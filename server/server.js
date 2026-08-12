@@ -1,29 +1,24 @@
-const express = require("express");
-const dotenv = require("dotenv");
-const cors = require("cors");
-const connectDB = require("./config/db");
+import app from "./app.js";
+import env from "./config/env.js";
+import connectDB from "./config/database.js";
 
-dotenv.config();
-
-// Database Connect
+// Initialize Database connection client
 connectDB();
 
-const app = express();
+const PORT = env.PORT || 5000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Test Route
-app.get("/", (req, res) => {
-  res.send("Smart Farming API Running...");
+const server = app.listen(PORT, () => {
+  console.log(`Server Running in ${env.NODE_ENV} mode on Port ${PORT}`);
 });
 
-// Routes
-app.use("/api/crops", require("./routes/cropRoutes"));
+// Graceful shutdown handling
+const shutdown = (signal) => {
+  console.log(`\nReceived ${signal}. Shutting down gracefully...`);
+  server.close(() => {
+    console.log("Http server closed.");
+    process.exit(0);
+  });
+};
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server Running on Port ${PORT}`);
-});
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
