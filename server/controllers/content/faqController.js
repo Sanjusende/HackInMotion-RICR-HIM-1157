@@ -1,0 +1,2 @@
+// TODO: Implement faqController
+export {};
