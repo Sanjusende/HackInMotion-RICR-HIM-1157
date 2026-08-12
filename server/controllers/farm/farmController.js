@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Farm from "../../models/Farm.js";
+import Farm from "../../models/FarmModel.js";
 
 /**
  * POST /api/farms
