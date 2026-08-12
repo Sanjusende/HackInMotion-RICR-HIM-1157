@@ -12,15 +12,15 @@ const SectionTitle = ({
   return (
     <div className={`flex flex-col max-w-3xl mb-10 md:mb-12 ${alignClass} ${className}`}>
       {badge && (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary dark:bg-primary/20 dark:text-green-300 mb-3 uppercase tracking-wider">
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary mb-3 uppercase tracking-wider">
           {badge}
         </span>
       )}
-      <h2 className="text-3xl md:text-4xl font-extrabold text-dark-text dark:text-slate-100 tracking-tight leading-tight">
+      <h2 className="text-3xl md:text-4xl font-extrabold text-dark-text tracking-tight leading-tight">
         {title}
       </h2>
       {subtitle && (
-        <p className="text-secondary-text dark:text-slate-400 text-base md:text-lg font-medium mt-3 max-w-2xl leading-relaxed">
+        <p className="text-secondary-text text-base md:text-lg font-medium mt-3 max-w-2xl leading-relaxed">
           {subtitle}
         </p>
       )}

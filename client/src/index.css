@@ -1,22 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-@variant dark (&:where(.dark, .dark *));
-
 @theme {
   /* Global Color Palette */
-  --color-primary: #16A34A;
-  --color-primary-hover: #15803D;
-  --color-secondary: #22C55E;
-  --color-accent: #10B981;
-  --color-blue-custom: #2563EB;
-  --color-bg-custom: #F8FAFC;
+  --color-primary: #16803D;
+  --color-primary-hover: #126B33;
+  --color-secondary: #22A559;
+  --color-accent: #3D9C61;
+  --color-blue-custom: #1686C1;
+  --color-bg-custom: #F7FAF7;
   --color-surface: #FFFFFF;
-  --color-sidebar-bg: #F1F5F9;
+  --color-sidebar-bg: #EEF6EF;
   --color-card-bg: #FFFFFF;
-  --color-dark-text: #111827;
-  --color-secondary-text: #6B7280;
-  --color-border-custom: #E5E7EB;
+  --color-dark-text: #19321E;
+  --color-secondary-text: #617466;
+  --color-border-custom: #DFE9DF;
   --color-success: #22C55E;
   --color-warning: #F59E0B;
   --color-danger: #EF4444;
@@ -49,11 +47,6 @@
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  /* Handle dark mode body transition */
-  .dark body {
-    background-color: #0B0F19; /* dark background slate-950 */
-    color: #F8FAFC; /* light text */
-  }
 
   h1, h2, h3, h4, h5, h6 {
     font-weight: 700; /* Heading: Bold */
@@ -62,9 +55,6 @@
     transition: color 0.3s ease;
   }
 
-  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
-    color: #F8FAFC;
-  }
 
   button {
     font-weight: 600; /* Buttons: SemiBold */
@@ -85,15 +75,9 @@
 ::-webkit-scrollbar-track {
   background: var(--color-bg-custom);
 }
-.dark ::-webkit-scrollbar-track {
-  background: #0B0F19;
-}
 ::-webkit-scrollbar-thumb {
   background: #CBD5E1;
   border-radius: 4px;
-}
-.dark ::-webkit-scrollbar-thumb {
-  background: #334155;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
@@ -115,10 +99,6 @@
   animation: shimmer 1.5s infinite linear;
 }
 
-.dark .animate-shimmer {
-  background: linear-gradient(90deg, #1E293B 25%, #334155 50%, #1E293B 75%);
-  background-size: 200% 100%;
-}
 
 /* Glassmorphism helpers */
 .glass-card {
@@ -128,12 +108,6 @@
   border: 1px solid rgba(229, 231, 235, 0.5);
 }
 
-.dark .glass-card {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(51, 65, 85, 0.5);
-}
 
 /* Custom animation styles */
 @keyframes float {

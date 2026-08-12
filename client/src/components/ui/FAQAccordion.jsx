@@ -4,16 +4,16 @@ import { ChevronDown } from 'lucide-react';
 
 const FAQItem = ({ question, answer, isOpen, onToggle }) => {
   return (
-    <div className="border border-border-custom dark:border-slate-800 rounded-card overflow-hidden bg-white dark:bg-slate-900 transition-colors shadow-small">
+    <div className="border border-border-custom rounded-card overflow-hidden bg-white transition-colors shadow-small">
       <button
         onClick={onToggle}
-        className="w-full px-6 py-4 flex items-center justify-between text-left font-bold text-dark-text dark:text-slate-100 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+        className="w-full px-6 py-4 flex items-center justify-between text-left font-bold text-dark-text hover:bg-gray-50 transition-colors cursor-pointer"
       >
         <span>{question}</span>
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
-          className="text-secondary-text dark:text-slate-400 shrink-0 ml-4"
+          className="text-secondary-text shrink-0 ml-4"
         >
           <ChevronDown size={20} />
         </motion.div>
@@ -27,7 +27,7 @@ const FAQItem = ({ question, answer, isOpen, onToggle }) => {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-6 pb-5 pt-1 text-sm font-semibold text-secondary-text dark:text-slate-400 border-t border-border-custom/50 dark:border-slate-800/50 leading-relaxed">
+            <div className="px-6 pb-5 pt-1 text-sm font-semibold text-secondary-text border-t border-border-custom/50 leading-relaxed">
               {answer}
             </div>
           </motion.div>

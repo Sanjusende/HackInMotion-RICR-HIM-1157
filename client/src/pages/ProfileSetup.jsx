@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Phone, MapPin, Globe, Check, Edit2, ArrowRight, ArrowLeft, Sprout } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
@@ -6,6 +7,7 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import Section from '../components/ui/Section';
+import { api } from '../context/AuthContext';
 
 const ProfileSetup = () => {
   const [step, setStep] = useState(1);
@@ -14,6 +16,11 @@ const ProfileSetup = () => {
     fullName: '',
     phone: '',
     location: '',
+    village: '',
+    district: '',
+    state: '',
+    latitude: '',
+    longitude: '',
     language: 'English',
 
     // Step 2: Farm Details
@@ -25,12 +32,15 @@ const ProfileSetup = () => {
     farmingType: 'Organic',
     budget: '',
     cropPreference: 'Vegetables',
+    currentCrop: '',
+    plannedCrop: '',
     challenge: 'Water Shortage',
   });
 
   const [errors, setErrors] = useState({});
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const validateStep = (currentStep) => {
     const tempErrors = {};
@@ -42,12 +52,17 @@ const ProfileSetup = () => {
         tempErrors.phone = 'Please enter a valid phone number';
       }
       if (!formData.location.trim()) tempErrors.location = 'Location is required';
+      if (!formData.village.trim()) tempErrors.village = 'Village is required';
+      if (!formData.district.trim()) tempErrors.district = 'District is required';
+      if (!formData.state.trim()) tempErrors.state = 'State is required';
     } else if (currentStep === 2) {
       if (!formData.farmSize) {
         tempErrors.farmSize = 'Farm Size is required';
       } else if (parseFloat(formData.farmSize) <= 0) {
         tempErrors.farmSize = 'Farm size must be a positive number';
       }
+      if (formData.latitude === '' || Number.isNaN(Number(formData.latitude))) tempErrors.latitude = 'Latitude is required';
+      if (formData.longitude === '' || Number.isNaN(Number(formData.longitude))) tempErrors.longitude = 'Longitude is required';
     } else if (currentStep === 3) {
       if (!formData.budget) {
         tempErrors.budget = 'Seasonal Budget is required';
@@ -76,13 +91,20 @@ const ProfileSetup = () => {
     setStep(targetStep);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setShowSummaryModal(true);
-      toast.success('Farmer Profile Setup Completed Successfully!');
-    }, 2000);
+    try {
+      const { data } = await api.post('/farms', {
+        farmName: `${formData.fullName}'s Farm`, state: formData.state, district: formData.district, village: formData.village,
+        latitude: Number(formData.latitude), longitude: Number(formData.longitude), landSize: Number(formData.farmSize), landUnit: 'ACRE',
+        soilType: formData.soilType.toUpperCase(), currentCrop: formData.currentCrop, plannedCrop: formData.plannedCrop,
+        irrigationMethod: ({ Drip: 'DRIP', Sprinkler: 'SPRINKLER', Rainfed: 'RAIN-FED' })[formData.irrigationType] || 'OTHER',
+      }, { headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('krishimitra-session'))?.accessToken}` } });
+      if (!data.success) throw new Error(data.message);
+      localStorage.setItem('krishimitra-farm-profile', JSON.stringify({ ...formData, id: data.data.farm._id }));
+      setShowSummaryModal(true); toast.success('Farm profile saved successfully.');
+    } catch (error) { toast.error(error.response?.data?.message || error.message || 'Unable to save your farm profile.'); }
+    finally { setIsSubmitting(false); }
   };
 
   const handleChange = (field, value) => {
@@ -186,6 +208,12 @@ const ProfileSetup = () => {
                     />
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Input id="village" label="Village" placeholder="Enter village" value={formData.village} onChange={(e) => handleChange('village', e.target.value)} error={errors.village} />
+                    <Input id="district" label="District" placeholder="Enter district" value={formData.district} onChange={(e) => handleChange('district', e.target.value)} error={errors.district} />
+                    <Input id="state" label="State" placeholder="Enter state" value={formData.state} onChange={(e) => handleChange('state', e.target.value)} error={errors.state} />
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Input
                       id="location"
@@ -216,6 +244,11 @@ const ProfileSetup = () => {
                         </div>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <Input id="latitude" label="Latitude" type="number" placeholder="e.g. 18.5204" value={formData.latitude} onChange={(e) => handleChange('latitude', e.target.value)} error={errors.latitude} />
+                    <Input id="longitude" label="Longitude" type="number" placeholder="e.g. 73.8567" value={formData.longitude} onChange={(e) => handleChange('longitude', e.target.value)} error={errors.longitude} />
                   </div>
                 </motion.div>
               )}
@@ -256,6 +289,11 @@ const ProfileSetup = () => {
                         <option value="Red">Red Soil (Loamy)</option>
                       </select>
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <Input id="currentCrop" label="Current Crop" placeholder="e.g. Wheat" value={formData.currentCrop} onChange={(e) => handleChange('currentCrop', e.target.value)} />
+                    <Input id="plannedCrop" label="Planned Crop" placeholder="e.g. Soybean" value={formData.plannedCrop} onChange={(e) => handleChange('plannedCrop', e.target.value)} />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -464,9 +502,9 @@ const ProfileSetup = () => {
               <Button
                 variant="primary"
                 fullWidth
-                onClick={() => setShowSummaryModal(false)}
+                onClick={() => { setShowSummaryModal(false); navigate('/dashboard'); }}
               >
-                Close & View Advisory
+                View dashboard
               </Button>
             </motion.div>
           </div>

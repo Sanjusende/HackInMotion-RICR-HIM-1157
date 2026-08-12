@@ -5,6 +5,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +14,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const validate = () => {
     const tempErrors = {};
@@ -30,19 +32,18 @@ const Login = () => {
     return Object.keys(tempErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
     setIsLoading(true);
-    // Simulate API Login call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await login({ email, password });
       toast.success('Successfully logged in!');
-      setTimeout(() => {
-        navigate('/profile/setup');
-      }, 1000);
-    }, 1500);
+      navigate(localStorage.getItem('krishimitra-farm-profile') ? '/dashboard' : '/profile/setup');
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message || 'Unable to sign in. Please try again.');
+    } finally { setIsLoading(false); }
   };
 
   return (

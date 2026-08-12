@@ -1,21 +1,24 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, MapPin, Lock, Eye, EyeOff, Sprout } from 'lucide-react';
+import { User, Mail, Phone, Lock, Eye, EyeOff, Sprout } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
+import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [location, setLocation] = useState('');
+  const [phone, setPhone] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   const validate = () => {
     const tempErrors = {};
@@ -25,7 +28,7 @@ const Register = () => {
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       tempErrors.email = 'Please enter a valid email address';
     }
-    if (!location) tempErrors.location = 'Farm location is required';
+    if (phone && !/^\+?[0-9\s-]{10,14}$/.test(phone)) tempErrors.phone = 'Please enter a valid phone number';
     if (!password) {
       tempErrors.password = 'Password is required';
     } else if (password.length < 6) {
@@ -36,23 +39,23 @@ const Register = () => {
     } else if (password !== confirmPassword) {
       tempErrors.confirmPassword = 'Passwords do not match';
     }
+    if (!acceptedTerms) tempErrors.terms = 'Please accept the terms to continue';
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
     setIsLoading(true);
-    // Simulate API registration call
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success('Registration successful!');
-      setTimeout(() => {
-        navigate('/login');
-      }, 1000);
-    }, 1500);
+    try {
+      await register({ name, email, phone, password, role: 'FARMER' });
+      toast.success('Registration successful! Complete your farm profile next.');
+      navigate('/profile/setup');
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message || 'Unable to create your account.');
+    } finally { setIsLoading(false); }
   };
 
   return (
@@ -95,13 +98,13 @@ const Register = () => {
           />
 
           <Input
-            id="location"
-            label="Farm Location (State/District)"
-            placeholder="Maharashtra, Pune"
-            icon={MapPin}
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            error={errors.location}
+            id="phone"
+            label="Phone number (optional)"
+            placeholder="+91 9876543210"
+            icon={Phone}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            error={errors.phone}
           />
 
           <div className="relative">
@@ -134,6 +137,14 @@ const Register = () => {
             onChange={(e) => setConfirmPassword(e.target.value)}
             error={errors.confirmPassword}
           />
+
+          <div>
+            <label className="flex items-start gap-2 text-sm text-secondary-text cursor-pointer">
+              <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="mt-1 accent-primary" />
+              <span>I agree to the terms and privacy policy.</span>
+            </label>
+            {errors.terms && <p className="text-danger text-xs mt-1">{errors.terms}</p>}
+          </div>
 
           <Button type="submit" variant="primary" fullWidth isLoading={isLoading}>
             Register Farm
