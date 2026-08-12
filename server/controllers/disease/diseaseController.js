@@ -1,2 +1,0 @@
-// TODO: Implement diseaseController
-export {};
