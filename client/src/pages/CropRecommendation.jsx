@@ -1,0 +1,114 @@
+import React, { useState } from 'react';
+import { useFarm } from '../context/FarmContext';
+import { Sprout, CheckCircle2, ArrowRight } from 'lucide-react';
+import Button from '../components/ui/Button';
+
+const RECOMMENDATION_RULES = [
+  {
+    soil: 'Black Soil',
+    season: 'Kharif',
+    crops: [
+      { name: 'Soybean', score: '95% Match', reasoning: 'Black soil has high clay content and moisture retention, perfect for soybean root nodulation during Kharif rains.' },
+      { name: 'Maize', score: '88% Match', reasoning: 'Deep black soil provides excellent nutrient uptake for hybrid maize cob development.' },
+      { name: 'Cotton', score: '85% Match', reasoning: 'Black cotton soil of Malwa/Deccan region provides suitable aeration for deep tap roots.' }
+    ]
+  },
+  {
+    soil: 'Black Soil',
+    season: 'Rabi',
+    crops: [
+      { name: 'Wheat', score: '98% Match', reasoning: 'Cool Rabi winter temperature combined with black soil moisture storage yields high protein wheat grain.' },
+      { name: 'Gram / Chickpea', score: '90% Match', reasoning: 'Low irrigation requirement; thrives on residual moisture in black soil.' }
+    ]
+  },
+  {
+    soil: 'Default',
+    season: 'Kharif',
+    crops: [
+      { name: 'Rice', score: '90% Match', reasoning: 'Suitable for monsoon water availability and clay loam soil.' },
+      { name: 'Maize', score: '85% Match', reasoning: 'High yield potential with moderate fertilizer response.' }
+    ]
+  }
+];
+
+const CropRecommendation = () => {
+  const { farm } = useFarm();
+
+  const [soilType, setSoilType] = useState(farm?.soilType || 'Black Soil');
+  const [season, setSeason] = useState(farm?.season || 'Kharif');
+
+  const ruleMatch = RECOMMENDATION_RULES.find((r) => r.soil === soilType && r.season === season) || RECOMMENDATION_RULES[0];
+
+  return (
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-3">
+          <Sprout className="w-8 h-8 text-emerald-600" />
+          Crop Recommendation Engine
+        </h1>
+        <p className="text-slate-600 text-sm mt-1">
+          Discover optimal crop choices based on your region ({farm?.location?.display || 'Indore, MP'}), soil type, and upcoming season.
+        </p>
+      </div>
+
+      {/* Input Selector Form */}
+      <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-md grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">Soil Type</label>
+          <select
+            value={soilType}
+            onChange={(e) => setSoilType(e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold"
+          >
+            <option value="Black Soil">Black Soil</option>
+            <option value="Red Soil">Red Soil</option>
+            <option value="Alluvial Soil">Alluvial Soil</option>
+            <option value="Clay Soil">Clay Soil</option>
+            <option value="Sandy Soil">Sandy Soil</option>
+            <option value="Loamy Soil">Loamy Soil</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">Upcoming Season</label>
+          <select
+            value={season}
+            onChange={(e) => setSeason(e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold"
+          >
+            <option value="Kharif">Kharif (Monsoon)</option>
+            <option value="Rabi">Rabi (Winter)</option>
+            <option value="Zaid">Zaid (Summer)</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Output Crop List with Reasoning */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-extrabold text-slate-900">
+          Recommended Crops for {soilType} ({season} Season)
+        </h2>
+
+        {ruleMatch.crops.map((crop, idx) => (
+          <div key={idx} className="bg-white rounded-3xl p-6 border border-slate-100 shadow-md space-y-3 hover:border-emerald-200 transition">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-black text-slate-900 flex items-center gap-2">
+                <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                {crop.name}
+              </span>
+              <span className="px-3 py-1 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-full">
+                {crop.score}
+              </span>
+            </div>
+
+            <p className="text-sm text-slate-700 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+              💡 <strong>Agronomic Reasoning:</strong> {crop.reasoning}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default CropRecommendation;
