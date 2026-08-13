@@ -1,6 +1,7 @@
 import React from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import KrishiMitraFloatingButton from '../ui/KrishiMitraFloatingButton';
 
 const AppLayout = ({ children }) => {
   return (
@@ -9,9 +10,12 @@ const AppLayout = ({ children }) => {
       <Navbar />
 
       {/* Main Responsive Content Container */}
-      <main >
+      <main className="flex-1">
         {children}
       </main>
+
+      {/* Floating KrishiMitra Voice Companion Button */}
+      <KrishiMitraFloatingButton />
 
       {/* Footer */}
       <Footer />
