@@ -27,7 +27,7 @@ const Navbar = () => {
     { label: 'Irrigation', path: '/irrigation', icon: Droplets },
     { label: 'Crop Health', path: '/crop-health', icon: Sprout },
     { label: 'Market', path: '/market', icon: TrendingUp },
-    { label: 'Voice Assistant', path: '/voice-assistant', icon: Mic }
+    { label: 'KrishiMitra', path: '/voice-assistant', icon: Mic }
   ];
 
   const publicLandingLinks = [
