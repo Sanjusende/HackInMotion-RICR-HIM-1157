@@ -29,15 +29,47 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Global error & token handling
+// Response Interceptor: Global error & token refresh handling
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
     const status = error.response?.status;
     const message = error.response?.data?.message || error.response?.data?.error || 'An unexpected error occurred';
 
+    // Automatic token refresh retry for 401 Unauthorized
+    if (status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const sessionData = JSON.parse(localStorage.getItem('krishimitra-session'));
+        if (sessionData?.refreshToken) {
+          const refreshRes = await axios.post(`${baseURL}/auth/refresh-token`, {
+            refreshToken: sessionData.refreshToken
+          });
+
+          if (refreshRes.data?.success && refreshRes.data?.data?.accessToken) {
+            const newAccessToken = refreshRes.data.data.accessToken;
+            const newRefreshToken = refreshRes.data.data.refreshToken || sessionData.refreshToken;
+
+            const updatedSession = {
+              ...sessionData,
+              accessToken: newAccessToken,
+              refreshToken: newRefreshToken
+            };
+            localStorage.setItem('krishimitra-session', JSON.stringify(updatedSession));
+            localStorage.setItem('token', newAccessToken);
+
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            return axios(originalRequest);
+          }
+        }
+      } catch (refreshErr) {
+        localStorage.removeItem('krishimitra-session');
+        localStorage.removeItem('token');
+      }
+    }
+
     if (status === 401) {
-      // Clear invalid session on 401 unauthorized
       localStorage.removeItem('krishimitra-session');
       localStorage.removeItem('token');
     }
