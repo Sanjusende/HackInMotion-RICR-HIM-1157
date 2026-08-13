@@ -12,7 +12,7 @@ class TokenService {
     const accessToken = jwt.sign(
       { id: user._id, role: user.role, email: user.email },
       env.JWT_SECRET,
-      { expiresIn: "15m" }
+      { expiresIn: "24h" }
     );
 
     const refreshToken = jwt.sign(
@@ -39,13 +39,13 @@ class TokenService {
   }
 
   /**
-   * Generate a stateless password reset token valid for 15 minutes
+   * Generate a stateless password reset token valid for 1 hour
    */
   generateResetToken(user) {
     return jwt.sign(
       { id: user._id, email: user.email },
       env.JWT_SECRET,
-      { expiresIn: "15m" }
+      { expiresIn: "1h" }
     );
   }
 

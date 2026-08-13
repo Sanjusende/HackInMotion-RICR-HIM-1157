@@ -4,26 +4,39 @@ import { fetchOpenMeteoWeather } from '../services/weather/openMeteoService.js';
 
 export const getCurrentWeather = async (req, res) => {
   try {
-    const farm = await Farm.findOne({ userId: req.user._id });
+    let lat = 22.7196;
+    let lng = 75.8577;
+    let farm = null;
 
-    const lat = farm?.location?.lat || 22.7196;
-    const lng = farm?.location?.lng || 75.8577;
+    try {
+      farm = await Farm.findOne({ userId: req.user._id });
+      if (farm?.location?.lat && farm?.location?.lng) {
+        lat = farm.location.lat;
+        lng = farm.location.lng;
+      }
+    } catch (dbErr) {
+      console.warn('DB lookup fallback in weather controller:', dbErr.message);
+    }
 
     const weatherData = await fetchOpenMeteoWeather(lat, lng);
 
     if (farm) {
-      await Weather.create({
-        farmId: farm._id,
-        fetchedAt: weatherData.fetchedAt,
-        temperature: weatherData.temperature,
-        humidity: weatherData.humidity,
-        windSpeed: weatherData.windSpeed,
-        rainProbability: weatherData.rainProbability,
-        rainfallMm: weatherData.rainfallMm,
-        weatherCondition: weatherData.weatherCondition,
-        forecast: weatherData.forecast,
-        source: weatherData.source
-      });
+      try {
+        await Weather.create({
+          farmId: farm._id,
+          fetchedAt: weatherData.fetchedAt,
+          temperature: weatherData.temperature,
+          humidity: weatherData.humidity,
+          windSpeed: weatherData.windSpeed,
+          rainProbability: weatherData.rainProbability,
+          rainfallMm: weatherData.rainfallMm,
+          weatherCondition: weatherData.weatherCondition,
+          forecast: weatherData.forecast,
+          source: weatherData.source
+        });
+      } catch (saveErr) {
+        // Non-blocking log save error
+      }
     }
 
     return res.status(200).json({
@@ -41,9 +54,18 @@ export const getCurrentWeather = async (req, res) => {
 
 export const getWeatherForecast = async (req, res) => {
   try {
-    const farm = await Farm.findOne({ userId: req.user._id });
-    const lat = farm?.location?.lat || 22.7196;
-    const lng = farm?.location?.lng || 75.8577;
+    let lat = 22.7196;
+    let lng = 75.8577;
+
+    try {
+      const farm = await Farm.findOne({ userId: req.user._id });
+      if (farm?.location?.lat && farm?.location?.lng) {
+        lat = farm.location.lat;
+        lng = farm.location.lng;
+      }
+    } catch (dbErr) {
+      console.warn('DB lookup fallback in forecast controller:', dbErr.message);
+    }
 
     const weatherData = await fetchOpenMeteoWeather(lat, lng);
 
