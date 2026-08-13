@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Sprout } from 'lucide-react';
 import Button from '../ui/Button';
+import { useAuth } from '../../context/AuthContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+  const { isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,9 +26,6 @@ const Navbar = () => {
   useEffect(() => {
     setIsOpen(false);
   }, [location]);
-
-  const navLinks = [
-  ];
 
   return (
     <nav
@@ -46,37 +45,26 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* Desktop Links */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.path}
-                to={link.path}
-                className={({ isActive }) =>
-                  `font-semibold text-sm transition-colors cursor-pointer ${
-                    isActive
-                      ? 'text-primary'
-                      : 'text-secondary-text hover:text-dark-text'
-                  }`
-                }
-              >
-                {link.name}
-              </NavLink>
-            ))}
-          </div>
-
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/login">
-              <Button variant="secondary" size="sm">
-                Log In
+            {isAuthenticated ? (
+              <Button variant="secondary" size="sm" onClick={logout}>
+                Log Out
               </Button>
-            </Link>
-            <Link to="/register">
-              <Button variant="primary" size="sm">
-                Get started
-              </Button>
-            </Link>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="secondary" size="sm">
+                    Log In
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button variant="primary" size="sm">
+                    Get started
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -95,31 +83,24 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden bg-surface border-b border-border-custom shadow-medium absolute top-16 left-0 right-0 py-4 px-6 space-y-4">
           <div className="flex flex-col space-y-3">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.path}
-                to={link.path}
-                className={({ isActive }) =>
-                  `font-semibold text-base transition-colors cursor-pointer ${
-                    isActive ? 'text-primary' : 'text-secondary-text'
-                  }`
-                }
-              >
-                {link.name}
-              </NavLink>
-            ))}
-          </div>
-          <div className="border-t border-border-custom pt-4 flex flex-col space-y-3">
-            <Link to="/login" className="w-full">
-              <Button variant="secondary" size="md" fullWidth>
-                Log In
+            {isAuthenticated ? (
+              <Button variant="secondary" size="md" fullWidth onClick={logout}>
+                Log Out
               </Button>
-            </Link>
-            <Link to="/register" className="w-full">
-              <Button variant="primary" size="md" fullWidth>
-                Get Start
-              </Button>
-            </Link>
+            ) : (
+              <>
+                <Link to="/login" className="w-full">
+                  <Button variant="secondary" size="md" fullWidth>
+                    Log In
+                  </Button>
+                </Link>
+                <Link to="/register" className="w-full">
+                  <Button variant="primary" size="md" fullWidth>
+                    Get started
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

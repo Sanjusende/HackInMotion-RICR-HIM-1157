@@ -253,3 +253,105 @@ export const getMe = async (req, res) => {
     });
   }
 };
+
+/**
+ * POST /api/v1/auth/forgot-password
+ * Triggers forgot password flow and yields a stateless reset token
+ */
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required"
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User with this email does not exist"
+      });
+    }
+
+    // Generate token
+    const resetToken = tokenService.generateResetToken(user);
+    const resetLink = `${req.protocol}://${req.get("host")}/reset-password?token=${resetToken}`;
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset token generated successfully. In a production environment, this would be sent to your email.",
+      data: {
+        resetToken,
+        resetLink
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Server Error"
+    });
+  }
+};
+
+/**
+ * POST /api/v1/auth/reset-password
+ * Resets user password using reset token
+ */
+export const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Token and new password are required"
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters"
+      });
+    }
+
+    let decoded;
+    try {
+      decoded = tokenService.verifyResetToken(token);
+    } catch (err) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid or expired reset token"
+      });
+    }
+
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedPassword;
+    // Invalidate current refresh token to force re-auth
+    user.refreshToken = "";
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password has been reset successfully"
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Server Error"
+    });
+  }
+};

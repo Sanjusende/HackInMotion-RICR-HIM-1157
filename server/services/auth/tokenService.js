@@ -37,6 +37,24 @@ class TokenService {
   verifyRefreshToken(token) {
     return jwt.verify(token, env.JWT_REFRESH_SECRET);
   }
+
+  /**
+   * Generate a stateless password reset token valid for 15 minutes
+   */
+  generateResetToken(user) {
+    return jwt.sign(
+      { id: user._id, email: user.email },
+      env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+  }
+
+  /**
+   * Verify a password reset token
+   */
+  verifyResetToken(token) {
+    return jwt.verify(token, env.JWT_SECRET);
+  }
 }
 
 export default new TokenService();
