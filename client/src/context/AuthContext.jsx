@@ -21,9 +21,13 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (session) {
       localStorage.setItem('krishimitra-session', JSON.stringify(session));
+      if (session.accessToken) {
+        localStorage.setItem('token', session.accessToken);
+      }
       setCurrentUser(session.user);
     } else {
       localStorage.removeItem('krishimitra-session');
+      localStorage.removeItem('token');
       setCurrentUser(null);
     }
   }, [session]);
@@ -57,6 +61,7 @@ export const AuthProvider = ({ children }) => {
   const saveSession = (data) => {
     const next = { user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken };
     setSession(next);
+    localStorage.setItem('token', data.accessToken);
     return next.user;
   };
 
@@ -85,6 +90,7 @@ export const AuthProvider = ({ children }) => {
       setSession(null);
       setCurrentUser(null);
       localStorage.removeItem('krishimitra-session');
+      localStorage.removeItem('token');
       
       // Clear cookies
       document.cookie.split(";").forEach((cookie) => {

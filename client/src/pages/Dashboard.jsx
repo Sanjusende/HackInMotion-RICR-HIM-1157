@@ -211,33 +211,42 @@ const Dashboard = () => {
       {/* ======================================================== */}
       {/* 1. DASHBOARD HEADER */}
       {/* ======================================================== */}
-      <div className="relative bg-gradient-to-r from-emerald-900 via-emerald-800 to-slate-900 text-white p-6 sm:p-8 rounded-[2.5rem] shadow-xl overflow-hidden">
-        <div className="absolute top-0 right-0 -z-0 w-[400px] h-[400px] bg-white/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative bg-white/90 backdrop-blur-md text-slate-900 p-6 sm:p-8 rounded-[2.5rem] shadow-sm border border-emerald-100/90 overflow-hidden">
+        {/* Soft background glow accents */}
+        <div className="absolute top-0 right-0 -z-0 w-[350px] h-[350px] bg-gradient-to-br from-emerald-200/30 to-green-100/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 -z-0 w-[300px] h-[300px] bg-emerald-100/30 rounded-full blur-2xl pointer-events-none" />
 
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-emerald-300">
-              <span className="flex items-center gap-1 bg-white/10 px-3 py-1 rounded-full border border-white/10">
-                <MapPin size={13} className="text-emerald-400" />
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2.5 text-xs font-bold">
+              <span className="flex items-center gap-1.5 bg-slate-100/90 text-slate-700 px-3.5 py-1.5 rounded-full border border-slate-200/80">
+                <MapPin size={13} className="text-emerald-600" />
                 {farm?.location?.display || 'Indore, Madhya Pradesh'}
               </span>
-              <span className="flex items-center gap-1 bg-white/10 px-3 py-1 rounded-full border border-white/10">
-                <Calendar size={13} className="text-emerald-400" />
+              <span className="flex items-center gap-1.5 bg-slate-100/90 text-slate-700 px-3.5 py-1.5 rounded-full border border-slate-200/80">
+                <Calendar size={13} className="text-emerald-600" />
                 {currentDateStr}
               </span>
-              <span className="flex items-center gap-1 bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-full border border-emerald-500/30">
-                <Sun size={13} className="text-amber-400 animate-pulse" />
+              <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-800 px-3.5 py-1.5 rounded-full border border-emerald-200/80 font-extrabold">
+                <Sun size={14} className="text-amber-500 animate-pulse" />
                 28°C • Clear Sky
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
+            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900">
               Good Morning, {user?.name || 'Farmer'} 👋
             </h1>
 
-            <p className="text-emerald-100 text-xs sm:text-sm font-medium">
-              🌱 Active Crop: <strong className="text-white">{farm?.currentCrop || 'Wheat'}</strong> ({farm?.growthStage || 'Vegetative'} Stage) • Land: <strong className="text-white">{farm?.landSize?.value || 5} {farm?.landSize?.unit || 'Acres'}</strong> ({farm?.soilType || 'Black Soil'})
-            </p>
+            <div className="p-3 bg-emerald-50/60 rounded-2xl border border-emerald-100/80 inline-flex flex-wrap items-center gap-2 text-xs sm:text-sm font-semibold text-slate-700">
+              <span className="flex items-center gap-1 text-emerald-800 font-bold">
+                <Sprout size={15} className="text-emerald-600" /> Active Crop:
+              </span>
+              <strong className="text-slate-900 font-extrabold">{farm?.currentCrop || 'Wheat'}</strong>
+              <span className="text-slate-400">•</span>
+              <span className="text-slate-600">Stage: <strong className="text-slate-900">{farm?.growthStage || 'Vegetative'}</strong></span>
+              <span className="text-slate-400">•</span>
+              <span className="text-slate-600">Land: <strong className="text-slate-900">{farm?.landSize?.value || 5} {farm?.landSize?.unit || 'Acres'}</strong> ({farm?.soilType || 'Black Soil'})</span>
+            </div>
           </div>
 
           {/* Quick Header Actions */}
@@ -245,9 +254,9 @@ const Dashboard = () => {
             {/* Refresh */}
             <button
               onClick={handleRefresh}
-              className="p-2.5 bg-white/10 hover:bg-white/20 rounded-2xl transition-all text-white flex items-center gap-2 text-xs font-bold border border-white/10 cursor-pointer"
+              className="p-2.5 bg-slate-100 hover:bg-slate-200/80 rounded-2xl transition-all text-slate-700 flex items-center gap-2 text-xs font-bold border border-slate-200/80 cursor-pointer"
             >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 text-emerald-600 ${refreshing ? 'animate-spin' : ''}`} />
               <span>Refresh</span>
             </button>
 
@@ -255,15 +264,15 @@ const Dashboard = () => {
             <div className="relative">
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="p-2.5 bg-white/10 hover:bg-white/20 rounded-2xl transition-all text-white relative border border-white/10 cursor-pointer"
+                className="p-2.5 bg-slate-100 hover:bg-slate-200/80 rounded-2xl transition-all text-slate-700 relative border border-slate-200/80 cursor-pointer"
               >
-                <Bell className="w-4 h-4" />
+                <Bell className="w-4 h-4 text-slate-700" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 animate-ping" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500" />
               </button>
 
               {notificationsOpen && (
-                <div className="absolute right-0 mt-3 w-80 bg-white text-slate-900 rounded-3xl p-4 shadow-2xl border border-slate-200 z-50 space-y-3">
+                <div className="absolute right-0 mt-3 w-80 bg-white text-slate-900 rounded-3xl p-4 shadow-2xl border border-emerald-100 z-50 space-y-3">
                   <div className="flex justify-between items-center border-b border-slate-100 pb-2">
                     <span className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
                       <Bell size={14} className="text-emerald-600" /> Active Farm Alerts
@@ -289,7 +298,7 @@ const Dashboard = () => {
             {/* Ask AI Voice */}
             <Link
               to="/voice-assistant"
-              className="px-4 py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 font-extrabold rounded-2xl transition flex items-center gap-2 shadow-md text-xs"
+              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl transition flex items-center gap-2 shadow-md text-xs"
             >
               <Mic className="w-4 h-4" />
               Ask AI Assistant
@@ -298,7 +307,7 @@ const Dashboard = () => {
             {/* Farm Profile Setup */}
             <Link
               to="/farm-profile"
-              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl transition text-xs border border-white/20"
+              className="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-2xl transition text-xs border border-slate-200"
             >
               Farm Setup
             </Link>
