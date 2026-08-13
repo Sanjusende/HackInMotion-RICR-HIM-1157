@@ -5,7 +5,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import AuthLayout from '../components/layout/AuthLayout';
-import { api } from '../context/AuthContext';
+import api from '../services/api';
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();

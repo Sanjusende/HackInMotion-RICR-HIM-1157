@@ -6,7 +6,7 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import AuthLayout from '../components/layout/AuthLayout';
 import Card from '../components/ui/Card';
-import { api } from '../context/AuthContext';
+import api from '../services/api';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');

@@ -1,24 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 
+export { api };
 const AuthContext = createContext(null);
-export const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || '/api/v1', timeout: 10000 });
-
-// Add request interceptor to automatically attach authorization header
-api.interceptors.request.use(
-  (config) => {
-    try {
-      const sessionData = JSON.parse(localStorage.getItem('krishimitra-session'));
-      if (sessionData?.accessToken) {
-        config.headers.Authorization = `Bearer ${sessionData.accessToken}`;
-      }
-    } catch (e) {
-      // Ignore JSON parse errors
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 const storedSession = () => {
   try {
