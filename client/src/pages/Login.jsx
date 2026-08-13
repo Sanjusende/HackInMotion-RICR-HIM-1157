@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, Sprout } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
-import Card from '../components/ui/Card';
+import AuthLayout from '../components/layout/AuthLayout';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
@@ -40,89 +40,75 @@ const Login = () => {
     try {
       await login({ email, password });
       toast.success('Successfully logged in!');
-      navigate(localStorage.getItem('krishimitra-farm-profile') ? '/dashboard' : '/profile/setup');
+      navigate('/dashboard');
     } catch (error) {
       toast.error(error.response?.data?.message || error.message || 'Unable to sign in. Please try again.');
-    } finally { setIsLoading(false); }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 bg-bg-custom relative">
+    <AuthLayout title="Welcome Back" subtitle="Access your agricultural dashboard">
       <Toaster position="top-right" />
-      {/* Background shape */}
-      <div className="absolute top-10 left-10 w-72 h-72 rounded-full bg-primary/5 blur-3xl -z-10 animate-pulse" />
-      <div className="absolute bottom-10 right-10 w-80 h-80 rounded-full bg-accent/5 blur-3xl -z-10 animate-pulse" />
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <Input
+          id="email"
+          label="Email Address"
+          type="email"
+          placeholder="farmer@krishimitra.org"
+          icon={Mail}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          error={errors.email}
+        />
 
-      <Card shadow="large" className="w-full max-w-md p-8 bg-white" hoverLift={false}>
-        <div className="flex flex-col items-center mb-8">
-          <div className="p-3 bg-primary/10 rounded-full text-primary mb-3">
-            <Sprout size={32} />
-          </div>
-          <h2 className="text-2xl font-extrabold text-dark-text">Welcome Back</h2>
-          <p className="text-secondary-text font-medium text-sm mt-1">
-            Access your agricultural dashboard
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="relative">
           <Input
-            id="email"
-            label="Email Address"
-            type="email"
-            placeholder="farmer@krishimitra.org"
-            icon={Mail}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            error={errors.email}
+            id="password"
+            label="Password"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="••••••••"
+            icon={Lock}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            error={errors.password}
           />
-
-          <div className="relative">
-            <Input
-              id="password"
-              label="Password"
-              type={showPassword ? 'text' : 'password'}
-              placeholder="••••••••"
-              icon={Lock}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              error={errors.password}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-[38px] text-secondary-text hover:text-dark-text cursor-pointer"
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
-          </div>
-
-          <div className="flex justify-end">
-            <Link
-              to="/forgot-password"
-              className="text-sm font-semibold text-primary hover:text-primary-hover transition-colors"
-            >
-              Forgot Password?
-            </Link>
-          </div>
-
-          <Button type="submit" variant="primary" fullWidth isLoading={isLoading}>
-            Sign In
-          </Button>
-        </form>
-
-        <div className="border-t border-border-custom mt-6 pt-6 text-center">
-          <p className="text-sm text-secondary-text font-medium">
-            Don't have an account?{' '}
-            <Link
-              to="/register"
-              className="text-primary hover:text-primary-hover font-semibold transition-colors"
-            >
-              Create Account
-            </Link>
-          </p>
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-4 top-[38px] text-secondary-text hover:text-dark-text cursor-pointer"
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
         </div>
-      </Card>
-    </div>
+
+        <div className="flex justify-end">
+          <Link
+            to="/forgot-password"
+            className="text-sm font-semibold text-primary hover:text-primary-hover transition-colors"
+          >
+            Forgot Password?
+          </Link>
+        </div>
+
+        <Button type="submit" variant="primary" fullWidth isLoading={isLoading}>
+          Sign In
+        </Button>
+      </form>
+
+      <div className="border-t border-border-custom mt-6 pt-6 text-center">
+        <p className="text-sm text-secondary-text font-medium">
+          Don't have an account?{' '}
+          <Link
+            to="/register"
+            className="text-primary hover:text-primary-hover font-semibold transition-colors"
+          >
+            Create Account
+          </Link>
+        </p>
+      </div>
+    </AuthLayout>
   );
 };
 

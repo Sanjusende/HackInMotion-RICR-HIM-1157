@@ -1,31 +1,14 @@
-import express from "express";
-
-import {
-    createFarm,
-    getFarms,
-    getFarmById,
-    updateFarm,
-    deleteFarm,
-} from "../controllers/farm/farmController.js";
-
-import authMiddleware from "../middleware/authMiddleware.js";
+import express from 'express';
+import { getMyFarm, createOrUpdateFarm, getFarmById } from '../controllers/farmController.js';
+import protect from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-/*
-|--------------------------------------------------------------------------
-| Farm Routes
-|--------------------------------------------------------------------------
-*/
+router.use(protect);
 
-router.post("/", authMiddleware, createFarm);
-
-router.get("/", authMiddleware, getFarms);
-
-router.get("/:id", authMiddleware, getFarmById);
-
-router.put("/:id", authMiddleware, updateFarm);
-
-router.delete("/:id", authMiddleware, deleteFarm);
+router.get('/me', getMyFarm);
+router.get('/:id', getFarmById);
+router.post('/', createOrUpdateFarm);
+router.put('/:id', createOrUpdateFarm);
 
 export default router;
