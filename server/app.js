@@ -1,8 +1,10 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import morgan from "morgan";
+import cookieParser from "cookie-parser";
 import env from "./config/env.js";
+import corsOptions from "./config/cors.js";
+import loggerMiddleware from "./config/logger.js";
 import authRoutes from "./routes/authRoutes.js";
 import farmRoutes from "./routes/farmRoutes.js";
 import weatherRoutes from "./routes/weatherRoutes.js";
@@ -12,11 +14,22 @@ import marketRoutes from "./routes/marketRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import voiceRoutes from "./routes/voiceRoutes.js";
 
+// Optional compression middleware loader
+let compressionMiddleware = (req, res, next) => next();
+try {
+  const compressionModule = await import("compression");
+  compressionMiddleware = (compressionModule.default || compressionModule)();
+} catch (e) {
+  // Safe fallback if compression package is not yet installed in node_modules
+}
+
 const app = express();
 
 app.use(helmet());
-app.use(cors());
-app.use(morgan(env.NODE_ENV === "production" ? "combined" : "dev"));
+app.use(cors(corsOptions));
+app.use(cookieParser());
+app.use(compressionMiddleware);
+app.use(loggerMiddleware);
 
 // Parse JSON payloads up to 50MB (resolves PayloadTooLargeError)
 app.use(express.json({ limit: "50mb" }));

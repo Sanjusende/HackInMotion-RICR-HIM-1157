@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Sprout, LayoutDashboard, CloudRain, Droplets, TrendingUp, Mic, LogOut, User } from 'lucide-react';
+import { Menu, X, Sprout, LayoutDashboard, CloudRain, Droplets, TrendingUp, Mic, LogOut, User, Sparkles } from 'lucide-react';
 import Button from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
 
@@ -8,7 +8,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
-  const { isAuthenticated, logout, currentUser } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,26 +35,37 @@ const Navbar = () => {
     { label: 'Voice Assistant', path: '/voice-assistant', icon: Mic }
   ];
 
+  const publicLandingLinks = [
+    { label: 'Home', href: '#' },
+    { label: 'Features', href: '#features' },
+    { label: 'How It Works', href: '#how-it-works' },
+    { label: 'Why KrishiMitra', href: '#why-us' },
+    { label: 'Dashboard Preview', href: '#dashboard-preview' },
+    { label: 'FAQ', href: '#faq' }
+  ];
+
   return (
     <nav
       className={`sticky top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled
-          ? 'bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm'
-          : 'bg-white border-b border-slate-100'
+          ? 'bg-white/85 backdrop-blur-md border-b border-emerald-100 shadow-sm'
+          : 'bg-white/95 backdrop-blur-sm border-b border-slate-100'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
-          <Link to={isAuthenticated ? '/dashboard' : '/'} className="flex items-center space-x-2 text-emerald-700 font-bold text-xl cursor-pointer">
-            <Sprout className="w-8 h-8 text-emerald-600" />
+          <Link to={isAuthenticated ? '/dashboard' : '/'} className="flex items-center space-x-2 text-emerald-800 font-bold text-xl cursor-pointer">
+            <div className="p-1.5 bg-emerald-100/80 text-emerald-700 rounded-xl">
+              <Sprout className="w-6 h-6 text-emerald-700" />
+            </div>
             <span className="text-slate-900 tracking-tight font-extrabold text-2xl">
-              Smart<span className="text-emerald-600">Farm</span>
+              Krishi<span className="text-emerald-700">Mitra</span>
             </span>
           </Link>
 
           {/* Desktop Navigation Links */}
-          {isAuthenticated && (
+          {isAuthenticated ? (
             <div className="hidden lg:flex items-center space-x-1">
               {navLinks.map((link) => {
                 const Icon = link.icon;
@@ -72,6 +83,18 @@ const Navbar = () => {
                   </Link>
                 );
               })}
+            </div>
+          ) : (
+            <div className="hidden lg:flex items-center space-x-6 text-xs font-bold text-slate-600">
+              {publicLandingLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="hover:text-emerald-700 transition-colors"
+                >
+                  {link.label}
+                </a>
+              ))}
             </div>
           )}
 
@@ -92,18 +115,18 @@ const Navbar = () => {
                 </Button>
               </div>
             ) : (
-              <>
+              <div className="flex items-center gap-2">
                 <Link to="/login">
-                  <Button variant="secondary" size="sm">
+                  <Button variant="secondary" size="sm" className="font-bold">
                     Log In
                   </Button>
                 </Link>
                 <Link to="/register">
-                  <Button variant="primary" size="sm">
-                    Get started
+                  <Button variant="primary" size="sm" className="font-bold flex items-center gap-1 shadow-sm">
+                    <Sparkles size={14} /> Get Started
                   </Button>
                 </Link>
-              </>
+              </div>
             )}
           </div>
 
@@ -121,8 +144,8 @@ const Navbar = () => {
 
       {/* Mobile Links */}
       {isOpen && (
-        <div className="lg:hidden bg-white border-b border-slate-200 shadow-xl absolute top-16 left-0 right-0 py-4 px-6 space-y-3">
-          {isAuthenticated && (
+        <div className="lg:hidden bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xl absolute top-16 left-0 right-0 py-4 px-6 space-y-3">
+          {isAuthenticated ? (
             <div className="flex flex-col space-y-2 pb-3 border-b border-slate-100">
               {navLinks.map((link) => {
                 const Icon = link.icon;
@@ -145,6 +168,19 @@ const Navbar = () => {
                 Farm Setup
               </Link>
             </div>
+          ) : (
+            <div className="flex flex-col space-y-2 pb-3 border-b border-slate-100 text-sm font-semibold text-slate-700">
+              {publicLandingLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className="px-3 py-2 rounded-xl hover:bg-emerald-50 hover:text-emerald-700"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
           )}
 
           <div className="flex flex-col space-y-2 pt-2">
@@ -161,7 +197,7 @@ const Navbar = () => {
                 </Link>
                 <Link to="/register" className="w-full">
                   <Button variant="primary" size="md" fullWidth>
-                    Get started
+                    Get Started
                   </Button>
                 </Link>
               </>
