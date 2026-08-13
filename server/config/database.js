@@ -6,11 +6,12 @@ import env from "./env.js";
  */
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(env.MONGO_URI);
+    const conn = await mongoose.connect(env.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000
+    });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`Database Connection Error: ${error.message}`);
-    process.exit(1);
+    console.warn(`Database Connection Warning: ${error.message}. Server operating with fallback handling.`);
   }
 };
 

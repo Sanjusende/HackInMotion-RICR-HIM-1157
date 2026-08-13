@@ -8,24 +8,32 @@ export const getCurrentMarketData = async (req, res) => {
     let cropName = requestedCrop;
 
     if (!cropName) {
-      const farm = await Farm.findOne({ userId: req.user._id });
-      cropName = farm?.currentCrop || 'Wheat';
+      try {
+        const farm = await Farm.findOne({ userId: req.user._id });
+        cropName = farm?.currentCrop || 'Wheat';
+      } catch (dbErr) {
+        cropName = 'Wheat';
+      }
     }
 
     const marketLocation = farmLocationToMandi(req.user);
     const data = await fetchCropMarketData(cropName, marketLocation);
 
-    // Save record to DB history
-    await MarketPrice.create({
-      crop: data.crop,
-      market: data.market,
-      price: data.currentPrice,
-      unit: 'Quintal',
-      date: new Date(),
-      trend: data.trend,
-      changePercent: data.changePercent,
-      source: data.source
-    });
+    // Save record to DB history (non-blocking)
+    try {
+      await MarketPrice.create({
+        crop: data.crop,
+        market: data.market,
+        price: data.currentPrice,
+        unit: 'Quintal',
+        date: new Date(),
+        trend: data.trend,
+        changePercent: data.changePercent,
+        source: data.source
+      });
+    } catch (saveErr) {
+      // Ignore DB save error
+    }
 
     return res.status(200).json({
       success: true,
