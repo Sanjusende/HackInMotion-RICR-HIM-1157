@@ -2,57 +2,37 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFarm } from '../context/FarmContext';
 import { sendVoiceQuery, getVoiceHistory } from '../services/voiceService';
-import { getCurrentWeather } from '../services/weatherService';
-import { analyzeIrrigation } from '../services/irrigationService';
-import { getCropHealthHistory } from '../services/cropHealthService';
-import { getMarketCurrent } from '../services/marketService';
 import {
   Mic,
   MicOff,
   Volume2,
-  Sparkles,
-  RefreshCw,
+  VolumeX,
+  Loader2,
   Send,
-  CheckCircle2,
-  MessageSquare,
-  Play,
-  Square,
   Trash2,
   Sprout,
-  Navigation,
-  Compass
+  RotateCcw,
+  CloudSun,
+  TrendingUp,
+  HeartPulse,
+  Droplets,
+  Play
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 
 const LANGUAGES = [
-  { code: 'hi-IN', label: 'हिंदी (Hindi)' },
+  { code: 'hi-IN', label: 'Hindi' },
   { code: 'en-US', label: 'English' },
   { code: 'hi-EN', label: 'Hinglish' },
-  { code: 'mr-IN', label: 'मराठी (Marathi)' },
-  { code: 'gu-IN', label: 'ગુજરાતી (Gujarati)' }
+  { code: 'mr-IN', label: 'Marathi' },
+  { code: 'gu-IN', label: 'Gujarati' }
 ];
 
-const COMMAND_CATEGORIES = [
-  {
-    category: 'Weather',
-    commands: ['Aaj ka weather batao.', 'Will it rain today?', 'Temperature kya hai?']
-  },
-  {
-    category: 'Market',
-    commands: ['Aaj wheat ka mandi rate kya hai?', 'Which market has the highest wheat price?', 'Market trend kya hai?']
-  },
-  {
-    category: 'Crop Health',
-    commands: ['Meri crop ki health kaisi hai?', 'Any disease detected?', 'Show crop health.']
-  },
-  {
-    category: 'Irrigation',
-    commands: ['Fasal ko paani kab dena hai?', 'Show irrigation status.']
-  },
-  {
-    category: 'Navigation',
-    commands: ['Open dashboard.', 'Open crop health.', 'Open irrigation.', 'Open market analysis.', 'Open weather.']
-  }
+const QUICK_ACTIONS = [
+  { label: 'Weather', icon: CloudSun, query: 'Aaj ka weather batao.' },
+  { label: 'Market', icon: TrendingUp, query: 'Aaj wheat ka mandi rate kya hai?' },
+  { label: 'Crop Health', icon: HeartPulse, query: 'Meri crop ki health kaisi hai?' },
+  { label: 'Irrigation', icon: Droplets, query: 'Fasal ko paani kab dena hai?' }
 ];
 
 const VoiceAssistant = () => {
@@ -227,35 +207,32 @@ const VoiceAssistant = () => {
     }
   };
 
-  // State Banner Description
-  const stateLabelMap = {
-    idle: 'KrishiMitra is ready',
-    listening: 'KrishiMitra is listening...',
-    processing: 'KrishiMitra is thinking...',
-    speaking: 'KrishiMitra is speaking...',
-    error: "KrishiMitra couldn't process that request."
-  };
+  const latestUserMsg = [...chatMessages].reverse().find((m) => m.sender === 'user');
+  const latestBotMsg = [...chatMessages].reverse().find((m) => m.sender === 'krishiMitra');
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 text-slate-900 selection:bg-emerald-600 selection:text-white">
+    <div className="min-h-[calc(100vh-4rem)] max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 text-slate-900 selection:bg-emerald-600 selection:text-white">
       
-      {/* 1 & 2. KRISHIMITRA HEADER */}
+      {/* 1 & 2. PAGE HEADER SECTION */}
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-1.5 rounded-full text-xs font-extrabold shadow-2xs">
+        <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3.5 py-1 rounded-full shadow-2xs">
           <Sprout className="w-4 h-4 text-emerald-600" />
-          <span>🌱 KrishiMitra • AI farming companion • 🎙 Ask KrishiMitra</span>
+          <span>KrishiMitra</span>
+          <span className="text-[10px] text-emerald-600">•</span>
+          <span className="flex items-center gap-1 font-bold text-emerald-700">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Online
+          </span>
         </div>
 
-        <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight flex items-center justify-center gap-2.5">
-          <span>KrishiMitra</span>
-          <span className="text-xs font-bold bg-emerald-600 text-white px-2.5 py-1 rounded-lg">AI</span>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+          KrishiMitra
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500 font-semibold max-w-md mx-auto">
-          Ask anything about your farm — weather, market prices, crop health, or irrigation.
+        <p className="text-sm text-slate-500 font-medium max-w-md mx-auto">
+          Your AI Farming Companion
         </p>
 
         {/* Farm Telemetry Badge */}
-        <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-white border border-slate-200 px-4 py-1.5 rounded-2xl text-xs font-bold text-slate-700 shadow-2xs">
+        <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-white border border-slate-200 px-4 py-1 rounded-2xl text-xs font-semibold text-slate-600 shadow-2xs mt-1">
           <span>🌾 Active Crop: <strong>{farm?.currentCrop || 'Wheat'}</strong></span>
           <span>•</span>
           <span>Land: <strong>{farm?.landSize?.value || 5} {farm?.landSize?.unit || 'Acres'}</strong></span>
@@ -264,16 +241,16 @@ const VoiceAssistant = () => {
         </div>
       </div>
 
-      {/* LANGUAGE SELECTOR */}
+      {/* LANGUAGE SELECTOR BAR */}
       <div className="flex items-center justify-center gap-2 flex-wrap">
         {LANGUAGES.map((lang) => (
           <button
             key={lang.code}
             onClick={() => setSelectedLang(lang.code)}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition cursor-pointer ${
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
               selectedLang === lang.code
                 ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
             }`}
           >
             {lang.label}
@@ -281,70 +258,217 @@ const VoiceAssistant = () => {
         ))}
       </div>
 
-      {/* 3 & 5. MAIN VOICE INTERACTION CARD */}
-      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/80 shadow-2xs text-center space-y-6 relative overflow-hidden hover:border-emerald-200 transition">
+      {/* 3, 4, 5, 6. MAIN VOICE MICROPHONE SECTION */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-sm text-center space-y-4 max-w-2xl mx-auto">
         
-        {/* Voice State Status Indicator */}
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-slate-50 border border-slate-200 text-slate-700">
-          <span className={`w-2 h-2 rounded-full ${
-            voiceState === 'listening' ? 'bg-rose-500 animate-ping' :
-            voiceState === 'processing' ? 'bg-amber-500 animate-pulse' :
-            voiceState === 'speaking' ? 'bg-emerald-500 animate-bounce' : 'bg-emerald-600'
-          }`} />
-          <span>{stateLabelMap[voiceState]}</span>
-        </div>
-
-        {/* Primary Microphone CTA Button */}
-        <div className="flex justify-center">
+        {/* Centered Medium 80px Microphone Button */}
+        <div className="flex justify-center relative">
           <button
             type="button"
             onClick={toggleListening}
             aria-label="Ask KrishiMitra microphone"
-            className={`w-28 h-28 rounded-full flex flex-col items-center justify-center transition-all transform shadow-md cursor-pointer ${
+            disabled={voiceState === 'processing'}
+            className={`w-20 h-20 sm:w-22 sm:h-22 rounded-full flex items-center justify-center transition-all duration-200 shadow-md cursor-pointer ${
               voiceState === 'listening'
-                ? 'bg-rose-600 text-white animate-pulse scale-105 shadow-rose-600/30'
+                ? 'bg-rose-600 ring-4 ring-rose-200 animate-pulse text-white scale-[1.03]'
                 : voiceState === 'processing'
-                ? 'bg-amber-500 text-white animate-pulse shadow-amber-500/30'
+                ? 'bg-amber-500 text-white opacity-90 cursor-not-allowed'
                 : voiceState === 'speaking'
-                ? 'bg-emerald-700 text-white shadow-emerald-700/30'
-                : 'bg-emerald-600 hover:bg-emerald-700 text-white hover:scale-105 shadow-emerald-600/30'
+                ? 'bg-emerald-700 ring-4 ring-emerald-200 text-white'
+                : voiceState === 'error'
+                ? 'bg-rose-500 text-white'
+                : 'bg-emerald-600 hover:bg-emerald-700 hover:scale-[1.03] text-white shadow-emerald-600/20'
             }`}
           >
-            {voiceState === 'listening' ? <MicOff className="w-9 h-9" /> : <Mic className="w-9 h-9" />}
-            <span className="text-[10px] font-black uppercase tracking-wider mt-1">
-              {voiceState === 'listening' ? 'Listening...' :
-               voiceState === 'processing' ? 'Thinking...' :
-               voiceState === 'speaking' ? 'Speaking...' : 'Ask KrishiMitra'}
-            </span>
+            {voiceState === 'listening' && <MicOff className="w-8 h-8" />}
+            {voiceState === 'processing' && <Loader2 className="w-8 h-8 animate-spin" />}
+            {voiceState === 'speaking' && <Volume2 className="w-8 h-8" />}
+            {voiceState === 'error' && <RotateCcw className="w-8 h-8" />}
+            {voiceState === 'idle' && <Mic className="w-8 h-8" />}
           </button>
         </div>
 
-        {/* Action Controls Row */}
-        <div className="flex items-center justify-center gap-3 text-xs font-bold">
-          <button
-            onClick={toggleListening}
-            aria-label="Ask KrishiMitra"
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
-          >
-            <Mic size={14} />
-            <span>🎙 Ask KrishiMitra</span>
-          </button>
+        {/* Dynamic Voice State Status Text & Waveforms */}
+        <div className="space-y-1">
+          {voiceState === 'idle' && (
+            <>
+              <p className="text-lg font-bold text-slate-900">Ask KrishiMitra</p>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium">Tap the microphone and speak naturally</p>
+            </>
+          )}
+
+          {voiceState === 'listening' && (
+            <>
+              <p className="text-lg font-bold text-rose-600">Listening...</p>
+              {/* Subtle Waveform */}
+              <div className="flex gap-1 justify-center items-center py-1.5">
+                <span className="w-1 h-3.5 bg-rose-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1 h-6 bg-rose-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1 h-8 bg-rose-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <span className="w-1 h-6 bg-rose-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1 h-3.5 bg-rose-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              </div>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium">Speak your question</p>
+            </>
+          )}
+
+          {voiceState === 'processing' && (
+            <>
+              <p className="text-lg font-bold text-amber-600">Thinking...</p>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium">KrishiMitra is processing your request</p>
+            </>
+          )}
 
           {voiceState === 'speaking' && (
+            <>
+              <p className="text-lg font-bold text-emerald-700">Speaking...</p>
+              {/* Waveform */}
+              <div className="flex gap-1 justify-center items-center py-1.5">
+                <span className="w-1 h-3 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1 h-6 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
+                <span className="w-1 h-8 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '400ms' }} />
+                <span className="w-1 h-5 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
+                <span className="w-1 h-3 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              </div>
+              <button
+                onClick={handleStopSpeaking}
+                aria-label="Stop speaking"
+                className="mt-1.5 px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition inline-flex items-center gap-1 cursor-pointer border border-slate-200"
+              >
+                <VolumeX size={12} />
+                <span>Stop</span>
+              </button>
+            </>
+          )}
+
+          {voiceState === 'error' && (
+            <>
+              <p className="text-lg font-bold text-rose-600">Something went wrong</p>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium">Please try again.</p>
+              <button
+                onClick={() => setVoiceState('idle')}
+                className="mt-1.5 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition cursor-pointer"
+              >
+                Try Again
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* 7 & 18. CONVERSATION MESSAGES AREA */}
+      <div className="max-w-2xl mx-auto space-y-4">
+        {/* Empty State */}
+        {chatMessages.length === 0 && voiceState === 'idle' && (
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 text-center space-y-1.5 shadow-2xs">
+            <span className="text-2xl">🌱</span>
+            <p className="text-sm font-bold text-slate-900">How can I help?</p>
+            <p className="text-xs text-slate-500 font-medium max-w-sm mx-auto">
+              Ask KrishiMitra about weather, market prices, crop health or irrigation.
+            </p>
+          </div>
+        )}
+
+        {/* Conversation Thread */}
+        {latestUserMsg && (
+          <div className="space-y-3">
+            {/* User Message */}
+            <div className="space-y-1">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">You</span>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-medium text-slate-800">
+                "{latestUserMsg.text}"
+              </div>
+            </div>
+
+            {/* Assistant Response */}
+            {latestBotMsg && (
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1">
+                    🌱 KrishiMitra
+                  </span>
+                  {voiceState === 'speaking' ? (
+                    <span className="text-xs font-bold text-emerald-700 flex items-center gap-1">
+                      <Volume2 size={13} className="animate-pulse" /> Speaking
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => speakText(latestBotMsg.text, selectedLang)}
+                      className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Play size={12} /> Play Voice
+                    </button>
+                  )}
+                </div>
+                <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm text-sm sm:text-base font-bold text-slate-900 leading-relaxed">
+                  {latestBotMsg.text}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* 8. QUICK ACTIONS */}
+      <div className="max-w-2xl mx-auto space-y-2 text-center">
+        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Quick actions</span>
+        <div className="flex flex-wrap items-center justify-center gap-2.5">
+          {QUICK_ACTIONS.map((action, idx) => {
+            const ActionIcon = action.icon;
+            return (
+              <button
+                key={idx}
+                onClick={() => {
+                  setTextInput(action.query);
+                  handleProcessQuery(action.query);
+                }}
+                className="px-3.5 py-2 bg-white hover:bg-emerald-50 hover:text-emerald-800 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <ActionIcon size={14} className="text-emerald-600 shrink-0" />
+                <span>{action.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 9. BOTTOM CONTROL AREA */}
+      <div className="max-w-2xl mx-auto space-y-3">
+        <div className="flex items-center justify-between gap-2 text-xs font-bold">
+          {voiceState === 'listening' ? (
+            <button
+              onClick={toggleListening}
+              aria-label="Stop listening"
+              className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <MicOff size={15} />
+              <span>Stop Listening</span>
+            </button>
+          ) : voiceState === 'speaking' ? (
             <button
               onClick={handleStopSpeaking}
-              aria-label="Stop KrishiMitra"
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              aria-label="Stop speaking"
+              className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
             >
-              <Square size={14} />
-              <span>Stop</span>
+              <VolumeX size={15} />
+              <span>Stop Speaking</span>
+            </button>
+          ) : (
+            <button
+              onClick={toggleListening}
+              aria-label="Ask KrishiMitra"
+              className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Mic size={15} />
+              <span>🎙 Ask KrishiMitra</span>
             </button>
           )}
 
           {chatMessages.length > 0 && (
             <button
               onClick={handleClearChat}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer border border-slate-200"
+              aria-label="Clear conversation"
+              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition flex items-center gap-1 cursor-pointer border border-slate-200 shrink-0"
             >
               <Trash2 size={14} />
               <span>Clear</span>
@@ -352,119 +476,48 @@ const VoiceAssistant = () => {
           )}
         </div>
 
-        {/* Text Input / Fallback Query */}
-        <div className="max-w-md mx-auto pt-2 space-y-2">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={textInput}
-              onChange={(e) => setTextInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleProcessQuery(textInput)}
-              placeholder="Or type your question (e.g. Aaj wheat ka mandi rate kya hai?)..."
-              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 text-xs font-semibold text-slate-800"
-            />
-            <Button
-              onClick={() => handleProcessQuery(textInput)}
-              disabled={voiceState === 'processing' || !textInput.trim()}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-
+        {/* Compact Form Input */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleProcessQuery(textInput);
+          }}
+          className="flex gap-2"
+        >
+          <input
+            type="text"
+            value={textInput}
+            onChange={(e) => setTextInput(e.target.value)}
+            placeholder="Or type your question here..."
+            className="flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 shadow-2xs"
+          />
+          <Button
+            type="submit"
+            disabled={voiceState === 'processing' || !textInput.trim()}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs shrink-0"
+          >
+            <Send size={14} />
+          </Button>
+        </form>
       </div>
 
-      {/* 4. CONVERSATION UI THREAD */}
-      {chatMessages.length > 0 && (
-        <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-2xs space-y-4">
-          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-2">
-            <MessageSquare className="w-4 h-4 text-emerald-600" />
-            Conversation with KrishiMitra
-          </h3>
+      {/* 12. RECENT CONVERSATIONS */}
+      <div className="max-w-2xl mx-auto bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs space-y-3">
+        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Recent</span>
 
-          <div className="space-y-3">
-            {chatMessages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`p-4 rounded-xl text-xs space-y-1 ${
-                  msg.sender === 'user'
-                    ? 'bg-slate-100 border border-slate-200 text-slate-900 max-w-lg ml-auto'
-                    : 'bg-emerald-50 border border-emerald-200 text-emerald-950 max-w-xl'
-                }`}
-              >
-                <div className="flex items-center justify-between font-extrabold text-[11px]">
-                  <span className={msg.sender === 'user' ? 'text-slate-700' : 'text-emerald-800'}>
-                    {msg.sender === 'user' ? '👤 You' : '🌱 KrishiMitra'}
-                  </span>
-                  {msg.sender === 'krishiMitra' && (
-                    <button
-                      onClick={() => speakText(msg.text, selectedLang)}
-                      className="text-emerald-700 hover:underline flex items-center gap-1 font-bold cursor-pointer"
-                    >
-                      <Volume2 size={12} /> Play
-                    </button>
-                  )}
-                </div>
-                <p className="text-xs font-medium leading-relaxed">{msg.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 8 & 9. VOICE COMMAND CHIPS BY CATEGORY */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-4 hover:border-emerald-200 transition">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-          <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-            <Compass className="w-4 h-4 text-emerald-600" />
-            Supported Voice Commands (English • Hindi • Hinglish)
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {COMMAND_CATEGORIES.map((cat, idx) => (
-            <div key={idx} className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-2">
-              <span className="text-[11px] font-extrabold text-emerald-800 uppercase tracking-wider block">
-                {cat.category}
-              </span>
-              <div className="space-y-1.5">
-                {cat.commands.map((cmd, cIdx) => (
-                  <button
-                    key={cIdx}
-                    onClick={() => {
-                      setTextInput(cmd);
-                      handleProcessQuery(cmd);
-                    }}
-                    className="w-full text-left p-1.5 bg-white hover:bg-emerald-50 hover:text-emerald-800 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition cursor-pointer block truncate"
-                  >
-                    💬 "{cmd}"
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* RECENT VOICE Q&A HISTORY */}
-      {history.length > 0 && (
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 hover:border-emerald-200 transition">
-          <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-2">
-            <MessageSquare className="w-4 h-4 text-slate-600" />
-            Recent Telemetry Q&A History
-          </h2>
-
+        {history.length > 0 ? (
           <div className="space-y-2 text-xs">
-            {history.slice(0, 5).map((item, idx) => (
+            {history.slice(0, 4).map((item, idx) => (
               <div key={idx} className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-                <p className="font-bold text-slate-900">❓ "{item.query}"</p>
-                <p className="text-emerald-900 font-medium text-[11px] leading-relaxed">💡 {item.responseText}</p>
+                <p className="font-bold text-slate-900">You: "{item.query}"</p>
+                <p className="text-emerald-900 font-semibold text-[11px]">KrishiMitra: {item.responseText}</p>
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-xs text-slate-400 font-medium text-center py-2">No recent conversations</p>
+        )}
+      </div>
 
     </div>
   );
