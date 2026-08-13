@@ -1,54 +1,71 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const cropHealthSchema = new mongoose.Schema(
+const { Schema } = mongoose;
+
+const cropHealthSchema = new Schema(
   {
     farmId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Farm',
+      type: Schema.Types.ObjectId,
+      ref: "Farm",
       required: true,
-      index: true
+      index: true,
     },
+
     imageUrl: {
       type: String,
-      required: true
+      required: true,
     },
+
     description: {
       type: String,
-      trim: true
+      trim: true,
     },
+
     possibleIssue: {
       type: String,
-      required: true
+      required: true,
     },
+
     confidence: {
       type: String,
-      default: 'Moderate'
+      default: "Moderate",
     },
+
     whatToCheck: {
       type: String,
-      required: true
+      required: true,
     },
+
     nextAction: {
       type: String,
-      required: true
+      required: true,
     },
+
     location: {
-      lat: Number,
-      lng: Number
+      lat: {
+        type: Number,
+      },
+      lng: {
+        type: Number,
+      },
     },
+
     reportedAt: {
       type: Date,
       default: Date.now,
-      index: true
-    }
+      index: true,
+    },
   },
   {
-    timestamps: true
-  }
+    timestamps: true,
+  },
 );
 
-cropHealthSchema.index({ farmId: 1, reportedAt: -1 });
+cropHealthSchema.index({
+  farmId: 1,
+  reportedAt: -1,
+});
 
-const CropHealth = mongoose.model('CropHealth', cropHealthSchema);
+const CropHealth = mongoose.model("CropHealth", cropHealthSchema);
 
 export default CropHealth;
