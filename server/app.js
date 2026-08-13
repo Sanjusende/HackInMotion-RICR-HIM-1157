@@ -5,6 +5,12 @@ import morgan from "morgan";
 import env from "./config/env.js";
 import authRoutes from "./routes/authRoutes.js";
 import farmRoutes from "./routes/farmRoutes.js";
+import weatherRoutes from "./routes/weatherRoutes.js";
+import irrigationRoutes from "./routes/irrigationRoutes.js";
+import cropHealthRoutes from "./routes/cropHealthRoutes.js";
+import marketRoutes from "./routes/marketRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+import voiceRoutes from "./routes/voiceRoutes.js";
 
 const app = express();
 
@@ -43,5 +49,24 @@ app.use("/api/v1/auth", authRoutes);
 // Farm Routes mount points
 app.use("/api/farms", farmRoutes);
 app.use("/api/v1/farms", farmRoutes);
+
+// Feature Engine Route Mount Points
+app.use("/api/weather", weatherRoutes);
+app.use("/api/v1/weather", weatherRoutes);
+
+app.use("/api/irrigation", irrigationRoutes);
+app.use("/api/v1/irrigation", irrigationRoutes);
+
+app.use("/api/crop-health", cropHealthRoutes);
+app.use("/api/v1/crop-health", cropHealthRoutes);
+
+app.use("/api/market", marketRoutes);
+app.use("/api/v1/market", marketRoutes);
+
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/v1/dashboard", dashboardRoutes);
+
+app.use("/api/voice", voiceRoutes);
+app.use("/api/v1/voice", voiceRoutes);
 
 export default app;
