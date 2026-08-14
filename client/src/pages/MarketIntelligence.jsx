@@ -84,7 +84,7 @@ const MarketIntelligence = () => {
           <div className="h-7 bg-slate-200 rounded-lg w-40 animate-pulse" />
           <div className="h-7 bg-slate-200 rounded-lg w-24 animate-pulse" />
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="h-20 bg-slate-200 rounded-xl animate-pulse" />
           ))}
@@ -155,7 +155,7 @@ const MarketIntelligence = () => {
       </div>
 
       {/* 2. TOP 4 KPI CARDS */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs hover:border-emerald-200 transition space-y-1">
           <div className="flex items-center justify-between text-slate-500">
             <span className="text-[11px] font-semibold">Current Price</span>
@@ -263,7 +263,7 @@ const MarketIntelligence = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         
         {/* PRICE TREND CHART */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3 hover:border-emerald-200 transition">
+        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3 hover:border-emerald-200 transition min-w-0">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Price Trend ({period})</h2>
             <span className="text-[11px] font-semibold text-slate-400">₹ / Quintal</span>
@@ -292,7 +292,7 @@ const MarketIntelligence = () => {
         </div>
 
         {/* MARKET COMPARISON BAR CHART */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3 hover:border-emerald-200 transition">
+        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3 hover:border-emerald-200 transition min-w-0">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Market Price Comparison</h2>
             <span className="text-[11px] font-semibold text-slate-400">Nearby Mandis</span>
@@ -451,7 +451,7 @@ const MarketIntelligence = () => {
           <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Market Price Summary Table</h2>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full min-w-[500px] text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-100 text-slate-500 font-semibold">
                   <th className="pb-2">Crop</th>
