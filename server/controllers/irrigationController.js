@@ -5,7 +5,7 @@ import { fetchOpenMeteoWeather } from '../services/weather/openMeteoService.js';
 import { evaluateIrrigation } from '../services/irrigation/irrigationEngine.js';
 import { evaluateWeatherRisks } from '../services/weather/weatherRiskEngine.js';
 
-export const analyzeIrrigation = async (req, res) => {
+export const analyzeIrrigation = async (req, res, next) => {
   try {
     let farm = null;
     if (req.body.farmId) {
@@ -74,12 +74,11 @@ export const analyzeIrrigation = async (req, res) => {
       'Irrigation evaluated successfully'
     );
   } catch (error) {
-    console.error('Irrigation analysis error:', error);
-    return ApiResponse.error(res, 'Failed to evaluate irrigation decision', 500, 'SERVER_ERROR');
+    next(error);
   }
 };
 
-export const getIrrigationHistory = async (req, res) => {
+export const getIrrigationHistory = async (req, res, next) => {
   try {
     const farm = await Farm.findOne({ userId: req.user._id });
     if (!farm) {
@@ -90,6 +89,6 @@ export const getIrrigationHistory = async (req, res) => {
 
     return ApiResponse.success(res, history, 'Irrigation history retrieved successfully');
   } catch (error) {
-    return ApiResponse.error(res, 'Failed to fetch irrigation history', 500, 'SERVER_ERROR');
+    next(error);
   }
 };

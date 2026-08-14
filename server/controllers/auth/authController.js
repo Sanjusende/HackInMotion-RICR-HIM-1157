@@ -1,12 +1,49 @@
 import bcrypt from 'bcryptjs';
 import User from '../../models/User.js';
 import tokenService from '../../services/auth/tokenService.js';
+import env from '../../config/env.js';
+
+/**
+ * Helper to set secure, HTTP-only JWT cookies
+ */
+const setTokenCookies = (res, accessToken, refreshToken) => {
+  const cookieOptions = {
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  };
+
+  res.cookie('accessToken', accessToken, cookieOptions);
+  res.cookie('token', accessToken, cookieOptions);
+
+  if (refreshToken) {
+    res.cookie('refreshToken', refreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+  }
+};
+
+/**
+ * Helper to clear JWT cookies
+ */
+const clearTokenCookies = (res) => {
+  const cookieOptions = {
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
+  };
+  res.clearCookie('accessToken', cookieOptions);
+  res.clearCookie('token', cookieOptions);
+  res.clearCookie('refreshToken', cookieOptions);
+};
 
 /**
  * POST /api/auth/register
  * Handles farmer/user signup
  */
-export const register = async (req, res) => {
+export const register = async (req, res, next) => {
   try {
     const { name, email, phone, password, role, language } = req.body;
 
@@ -19,7 +56,7 @@ export const register = async (req, res) => {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
         message: 'User with this email already exists',
       });
@@ -46,6 +83,8 @@ export const register = async (req, res) => {
     user.refreshToken = refreshToken;
     await user.save();
 
+    setTokenCookies(res, accessToken, refreshToken);
+
     return res.status(201).json({
       success: true,
       message: 'User registered successfully',
@@ -63,10 +102,7 @@ export const register = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Server Error',
-    });
+    next(error);
   }
 };
 
@@ -74,7 +110,7 @@ export const register = async (req, res) => {
  * POST /api/auth/login
  * Authenticates user credentials
  */
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -109,6 +145,8 @@ export const login = async (req, res) => {
     user.lastLogin = new Date();
     await user.save();
 
+    setTokenCookies(res, accessToken, refreshToken);
+
     return res.status(200).json({
       success: true,
       message: 'Login successful',
@@ -126,10 +164,7 @@ export const login = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Server Error',
-    });
+    next(error);
   }
 };
 
@@ -137,7 +172,7 @@ export const login = async (req, res) => {
  * POST /api/auth/refresh-token
  * Rotates access token via valid refresh token
  */
-export const refresh = async (req, res) => {
+export const refresh = async (req, res, next) => {
   try {
     const { refreshToken } = req.body;
 
@@ -172,6 +207,8 @@ export const refresh = async (req, res) => {
     user.refreshToken = tokens.refreshToken;
     await user.save();
 
+    setTokenCookies(res, tokens.accessToken, tokens.refreshToken);
+
     return res.status(200).json({
       success: true,
       message: 'Token refreshed successfully',
@@ -181,10 +218,7 @@ export const refresh = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Server Error',
-    });
+    next(error);
   }
 };
 
@@ -192,7 +226,7 @@ export const refresh = async (req, res) => {
  * POST /api/auth/logout
  * Destroys active refresh token session
  */
-export const logout = async (req, res) => {
+export const logout = async (req, res, next) => {
   try {
     const { refreshToken } = req.body;
 
@@ -215,15 +249,14 @@ export const logout = async (req, res) => {
     user.refreshToken = '';
     await user.save();
 
+    clearTokenCookies(res);
+
     return res.status(200).json({
       success: true,
       message: 'Logged out successfully',
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Server Error',
-    });
+    next(error);
   }
 };
 
@@ -231,7 +264,7 @@ export const logout = async (req, res) => {
  * GET /api/auth/me
  * Retrieves current active profile
  */
-export const getMe = async (req, res) => {
+export const getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id).select('-password -refreshToken');
     if (!user) {
@@ -247,10 +280,7 @@ export const getMe = async (req, res) => {
       data: { user },
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Server Error',
-    });
+    next(error);
   }
 };
 
@@ -258,7 +288,7 @@ export const getMe = async (req, res) => {
  * POST /api/v1/auth/forgot-password
  * Triggers forgot password flow and yields a stateless reset token
  */
-export const forgotPassword = async (req, res) => {
+export const forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
     if (!email) {
@@ -290,10 +320,7 @@ export const forgotPassword = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Server Error',
-    });
+    next(error);
   }
 };
 
@@ -301,7 +328,7 @@ export const forgotPassword = async (req, res) => {
  * POST /api/v1/auth/reset-password
  * Resets user password using reset token
  */
-export const resetPassword = async (req, res) => {
+export const resetPassword = async (req, res, next) => {
   try {
     const { token, newPassword } = req.body;
     if (!token || !newPassword) {
@@ -350,9 +377,6 @@ export const resetPassword = async (req, res) => {
       message: 'Password has been reset successfully',
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Server Error',
-    });
+    next(error);
   }
 };

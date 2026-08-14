@@ -12,7 +12,7 @@ const DEFAULT_LOCATION = {
 const DEFAULT_CROP_IMAGE =
   'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=600&q=80';
 
-export const analyzeCropHealth = async (req, res) => {
+export const analyzeCropHealth = async (req, res, next) => {
   try {
     const { description } = req.body;
 
@@ -110,16 +110,11 @@ export const analyzeCropHealth = async (req, res) => {
       analysisTime: engineResult.analysisTime,
     });
   } catch (error) {
-    console.error('Crop health analysis error:', error);
-
-    return res.status(500).json({
-      success: false,
-      error: 'Analysis unavailable. Please retry or record observation manually.',
-    });
+    next(error);
   }
 };
 
-export const getCropHealthHistory = async (req, res) => {
+export const getCropHealthHistory = async (req, res, next) => {
   try {
     const farm = await Farm.findOne({
       userId: req.user._id,
@@ -139,16 +134,11 @@ export const getCropHealthHistory = async (req, res) => {
       data: history,
     });
   } catch (error) {
-    console.error('Get crop health history error:', error);
-
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to retrieve crop health history',
-    });
+    next(error);
   }
 };
 
-export const downloadCropHealthPdf = async (req, res) => {
+export const downloadCropHealthPdf = async (req, res, next) => {
   try {
     const report = await CropHealth.findById(req.params.id);
     if (!report) {
@@ -213,7 +203,6 @@ export const downloadCropHealthPdf = async (req, res) => {
 
     doc.end();
   } catch (error) {
-    console.error('PDF generation error:', error);
-    res.status(500).json({ success: false, error: 'Could not generate PDF report' });
+    next(error);
   }
 };
