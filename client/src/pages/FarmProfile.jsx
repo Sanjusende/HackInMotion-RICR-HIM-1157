@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useFarm } from '../context/FarmContext';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Sprout, Layers, Calendar, Compass, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
+import {
+  MapPin,
+  Sprout,
+  Layers,
+  Compass,
+  Loader2,
+  CheckCircle2,
+  ArrowRight,
+  Edit3,
+  AlertTriangle,
+  RefreshCw,
+  Check
+} from 'lucide-react';
 import Button from '../components/ui/Button';
 
 const SOIL_TYPES = [
@@ -46,7 +58,14 @@ const FarmProfile = () => {
     name: 'My Farm',
     lat: '',
     lng: '',
+    locationName: '',
+    fullAddress: '',
     manualLocation: '',
+    address: '',
+    city: '',
+    district: '',
+    state: '',
+    pincode: '',
     landSize: 5,
     landUnit: 'acres',
     soilType: 'Black Soil',
@@ -56,18 +75,31 @@ const FarmProfile = () => {
     season: 'Kharif'
   });
 
-  const [detectingGps, setDetectingGps] = useState(false);
-  const [gpsDetected, setGpsDetected] = useState(false);
-  const [gpsError, setGpsError] = useState('');
+  const [locationStatus, setLocationStatus] = useState('idle'); // 'idle' | 'detecting' | 'success' | 'permission_denied' | 'unavailable' | 'geocoding_failed'
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Initialize profile data from existing farm record
   useEffect(() => {
     if (farm) {
+      const savedLat = farm.location?.lat || '';
+      const savedLng = farm.location?.lng || '';
+      const savedName = farm.location?.name || farm.location?.display || (savedLat ? 'Farm Location' : '');
+      const savedAddress = farm.location?.fullAddress || farm.location?.display || '';
+
       setFormData({
         name: farm.name || 'My Farm',
-        lat: farm.location?.lat || '',
-        lng: farm.location?.lng || '',
+        lat: savedLat,
+        lng: savedLng,
+        locationName: savedName,
+        fullAddress: savedAddress,
         manualLocation: farm.location?.display || '',
+        address: farm.location?.address || '',
+        city: farm.location?.city || '',
+        district: farm.location?.district || '',
+        state: farm.location?.state || '',
+        pincode: farm.location?.pincode || '',
         landSize: farm.landSize?.value || 5,
         landUnit: farm.landSize?.unit || 'acres',
         soilType: farm.soilType || 'Black Soil',
@@ -76,37 +108,121 @@ const FarmProfile = () => {
         growthStage: farm.growthStage || 'Vegetative',
         season: farm.season || 'Kharif'
       });
-      if (farm.location?.lat) setGpsDetected(true);
+
+      if (savedLat && savedLng) {
+        setLocationStatus('success');
+      }
     }
   }, [farm]);
 
-  const handleUseGps = () => {
-    setDetectingGps(true);
-    setGpsError('');
+  // Reverse Geocoding Function using OpenStreetMap Nominatim
+  const reverseGeocode = async (latitude, longitude) => {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
+        {
+          headers: {
+            'Accept-Language': 'en'
+          }
+        }
+      );
+      if (!res.ok) throw new Error('Geocoding service unavailable');
+      const data = await res.json();
+      const addr = data.address || {};
+
+      const city = addr.city || addr.town || addr.village || addr.suburb || addr.county || addr.state_district || '';
+      const district = addr.state_district || addr.county || addr.district || '';
+      const state = addr.state || '';
+      const country = addr.country || 'India';
+      const postcode = addr.postcode || '';
+      const street = addr.road || addr.neighbourhood || addr.suburb || '';
+
+      let locationName = '';
+      if (city && state) {
+        locationName = `${city}, ${state}`;
+      } else if (district && state) {
+        locationName = `${district}, ${state}`;
+      } else if (state) {
+        locationName = state;
+      } else {
+        locationName = `${Number(latitude).toFixed(4)}, ${Number(longitude).toFixed(4)}`;
+      }
+
+      const addressParts = [street, city, district, state, postcode, country].filter(Boolean);
+      const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : `${locationName}, India`;
+
+      return {
+        locationName,
+        fullAddress,
+        city,
+        district,
+        state,
+        pincode: postcode,
+        address: street
+      };
+    } catch (err) {
+      console.warn('Reverse geocoding failed:', err);
+      return null;
+    }
+  };
+
+  // Handle GPS detection
+  const handleUseGps = async () => {
+    setLocationStatus('detecting');
+    setErrorMessage('');
 
     if (!navigator.geolocation) {
-      setGpsError('Geolocation is not supported by your browser. Please enter location manually.');
-      setDetectingGps(false);
+      setLocationStatus('unavailable');
+      setErrorMessage('Unable to detect your current location. Please enable GPS/location services and try again.');
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude } = position.coords;
-        setFormData((prev) => ({
-          ...prev,
-          lat: latitude,
-          lng: longitude
-        }));
-        setGpsDetected(true);
-        setDetectingGps(false);
+
+        // Attempt Reverse Geocoding
+        const geocodeResult = await reverseGeocode(latitude, longitude);
+
+        if (geocodeResult && geocodeResult.locationName) {
+          setFormData((prev) => ({
+            ...prev,
+            lat: latitude,
+            lng: longitude,
+            locationName: geocodeResult.locationName,
+            fullAddress: geocodeResult.fullAddress,
+            city: geocodeResult.city || prev.city,
+            district: geocodeResult.district || prev.district,
+            state: geocodeResult.state || prev.state,
+            pincode: geocodeResult.pincode || prev.pincode,
+            address: geocodeResult.address || prev.address,
+            manualLocation: geocodeResult.locationName
+          }));
+          setLocationStatus('success');
+        } else {
+          // GPS acquisition succeeded, but reverse geocoding lookup failed
+          setFormData((prev) => ({
+            ...prev,
+            lat: latitude,
+            lng: longitude,
+            locationName: `${Number(latitude).toFixed(4)}, ${Number(longitude).toFixed(4)}`,
+            fullAddress: `Coordinates: ${latitude}, ${longitude}`,
+            manualLocation: `${Number(latitude).toFixed(4)}, ${Number(longitude).toFixed(4)}`
+          }));
+          setLocationStatus('geocoding_failed');
+        }
       },
       (error) => {
-        console.warn('GPS position error:', error.message);
-        setGpsError('Could not detect location automatically. Please use manual location input below.');
-        setDetectingGps(false);
+        console.warn('GPS Error Code:', error.code, error.message);
+        if (error.code === error.PERMISSION_DENIED) {
+          setLocationStatus('permission_denied');
+          setErrorMessage('Location permission is required to detect your current location.');
+        } else {
+          setLocationStatus('unavailable');
+          setErrorMessage('Unable to detect your current location. Please enable GPS/location services and try again.');
+        }
       },
-      { timeout: 10000, enableHighAccuracy: true }
+      { timeout: 12000, enableHighAccuracy: true }
     );
   };
 
@@ -114,45 +230,157 @@ const FarmProfile = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      await saveFarm(formData);
+      const payload = {
+        ...formData,
+        location: {
+          lat: formData.lat,
+          lng: formData.lng,
+          name: formData.locationName,
+          fullAddress: formData.fullAddress,
+          display: formData.locationName || formData.manualLocation,
+          address: formData.address,
+          city: formData.city,
+          district: formData.district,
+          state: formData.state,
+          pincode: formData.pincode
+        }
+      };
+      await saveFarm(payload);
       navigate('/dashboard');
     } catch (err) {
-      console.error(err);
+      console.error('Error saving farm profile:', err);
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6">
+    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 text-slate-900 selection:bg-emerald-600 selection:text-white">
       <div className="mb-8 text-center sm:text-left">
-        <h1 className="text-3xl font-extrabold text-emerald-950 flex items-center justify-center sm:justify-start gap-3">
+        <h1 className="text-3xl font-black text-slate-900 flex items-center justify-center sm:justify-start gap-3">
           <Sprout className="w-8 h-8 text-emerald-600" />
           {farm ? 'Update Your Farm Profile' : 'Set Up Your Farm Profile'}
         </h1>
-        <p className="text-slate-600 mt-2">
-          Personalize SmartFarm with your location, soil, and crop details to get customized irrigation, weather risk, and market advice.
+        <p className="text-slate-600 text-sm mt-1 font-medium">
+          Personalize KrishiMitra with your location, soil, and crop details to get customized irrigation, weather risk, and market advice.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Step 1: Location Capture */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition">
-          <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-emerald-600" />
-            1. Farm Location
-          </h2>
+        
+        {/* ======================================================== */}
+        {/* STEP 1: FARM LOCATION CARD (IMPROVED READABLE LOCATION UI) */}
+        {/* ======================================================== */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/90 hover:shadow-md transition space-y-4">
+          
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-emerald-600" />
+              1. Farm Location
+            </h2>
+            <button
+              type="button"
+              onClick={() => setIsEditingLocation(!isEditingLocation)}
+              className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1.5 px-3 py-1 bg-emerald-50 hover:bg-emerald-100/80 rounded-lg transition border border-emerald-200 cursor-pointer"
+            >
+              <Edit3 size={13} />
+              <span>{isEditingLocation ? 'Done Editing' : 'Edit Location'}</span>
+            </button>
+          </div>
 
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row items-center gap-4 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+          {/* LOCATION STATUS CARD */}
+          <div className="bg-slate-50/80 rounded-xl border border-slate-200/80 p-4 space-y-3">
+            
+            {/* 1. DETECTING STATE */}
+            {locationStatus === 'detecting' && (
+              <div className="flex items-center gap-3 text-slate-700 text-sm font-bold p-2">
+                <Loader2 className="w-5 h-5 text-emerald-600 animate-spin" />
+                <span>📍 Detecting your location...</span>
+              </div>
+            )}
+
+            {/* 2. SUCCESS STATE */}
+            {locationStatus === 'success' && formData.locationName && (
+              <div className="space-y-2">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-0.5">
+                    <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                      <MapPin size={18} className="text-emerald-600" />
+                      {formData.locationName}
+                    </h3>
+                    <p className="text-xs font-medium text-slate-500 pl-6">
+                      {formData.fullAddress || formData.manualLocation}
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-extrabold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5 shrink-0">
+                    <CheckCircle2 size={14} className="text-emerald-600" />
+                    Current GPS Location
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* 3. GEOCODING FAILED FALLBACK STATE */}
+            {locationStatus === 'geocoding_failed' && (
+              <div className="space-y-1 p-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-black text-slate-900">
+                    📍 Location Detected: {formData.lat}, {formData.lng}
+                  </span>
+                  <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                    GPS Active
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 font-medium">
+                  Unable to find the readable address.
+                </p>
+              </div>
+            )}
+
+            {/* 4. PERMISSION DENIED STATE */}
+            {locationStatus === 'permission_denied' && (
+              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-2 text-xs">
+                <div className="flex items-center gap-2 text-amber-800 font-bold">
+                  <AlertTriangle size={16} className="text-amber-600" />
+                  <span>{errorMessage || 'Location permission is required to detect your current location.'}</span>
+                </div>
+                <Button
+                  type="button"
+                  onClick={handleUseGps}
+                  className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg inline-flex items-center gap-1.5 shadow-2xs"
+                >
+                  <RefreshCw size={12} /> Try Again
+                </Button>
+              </div>
+            )}
+
+            {/* 5. GPS UNAVAILABLE STATE */}
+            {locationStatus === 'unavailable' && (
+              <div className="p-3 bg-rose-50 rounded-xl border border-rose-200 space-y-2 text-xs">
+                <div className="flex items-center gap-2 text-rose-800 font-bold">
+                  <AlertTriangle size={16} className="text-rose-600" />
+                  <span>{errorMessage || 'Unable to detect your current location. Please enable GPS/location services and try again.'}</span>
+                </div>
+                <Button
+                  type="button"
+                  onClick={handleUseGps}
+                  className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg inline-flex items-center gap-1.5 shadow-2xs"
+                >
+                  <RefreshCw size={12} /> Try Again
+                </Button>
+              </div>
+            )}
+
+            {/* GPS DETECTION BUTTON */}
+            <div className="pt-2 flex flex-wrap items-center gap-3">
               <Button
                 type="button"
                 variant="primary"
                 onClick={handleUseGps}
-                disabled={detectingGps}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 px-5 rounded-lg shadow-sm"
+                disabled={locationStatus === 'detecting'}
+                className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-xs text-xs cursor-pointer"
               >
-                {detectingGps ? (
+                {locationStatus === 'detecting' ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Detecting location...
@@ -164,38 +392,79 @@ const FarmProfile = () => {
                   </>
                 )}
               </Button>
-
-              {gpsDetected && !detectingGps && (
-                <div className="flex items-center gap-2 text-emerald-700 text-sm font-semibold">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                  GPS coordinates captured ({Number(formData.lat).toFixed(4)}, {Number(formData.lng).toFixed(4)})
-                </div>
-              )}
             </div>
 
-            {gpsError && (
-              <p className="text-xs text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200">
-                {gpsError}
-              </p>
-            )}
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1">
-                Or enter State / District / Village manually:
-              </label>
-              <input
-                type="text"
-                value={formData.manualLocation}
-                onChange={(e) => setFormData({ ...formData, manualLocation: e.target.value })}
-                placeholder="e.g. Indore, Madhya Pradesh"
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-800 placeholder-slate-400"
-              />
-            </div>
           </div>
+
+          {/* EDITABLE LOCATION FORM (TOGGLED VIA EDIT BUTTON OR WHEN EDITING IS ACTIVE) */}
+          {isEditingLocation && (
+            <div className="pt-3 border-t border-slate-100 space-y-4 text-xs font-semibold text-slate-700">
+              <span className="text-xs font-extrabold text-slate-900 block">Manual Address Details:</span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1">Street / House / Area</label>
+                  <input
+                    type="text"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    placeholder="e.g. Village Rampur, Near River"
+                    className="w-full px-3.5 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-1">City / Town</label>
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value, locationName: e.target.value ? `${e.target.value}, ${formData.state || 'India'}` : formData.locationName })}
+                    placeholder="e.g. Bhopal"
+                    className="w-full px-3.5 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-1">District</label>
+                  <input
+                    type="text"
+                    value={formData.district}
+                    onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                    placeholder="e.g. Bhopal District"
+                    className="w-full px-3.5 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-1">State</label>
+                  <input
+                    type="text"
+                    value={formData.state}
+                    onChange={(e) => setFormData({ ...formData, state: e.target.value, locationName: formData.city ? `${formData.city}, ${e.target.value}` : e.target.value })}
+                    placeholder="e.g. Madhya Pradesh"
+                    className="w-full px-3.5 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-1">Pincode</label>
+                  <input
+                    type="text"
+                    value={formData.pincode}
+                    onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                    placeholder="e.g. 462001"
+                    className="w-full px-3.5 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Step 2: Land & Soil Info */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition">
+        {/* ======================================================== */}
+        {/* STEP 2: LAND & SOIL INFO */}
+        {/* ======================================================== */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/90 hover:shadow-md transition">
           <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
             <Layers className="w-5 h-5 text-emerald-600" />
             2. Land Size & Soil Type
@@ -247,8 +516,10 @@ const FarmProfile = () => {
           </div>
         </div>
 
-        {/* Step 3: Crop & Growth Stage */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition">
+        {/* ======================================================== */}
+        {/* STEP 3: CROP DETAILS & GROWTH STAGE */}
+        {/* ======================================================== */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/90 hover:shadow-md transition">
           <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
             <Sprout className="w-5 h-5 text-emerald-600" />
             3. Crop Details & Growth Stage
@@ -326,7 +597,7 @@ const FarmProfile = () => {
           <Button
             type="submit"
             disabled={saving}
-            className="w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg hover:shadow-emerald-600/30 transition flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg hover:shadow-emerald-600/30 transition flex items-center justify-center gap-2 cursor-pointer"
           >
             {saving ? (
               <>

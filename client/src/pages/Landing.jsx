@@ -622,7 +622,7 @@ const Landing = () => {
 
             <div className="flex justify-center pt-4 relative z-10">
               <Link to="/register">
-                <Button className="bg-white text-emerald-900 hover:bg-emerald-50 border-none font-extrabold text-base px-9 py-4 rounded-2xl shadow-xl hover:scale-105 transition-all">
+                <Button className="bg-emerald-50 text-emerald-950 hover:bg-emerald-100/90 border-none font-extrabold text-base px-9 py-4 rounded-2xl shadow-xl hover:scale-105 transition-all">
                   Get Started Now <ArrowRight size={18} className="ml-2" />
                 </Button>
               </Link>
