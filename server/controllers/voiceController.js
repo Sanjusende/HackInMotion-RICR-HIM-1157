@@ -2,28 +2,129 @@ import Farm from '../models/Farm.js';
 import VoiceQuery from '../models/VoiceQuery.js';
 import { processVoiceQuery } from '../services/voice/voiceService.js';
 
+/**
+ * Voice Assistant Controller
+ *
+ * Handles:
+ * - Voice/text query processing
+ * - Farm context retrieval
+ * - Voice query persistence
+ * - Voice query history
+ */
+
+// ------------------------------------------------------
+// Constants
+// ------------------------------------------------------
+
+const DEFAULT_HISTORY_LIMIT = 15;
+const MAX_QUERY_LENGTH = 500;
+
+// ------------------------------------------------------
+// Helper: Validate Query
+// ------------------------------------------------------
+
+const validateQuery = (query) => {
+  if (typeof query !== 'string') {
+    return {
+      valid: false,
+      message: 'Query must be a text value.',
+    };
+  }
+
+  const trimmedQuery = query.trim();
+
+  if (!trimmedQuery) {
+    return {
+      valid: false,
+      message: 'Query text is required.',
+    };
+  }
+
+  if (trimmedQuery.length > MAX_QUERY_LENGTH) {
+    return {
+      valid: false,
+      message: `Query cannot exceed ${MAX_QUERY_LENGTH} characters.`,
+    };
+  }
+
+  return {
+    valid: true,
+    value: trimmedQuery,
+  };
+};
+
+// ------------------------------------------------------
+// POST /voice/query
+// ------------------------------------------------------
+
 export const handleVoiceQuery = async (req, res) => {
   try {
-    const { query, language } = req.body;
+    const { query, language } = req.body || {};
 
-    if (!query) {
-      return res.status(400).json({
+    // ------------------------------------------
+    // Authentication Check
+    // ------------------------------------------
+
+    if (!req.user?._id) {
+      return res.status(401).json({
         success: false,
-        error: 'Query text is required'
+        error: 'Authentication required.',
       });
     }
 
-    const farm = await Farm.findOne({ userId: req.user._id });
-    const result = await processVoiceQuery(query, language, farm);
+    // ------------------------------------------
+    // Query Validation
+    // ------------------------------------------
+
+    const validation = validateQuery(query);
+
+    if (!validation.valid) {
+      return res.status(400).json({
+        success: false,
+        error: validation.message,
+      });
+    }
+
+    // ------------------------------------------
+    // Fetch User Farm Context
+    // ------------------------------------------
+
+    const farm = await Farm.findOne({
+      userId: req.user._id,
+    }).lean();
+
+    // ------------------------------------------
+    // Process Voice Query
+    // ------------------------------------------
+
+    const result = await processVoiceQuery(
+      validation.value,
+      language,
+      farm
+    );
+
+    if (!result?.responseText) {
+      throw new Error(
+        'Voice service returned an invalid response.'
+      );
+    }
+
+    // ------------------------------------------
+    // Save Voice Query
+    // ------------------------------------------
 
     const voiceRecord = await VoiceQuery.create({
       userId: req.user._id,
-      farmId: farm?._id,
+      farmId: farm?._id || null,
       query: result.queryText,
       language: result.language,
       responseText: result.responseText,
-      contextSnapshot: result.contextSnapshot
+      contextSnapshot: result.contextSnapshot || {},
     });
+
+    // ------------------------------------------
+    // Success Response
+    // ------------------------------------------
 
     return res.status(200).json({
       success: true,
@@ -32,29 +133,71 @@ export const handleVoiceQuery = async (req, res) => {
         query: result.queryText,
         language: result.language,
         responseText: result.responseText,
-        context: result.contextSnapshot
-      }
+        context: result.contextSnapshot || {},
+      },
     });
   } catch (error) {
-    console.error('Voice controller error:', error);
+    console.error('[VoiceController] Query processing failed:', {
+      message: error.message,
+      userId: req.user?._id,
+      stack: error.stack,
+    });
+
     return res.status(500).json({
       success: false,
-      error: "We couldn't understand your query. Please try speaking or typing again."
+      error:
+        'Unable to process your voice query right now. Please try again later.',
     });
   }
 };
 
+// ------------------------------------------------------
+// GET /voice/history
+// ------------------------------------------------------
+
 export const getVoiceHistory = async (req, res) => {
   try {
-    const history = await VoiceQuery.find({ userId: req.user._id }).sort({ createdAt: -1 }).limit(15);
+    // ------------------------------------------
+    // Authentication Check
+    // ------------------------------------------
+
+    if (!req.user?._id) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required.',
+      });
+    }
+
+    // ------------------------------------------
+    // Fetch Voice History
+    // ------------------------------------------
+
+    const history = await VoiceQuery.find({
+      userId: req.user._id,
+    })
+      .sort({ createdAt: -1 })
+      .limit(DEFAULT_HISTORY_LIMIT)
+      .lean();
+
+    // ------------------------------------------
+    // Success Response
+    // ------------------------------------------
+
     return res.status(200).json({
       success: true,
-      data: history
+      count: history.length,
+      data: history,
     });
   } catch (error) {
+    console.error('[VoiceController] History retrieval failed:', {
+      message: error.message,
+      userId: req.user?._id,
+      stack: error.stack,
+    });
+
     return res.status(500).json({
       success: false,
-      error: 'Failed to retrieve voice history'
+      error: 'Failed to retrieve voice history. Please try again later.',
     });
   }
 };
