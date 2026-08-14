@@ -40,7 +40,10 @@ const apiLimiter = rateLimit({
   }
 });
 
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginOpenerPolicy: { policy: "unsafe-none" }
+}));
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(compressionMiddleware);

@@ -1,6 +1,18 @@
 import axios from 'axios';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+const getBaseURL = () => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
+  if (envUrl && !envUrl.includes('localhost')) return envUrl;
+  
+  // If running in browser and on Vercel or any live host, force Render backend URL
+  if (typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname !== 'localhost')) {
+    return 'https://hackinmotion-ricr-him-1157-1.onrender.com/api/v1';
+  }
+  
+  return envUrl || 'https://hackinmotion-ricr-him-1157-1.onrender.com/api/v1';
+};
+
+const baseURL = getBaseURL();
 
 const api = axios.create({
   baseURL,
