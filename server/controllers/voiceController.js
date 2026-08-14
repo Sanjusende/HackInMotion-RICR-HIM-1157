@@ -115,6 +115,10 @@ export const handleVoiceQuery = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+      message: 'Voice query processed successfully',
+      intent: result.intent,
+      response: result.responseText,
+      language: result.language,
       data: {
         id: voiceRecord._id,
         query: result.queryText,
