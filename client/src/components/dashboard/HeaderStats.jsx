@@ -99,7 +99,7 @@ const HeaderStats = ({
         <div className="min-w-[260px] sm:min-w-0 snap-center bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-xs hover:shadow-md dark:hover:shadow-slate-950 transition-all duration-300 flex flex-col justify-between h-36 group">
           <div className="flex justify-between items-start">
             <div className="space-y-0.5">
-              <span className="text-[10px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest">
+              <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                 Soil Moisture
               </span>
               <p className="text-2xl font-black text-slate-900 dark:text-white">{soilMoistureVal}%</p>
@@ -114,7 +114,7 @@ const HeaderStats = ({
               {isSoilDry ? 'Needs Water' : 'Balanced'}
             </span>
             {/* Liquid progress bar */}
-            <div className="w-16 h-2 bg-slate-100 dark:bg-slate-850 rounded-full overflow-hidden">
+            <div className="w-16 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
               <div 
                 className={`h-full rounded-full transition-all duration-500 ${isSoilDry ? 'bg-amber-500' : 'bg-blue-500'}`}
                 style={{ width: `${soilMoistureVal}%` }}
@@ -178,7 +178,7 @@ const HeaderStats = ({
               {growthStage} Stage
             </span>
             {/* Linear progress bar */}
-            <div className="w-16 h-2 bg-slate-100 dark:bg-slate-850 rounded-full overflow-hidden">
+            <div className="w-16 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                 style={{ width: `${growthProgress}%` }}
@@ -196,7 +196,7 @@ const HeaderStats = ({
               </span>
               <p className="text-2xl font-black text-slate-900 dark:text-white">{alertCount} Alerts</p>
             </div>
-            <div className="p-2 bg-rose-100 dark:bg-rose-950/30 text-rose-650 dark:text-rose-400 rounded-2xl group-hover:scale-110 transition-transform relative">
+            <div className="p-2 bg-rose-100 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 rounded-2xl group-hover:scale-110 transition-transform relative">
               <AlertTriangle size={18} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 animate-ping" />
             </div>

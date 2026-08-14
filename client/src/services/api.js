@@ -1,6 +1,11 @@
 import axios from 'axios';
 
 const getBaseURL = () => {
+  // If running in browser on localhost, force local backend URL so local fixes are used
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return 'http://localhost:5000/api/v1';
+  }
+
   const envUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
   if (envUrl && !envUrl.includes('localhost')) return envUrl;
   

@@ -197,7 +197,11 @@ const VoiceAssistant = () => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang || selectedLang;
+      let speechLang = lang || selectedLang;
+      if (speechLang === 'hi-EN') {
+        speechLang = 'hi-IN';
+      }
+      utterance.lang = speechLang;
       utterance.onstart = () => setVoiceState('speaking');
       utterance.onend = () => setVoiceState('idle');
       utterance.onerror = () => setVoiceState('idle');
