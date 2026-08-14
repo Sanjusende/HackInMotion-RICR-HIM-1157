@@ -7,11 +7,57 @@ import mongoose from 'mongoose';
 const SUPPORTED_LANGUAGES = [
   'en-IN',
   'en-US',
+  'en-GB',
   'hi-IN',
   'mr-IN',
   'gu-IN',
   'pa-IN',
+  'ta-IN',
+  'te-IN',
+  'bn-IN',
+  'kn-IN',
+  'ml-IN',
 ];
+
+export const normalizeLanguage = (languageStr) => {
+  if (!languageStr) return 'en-US';
+  const lang = String(languageStr).trim().toLowerCase();
+
+  if (lang === 'en-us') return 'en-US';
+  if (lang === 'en-gb') return 'en-GB';
+  if (lang === 'en-in') return 'en-IN';
+  if (lang.startsWith('en')) return 'en-US';
+
+  if (lang === 'hi-in') return 'hi-IN';
+  if (lang.startsWith('hi')) return 'hi-IN';
+
+  if (lang === 'mr-in') return 'mr-IN';
+  if (lang.startsWith('mr')) return 'mr-IN';
+
+  if (lang === 'gu-in') return 'gu-IN';
+  if (lang.startsWith('gu')) return 'gu-IN';
+
+  if (lang === 'pa-in') return 'pa-IN';
+  if (lang.startsWith('pa') || lang.startsWith('pb')) return 'pa-IN';
+
+  if (lang === 'ta-in') return 'ta-IN';
+  if (lang.startsWith('ta')) return 'ta-IN';
+
+  if (lang === 'te-in') return 'te-IN';
+  if (lang.startsWith('te')) return 'te-IN';
+
+  if (lang === 'bn-in') return 'bn-IN';
+  if (lang.startsWith('bn')) return 'bn-IN';
+
+  if (lang === 'kn-in') return 'kn-IN';
+  if (lang.startsWith('kn')) return 'kn-IN';
+
+  if (lang === 'ml-in') return 'ml-IN';
+  if (lang.startsWith('ml')) return 'ml-IN';
+
+  console.warn(`[VoiceAssistant] Unsupported language code received: "${languageStr}". Falling back to "en-US".`);
+  return 'en-US';
+};
 
 const MAX_QUERY_LENGTH = 500;
 const MAX_RESPONSE_LENGTH = 5000;
@@ -64,7 +110,7 @@ const voiceQuerySchema = new mongoose.Schema(
     language: {
       type: String,
       trim: true,
-      lowercase: true,
+      set: normalizeLanguage,
       default: 'hi-IN',
       enum: {
         values: SUPPORTED_LANGUAGES,
