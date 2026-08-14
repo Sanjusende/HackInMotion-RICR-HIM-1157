@@ -160,7 +160,7 @@ const Dashboard = () => {
     return (
       <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
         <div className="h-28 bg-slate-200 rounded-3xl w-full animate-pulse" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="h-28 bg-slate-200 rounded-2xl animate-pulse" />
           ))}
@@ -346,7 +346,7 @@ const Dashboard = () => {
       {/* ======================================================== */}
       {/* 2. KPI SUMMARY CARDS GRID (5 Cards) */}
       {/* ======================================================== */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         
         {/* KPI 1: Temperature */}
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all space-y-2 group">
@@ -433,7 +433,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Weather Trend Line Chart */}
-        <div className="lg:col-span-7 bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
+        <div className="lg:col-span-7 min-w-0 bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div>
               <span className="text-[11px] font-extrabold text-blue-600 uppercase tracking-wider">Micro-Climate Telemetry</span>
@@ -543,7 +543,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Market Price Line Chart */}
-        <div className="lg:col-span-7 bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
+        <div className="lg:col-span-7 min-w-0 bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
               <span className="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider">Mandi Analytics</span>
@@ -614,7 +614,7 @@ const Dashboard = () => {
         </div>
 
         {/* Crop Price Comparison Bar Chart */}
-        <div className="lg:col-span-5 bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4 flex flex-col justify-between">
+        <div className="lg:col-span-5 min-w-0 bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4 flex flex-col justify-between">
           <div className="border-b border-slate-100 pb-3">
             <span className="text-[11px] font-extrabold text-purple-600 uppercase tracking-wider">Regional Commodity Benchmarks</span>
             <h3 className="text-lg font-bold text-slate-900">Current Crop Price Comparison</h3>
@@ -638,7 +638,7 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-100">
             <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
               <span className="text-[10px] text-slate-400 font-bold uppercase">Highest Commodity</span>
               <p className="font-extrabold text-slate-900">Cotton • ₹6,800</p>

@@ -92,7 +92,7 @@ const Weather = () => {
           <div className="h-6 bg-slate-200 rounded-lg w-24 animate-pulse" />
         </div>
         <div className="h-28 bg-slate-200 rounded-xl animate-pulse" />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="h-20 bg-slate-200 rounded-xl animate-pulse" />
           ))}
@@ -170,7 +170,7 @@ const Weather = () => {
       </div>
 
       {/* 4 METRIC CARDS */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs flex items-center gap-3">
           <Droplets className="w-4 h-4 text-emerald-600 shrink-0" />
           <div>

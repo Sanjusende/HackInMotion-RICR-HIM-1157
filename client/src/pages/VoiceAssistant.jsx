@@ -434,7 +434,7 @@ const VoiceAssistant = () => {
 
       {/* 9. BOTTOM CONTROL AREA */}
       <div className="max-w-2xl mx-auto space-y-3">
-        <div className="flex items-center justify-between gap-2 text-xs font-bold">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 text-xs font-bold">
           {voiceState === 'listening' ? (
             <button
               onClick={toggleListening}
