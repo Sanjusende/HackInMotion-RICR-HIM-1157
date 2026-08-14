@@ -3,10 +3,25 @@ import dotenv from "dotenv";
 // Load environment variables
 dotenv.config();
 
+const NODE_ENV = process.env.NODE_ENV || "development";
+
+// Enforce environment validation
+const requiredEnvVars = ["MONGO_URI", "JWT_SECRET", "JWT_REFRESH_SECRET"];
+const missingVars = requiredEnvVars.filter((v) => !process.env[v]);
+
+if (missingVars.length > 0) {
+  if (NODE_ENV === "production") {
+    console.error(`🚨 Fatal Environment Config Error: Missing required variables: ${missingVars.join(", ")}`);
+    process.exit(1);
+  } else {
+    console.warn(`⚠️ Warning: Missing environment variables in development mode: ${missingVars.join(", ")}. Using insecure defaults.`);
+  }
+}
+
 const env = {
-  PORT: process.env.PORT || 5000,
+  PORT: parseInt(process.env.PORT || "5000", 10),
   MONGO_URI: process.env.MONGO_URI || "mongodb://localhost:27017/smart-farming",
-  NODE_ENV: process.env.NODE_ENV || "development",
+  NODE_ENV,
   JWT_SECRET: process.env.JWT_SECRET || "fallback_jwt_secret_for_krishimitra_12345",
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || "fallback_jwt_refresh_secret_for_krishimitra_67890"
 };

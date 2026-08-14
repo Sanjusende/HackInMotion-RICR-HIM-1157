@@ -1,19 +1,21 @@
 import Farm from '../models/Farm.js';
 import MarketPrice from '../models/MarketPrice.js';
+import ApiResponse from '../utils/apiResponse.js';
 import { fetchCropMarketData } from '../services/market/marketDataService.js';
 
-export const getCurrentMarketData = async (req, res) => {
+export const getCurrentMarketData = async (req, res, next) => {
   try {
     const requestedCrop = req.query.crop;
     let cropName = requestedCrop;
+    let farm = null;
 
-    if (!cropName) {
-      try {
-        const farm = await Farm.findOne({ userId: req.user._id });
+    try {
+      farm = await Farm.findOne({ userId: req.user._id });
+      if (!cropName) {
         cropName = farm?.currentCrop || 'Wheat';
-      } catch (dbErr) {
-        cropName = 'Wheat';
       }
+    } catch (dbErr) {
+      if (!cropName) cropName = 'Wheat';
     }
 
     const marketLocation = farmLocationToMandi(req.user);
@@ -32,84 +34,88 @@ export const getCurrentMarketData = async (req, res) => {
         source: data.source
       });
     } catch (saveErr) {
-      // Ignore DB save error
+      console.warn('Market log save failed (non-blocking):', saveErr.message);
     }
 
-    return res.status(200).json({
-      success: true,
-      data
-    });
+    return ApiResponse.success(res, data, 'Current market price data loaded successfully');
   } catch (error) {
-    console.error('Market controller error:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Unable to Load Market Data... please try again later'
-    });
+    next(error);
   }
 };
 
-export const getMarketHistory = async (req, res) => {
+export const getMarketHistory = async (req, res, next) => {
   try {
     const cropName = req.query.crop || 'Wheat';
     const period = req.query.period || '7d';
-    const data = await fetchCropMarketData(cropName);
+    
+    // Pagination parameters
+    const page = parseInt(req.query.page || '1', 10);
+    const limit = parseInt(req.query.limit || '20', 10);
+    const skip = (page - 1) * limit;
 
-    let historySeries = data.history7d;
-    if (period === '30d') historySeries = data.history30d;
-    if (period === '90d') historySeries = data.history90d;
+    // Query database for historical prices logged
+    const filter = { crop: new RegExp(`^${cropName}$`, 'i') };
+    const totalCount = await MarketPrice.countDocuments(filter);
+    
+    let historySeries = await MarketPrice.find(filter)
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit);
 
-    return res.status(200).json({
-      success: true,
-      crop: cropName,
-      period,
-      data: historySeries
-    });
+    // If no custom entries in DB, fall back to historical stubs from Service helper
+    if (!historySeries || historySeries.length === 0) {
+      const data = await fetchCropMarketData(cropName);
+      let fullMockSeries = data.history7d;
+      if (period === '30d') fullMockSeries = data.history30d;
+      if (period === '90d') fullMockSeries = data.history90d;
+      
+      // Perform server-side pagination mock slice
+      historySeries = fullMockSeries.slice(skip, skip + limit);
+    }
+
+    return ApiResponse.success(
+      res,
+      {
+        crop: cropName,
+        period,
+        page,
+        limit,
+        totalCount: totalCount || historySeries.length,
+        series: historySeries
+      },
+      'Market price history loaded successfully'
+    );
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      error: 'Unable to load price history'
-    });
+    next(error);
   }
 };
 
-export const getMarketTrend = async (req, res) => {
+export const getMarketTrend = async (req, res, next) => {
   try {
     const cropName = req.query.crop || 'Wheat';
     const data = await fetchCropMarketData(cropName);
 
-    return res.status(200).json({
-      success: true,
-      data: {
-        crop: data.crop,
-        currentPrice: data.currentPrice,
-        trend: data.trend,
-        changePercent: data.changePercent,
-        displayText: data.displayText,
-        sellingInsightText: data.sellingInsightText
-      }
-    });
+    return ApiResponse.success(res, {
+      crop: data.crop,
+      currentPrice: data.currentPrice,
+      trend: data.trend,
+      changePercent: data.changePercent,
+      displayText: data.displayText,
+      sellingInsightText: data.sellingInsightText
+    }, 'Market trend insights loaded successfully');
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      error: 'Unable to load market trend'
-    });
+    next(error);
   }
 };
 
-export const getNearbyMarkets = async (req, res) => {
+export const getNearbyMarkets = async (req, res, next) => {
   try {
     const cropName = req.query.crop || 'Wheat';
     const data = await fetchCropMarketData(cropName);
 
-    return res.status(200).json({
-      success: true,
-      data: data.nearbyMarkets || []
-    });
+    return ApiResponse.success(res, data.nearbyMarkets || [], 'Nearby market prices loaded successfully');
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      error: 'Unable to load nearby market comparison'
-    });
+    next(error);
   }
 };
 
