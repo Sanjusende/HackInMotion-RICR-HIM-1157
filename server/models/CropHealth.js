@@ -41,6 +41,53 @@ const cropHealthSchema = new Schema(
       required: true,
     },
 
+    crop: {
+      type: String,
+    },
+
+    health: {
+      type: String,
+    },
+
+    disease: {
+      type: String,
+    },
+
+    severity: {
+      type: String,
+    },
+
+    affectedArea: {
+      type: String,
+    },
+
+    causes: {
+      type: [String],
+      default: [],
+    },
+
+    treatment: {
+      type: [String],
+      default: [],
+    },
+
+    prevention: {
+      type: [String],
+      default: [],
+    },
+
+    fertilizerRecommendation: {
+      type: String,
+    },
+
+    irrigationRecommendation: {
+      type: String,
+    },
+
+    analysisTime: {
+      type: String,
+    },
+
     location: {
       lat: {
         type: Number,

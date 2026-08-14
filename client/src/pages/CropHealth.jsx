@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { analyzeCropHealth, getCropHealthHistory } from '../services/cropHealthService';
 import { useFarm } from '../context/FarmContext';
-import { Upload, Camera, Sprout, AlertCircle, CheckCircle2, History, Loader2, Info } from 'lucide-react';
+import { Upload, Camera, Sprout, AlertCircle, CheckCircle2, History, Loader2, Info, X, TriangleAlert } from 'lucide-react';
 import Button from '../components/ui/Button';
 // Diagnostic clinical telemetry mappings for crop health issues
 const DISEASE_CLINICAL_DETAILS = {
@@ -38,6 +38,7 @@ const CropHealth = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [currentResult, setCurrentResult] = useState(null);
+  const [warning, setWarning] = useState(null);
   const [history, setHistory] = useState([]);
   const [loadingHist, setLoadingHist] = useState(true);
 
@@ -63,12 +64,14 @@ const CropHealth = () => {
     if (file) {
       setSelectedFile(file);
       setImagePreview(URL.createObjectURL(file));
+      setWarning(null);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setAnalyzing(true);
+    setWarning(null);
 
     try {
       const formData = new FormData();
@@ -84,6 +87,8 @@ const CropHealth = () => {
       }
     } catch (err) {
       console.error(err);
+      const message = err.response?.data?.error || err.response?.data?.message || err.message || "Failed to analyze crop health.";
+      setWarning(message);
     } finally {
       setAnalyzing(false);
     }
@@ -109,6 +114,25 @@ const CropHealth = () => {
           <strong>Decision Support Note:</strong> Outputs provide possible-issue flags and preliminary check instructions. They represent decision-support guidance and should be confirmed with your local KVK or agronomy officer.
         </p>
       </div>
+
+      {warning && (
+        <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 flex items-start justify-between gap-3 text-sm text-amber-900 animate-fadeIn">
+          <div className="flex items-start gap-2.5">
+            <TriangleAlert className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-extrabold">Image Validation Note</p>
+              <p className="mt-0.5">{warning}</p>
+            </div>
+          </div>
+          <button 
+            type="button" 
+            onClick={() => setWarning(null)}
+            className="text-amber-500 hover:text-amber-800 transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+      )}
 
       {/* Form Section */}
       <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-md space-y-6">
