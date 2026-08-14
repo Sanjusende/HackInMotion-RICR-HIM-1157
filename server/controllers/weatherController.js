@@ -1,8 +1,12 @@
 import Farm from '../models/Farm.js';
 import Weather from '../models/Weather.js';
+import ApiResponse from '../utils/apiResponse.js';
 import { fetchOpenMeteoWeather } from '../services/weather/openMeteoService.js';
 
-export const getCurrentWeather = async (req, res) => {
+/**
+ * Get current weather details for the user's farm location
+ */
+export const getCurrentWeather = async (req, res, next) => {
   try {
     let lat = 22.7196;
     let lng = 75.8577;
@@ -35,24 +39,20 @@ export const getCurrentWeather = async (req, res) => {
           source: weatherData.source
         });
       } catch (saveErr) {
-        // Non-blocking log save error
+        console.warn('Weather log save failed (non-blocking):', saveErr.message);
       }
     }
 
-    return res.status(200).json({
-      success: true,
-      data: weatherData
-    });
+    return ApiResponse.success(res, weatherData, 'Current weather data loaded successfully');
   } catch (error) {
-    console.error('Weather controller error:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Unable to load current weather data'
-    });
+    next(error);
   }
 };
 
-export const getWeatherForecast = async (req, res) => {
+/**
+ * Get weather forecast detail list
+ */
+export const getWeatherForecast = async (req, res, next) => {
   try {
     let lat = 22.7196;
     let lng = 75.8577;
@@ -69,14 +69,8 @@ export const getWeatherForecast = async (req, res) => {
 
     const weatherData = await fetchOpenMeteoWeather(lat, lng);
 
-    return res.status(200).json({
-      success: true,
-      data: weatherData.forecast || []
-    });
+    return ApiResponse.success(res, weatherData.forecast || [], 'Weather forecast loaded successfully');
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      error: 'Unable to load weather forecast'
-    });
+    next(error);
   }
 };

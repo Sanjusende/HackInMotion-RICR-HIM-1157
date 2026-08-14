@@ -34,6 +34,8 @@ const communityReportSchema = new mongoose.Schema(
   }
 );
 
+communityReportSchema.index({ 'location.lat': 1, 'location.lng': 1 });
+
 const CommunityReport = mongoose.model('CommunityReport', communityReportSchema);
 
 export default CommunityReport;
