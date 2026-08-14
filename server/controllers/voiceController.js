@@ -2,19 +2,6 @@ import Farm from '../models/Farm.js';
 import VoiceQuery from '../models/VoiceQuery.js';
 import { processVoiceQuery } from '../services/voice/voiceService.js';
 
-/**
- * Voice Assistant Controller
- *
- * Handles:
- * - Voice/text query processing
- * - Farm context retrieval
- * - Voice query persistence
- * - Voice query history
- */
-
-// ------------------------------------------------------
-// Constants
-// ------------------------------------------------------
 
 const DEFAULT_HISTORY_LIMIT = 15;
 const MAX_QUERY_LENGTH = 500;
