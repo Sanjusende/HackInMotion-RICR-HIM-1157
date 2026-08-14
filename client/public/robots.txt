@@ -1,0 +1,5 @@
+User-agent: *
+
+Allow: /
+
+Sitemap: https://krishimitra2026.vercel.app/sitemap.xml
