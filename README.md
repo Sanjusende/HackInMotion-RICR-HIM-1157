@@ -366,9 +366,9 @@ Additional documentation can be found inside the `docs` folder:
 # 👥 Team Members
 
 - Sanjay Sende --- Team Leader
-- Shubham Uprade
-- Atul Baghel
-- Nikhil Waghade
+- Shubham Uprade --Frontend Developer
+- Atul Baghel    --Frontend Developer
+- Nikhil Waghade --Backend Developer
 
 ---
 
