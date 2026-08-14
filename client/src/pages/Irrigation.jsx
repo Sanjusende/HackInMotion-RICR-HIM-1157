@@ -2,48 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { analyzeIrrigation, getIrrigationHistory } from '../services/irrigationService';
 import { getCurrentWeather } from '../services/weatherService';
 import { useFarm } from '../context/FarmContext';
-import {
-  Droplets,
-  CloudRain,
-  Sprout,
-  Clock,
-  Gauge,
-  Leaf,
-  RefreshCw,
-  CheckCircle,
-  AlertTriangle,
-  Sparkles,
-  Sliders,
-  TrendingDown,
-  TrendingUp,
-  Thermometer,
-  ShieldCheck
-} from 'lucide-react';
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, AreaChart, Area } from 'recharts';
+import { AlertTriangle, RefreshCw, X, FileText, CheckCircle2, Droplets, Clock } from 'lucide-react';
 
-const CROPS = ['Wheat', 'Rice', 'Maize', 'Soybean', 'Cotton', 'Potato', 'Mustard'];
-const SOIL_TYPES = ['Black Soil', 'Alluvial Soil', 'Red Soil', 'Clay Soil', 'Loamy Soil'];
-
-// Fallback / historical week series for water usage chart
-const DEFAULT_WATER_SERIES = [
-  { day: 'Mon', actual: 1100, recommended: 1000 },
-  { day: 'Tue', actual: 1200, recommended: 1100 },
-  { day: 'Wed', actual: 950, recommended: 1000 },
-  { day: 'Thu', actual: 1050, recommended: 1000 },
-  { day: 'Fri', actual: 1150, recommended: 1050 },
-  { day: 'Sat', actual: 1000, recommended: 1000 },
-  { day: 'Sun', actual: 1000, recommended: 1000 }
-];
-
-const DEFAULT_MOISTURE_SERIES = [
-  { day: 'Mon', current: 38, recommended: 45 },
-  { day: 'Tue', current: 40, recommended: 45 },
-  { day: 'Wed', current: 39, recommended: 45 },
-  { day: 'Thu', current: 41, recommended: 45 },
-  { day: 'Fri', current: 43, recommended: 45 },
-  { day: 'Sat', current: 42, recommended: 45 },
-  { day: 'Sun', current: 42, recommended: 45 }
-];
+import IrrigationHeader from '../components/irrigation/IrrigationHeader';
+import IrrigationStatus from '../components/irrigation/IrrigationStatus';
+import FieldSelector from '../components/irrigation/FieldSelector';
+import SoilMoistureVisualizer from '../components/irrigation/SoilMoistureVisualizer';
+import SmartRecommendation from '../components/irrigation/SmartRecommendation';
+import WaterUsageCharts from '../components/irrigation/WaterUsageCharts';
+import WaterEfficiencyCard from '../components/irrigation/WaterEfficiencyCard';
+import IrrigationHistory from '../components/irrigation/IrrigationHistory';
+import IrrigationAnalysisForm from '../components/irrigation/IrrigationAnalysisForm';
 
 const Irrigation = () => {
   const { farm } = useFarm();
@@ -53,21 +22,37 @@ const Irrigation = () => {
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState(null);
+  const [showPlanModal, setShowPlanModal] = useState(false);
+
+  // Field selector state
+  const [fields, setFields] = useState([
+    { id: 'f1', name: 'Field 01', crop: 'Wheat', area: 12, soilMoisture: 38, icon: '🌾' },
+    { id: 'f2', name: 'Field 02', crop: 'Soybean', area: 8, soilMoisture: 61, icon: '🌱' },
+    { id: 'f3', name: 'Field 03', crop: 'Rice', area: 10, soilMoisture: 72, icon: '🌾' }
+  ]);
+  const [selectedFieldId, setSelectedFieldId] = useState('f1');
 
   // Form State
   const [crop, setCrop] = useState('Wheat');
-  const [landArea, setLandArea] = useState(5);
+  const [landArea, setLandArea] = useState(12);
   const [soilType, setSoilType] = useState('Black Soil');
-  const [soilMoisture, setSoilMoisture] = useState(42);
-  const [rainForecast, setRainForecast] = useState(20);
+  const [soilMoisture, setSoilMoisture] = useState(38);
 
   useEffect(() => {
     if (farm) {
-      if (farm.currentCrop) setCrop(farm.currentCrop);
-      if (farm.landSize?.value) setLandArea(farm.landSize.value);
+      if (farm.currentCrop) {
+        setCrop(farm.currentCrop);
+        setFields(prev => prev.map(f => f.id === 'f1' ? { ...f, crop: farm.currentCrop } : f));
+      }
+      if (farm.landSize?.value) {
+        setLandArea(farm.landSize.value);
+        setFields(prev => prev.map(f => f.id === 'f1' ? { ...f, area: farm.landSize.value } : f));
+      }
       if (farm.soilType) setSoilType(farm.soilType);
     }
   }, [farm]);
+
+  const selectedField = fields.find(f => f.id === selectedFieldId) || fields[0];
 
   const fetchIrrigationData = async () => {
     try {
@@ -83,13 +68,10 @@ const Irrigation = () => {
       const weatherRes = await getCurrentWeather();
       if (weatherRes && weatherRes.success) {
         setWeather(weatherRes.data);
-        if (weatherRes.data?.rainProbability !== undefined) {
-          setRainForecast(weatherRes.data.rainProbability);
-        }
       }
     } catch (err) {
       console.error('Irrigation load error:', err);
-      setError('Unable to load irrigation data');
+      setError('Unable to calculate the latest irrigation recommendation. Please retry.');
     } finally {
       setLoading(false);
       setAnalyzing(false);
@@ -103,27 +85,39 @@ const Irrigation = () => {
   const handleAnalyze = async (e) => {
     if (e) e.preventDefault();
     setAnalyzing(true);
+    // Update active field values
+    setFields(prev => prev.map(f => f.id === selectedFieldId ? {
+      ...f,
+      crop,
+      area: landArea,
+      soilMoisture
+    } : f));
+
     await fetchIrrigationData();
   };
+
+  const handleSelectField = (field) => {
+    setSelectedFieldId(field.id);
+    setCrop(field.crop);
+    setLandArea(field.area);
+    setSoilMoisture(field.soilMoisture);
+  };
+
+  // Water volume heuristic based on selected field area & moisture deficit
+  const calculatedLiters = Math.round((selectedField.area || 10) * 100 * (selectedField.soilMoisture < 45 ? 1.0 : 0.4));
+  const isIrrigateNeeded = selectedField.soilMoisture < 45;
 
   // Skeleton Loader State
   if (loading && !analyzing) {
     return (
       <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-        <div className="flex justify-between items-center">
-          <div className="h-7 bg-slate-200 rounded-lg w-40 animate-pulse" />
-          <div className="h-7 bg-slate-200 rounded-lg w-24 animate-pulse" />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-20 bg-slate-200 rounded-xl animate-pulse" />
-          ))}
-        </div>
+        <div className="h-20 bg-slate-200/80 rounded-2xl animate-pulse" />
+        <div className="h-44 bg-slate-200/80 rounded-2xl animate-pulse" />
+        <div className="h-36 bg-slate-200/80 rounded-2xl animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="h-44 bg-slate-200 rounded-xl animate-pulse" />
-          <div className="h-44 bg-slate-200 rounded-xl animate-pulse" />
+          <div className="h-56 bg-slate-200/80 rounded-3xl animate-pulse" />
+          <div className="h-56 bg-slate-200/80 rounded-3xl animate-pulse" />
         </div>
-        <div className="h-64 bg-slate-200 rounded-xl animate-pulse" />
       </div>
     );
   }
@@ -131,457 +125,150 @@ const Irrigation = () => {
   // Error State Component
   if (error && !result) {
     return (
-      <div className="max-w-md mx-auto my-12 p-6 bg-white rounded-xl border border-slate-200 shadow-xs text-center space-y-3">
-        <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto" />
-        <p className="text-sm font-bold text-slate-900">{error}</p>
-        <p className="text-xs text-slate-500">Please check network connection and try again.</p>
+      <div className="max-w-md mx-auto my-16 p-6 bg-white rounded-2xl border border-slate-200 shadow-xs text-center space-y-4">
+        <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto">
+          <AlertTriangle size={24} />
+        </div>
+        <div className="space-y-1">
+          <h2 className="text-base font-black text-slate-900">Irrigation Data Unavailable</h2>
+          <p className="text-xs text-slate-500 font-medium">{error}</p>
+        </div>
         <button
           onClick={handleAnalyze}
-          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition cursor-pointer"
+          className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition cursor-pointer flex items-center gap-2 mx-auto shadow-xs"
         >
-          Try Again
+          <RefreshCw size={14} />
+          <span>Retry Analysis</span>
         </button>
       </div>
     );
   }
 
-  const decision = result?.decision || 'DONT_IRRIGATE';
-  const isIrrigate = decision === 'IRRIGATE';
-  const confidence = result?.confidence ? Math.round(result.confidence * 100) : 92;
-  const currentTemp = weather?.temperature || 28;
-  const currentRainProb = weather?.rainProbability ?? rainForecast;
-
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 text-slate-900 selection:bg-emerald-600 selection:text-white">
       
       {/* 1. PAGE HEADER */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Irrigation</h1>
-            <span className="flex items-center gap-1 px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-[11px] font-extrabold rounded-full border border-emerald-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              System Active
-            </span>
-          </div>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">Smart water planning for your farm.</p>
-        </div>
+      <IrrigationHeader
+        analyzing={analyzing}
+        onRefresh={handleAnalyze}
+      />
 
-        <button
-          onClick={handleAnalyze}
-          disabled={analyzing}
-          className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 rounded-lg transition flex items-center gap-1.5 text-xs font-semibold border border-slate-200 cursor-pointer shadow-2xs disabled:opacity-50"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 ${analyzing ? 'animate-spin' : ''}`} />
-          <span>{analyzing ? 'Analyzing...' : 'Refresh'}</span>
-        </button>
+      {/* 10. IRRIGATION STATUS BANNER */}
+      <IrrigationStatus
+        selectedField={selectedField}
+        isIrrigateNeeded={isIrrigateNeeded}
+        calculatedLiters={calculatedLiters}
+      />
+
+      {/* 11. FIELD SELECTOR */}
+      <FieldSelector
+        fields={fields}
+        selectedFieldId={selectedFieldId}
+        onSelectField={handleSelectField}
+      />
+
+      {/* 12 & 13. SOIL MOISTURE & SMART RECOMMENDATION GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* SOIL MOISTURE VISUALIZER */}
+        <SoilMoistureVisualizer moisture={selectedField.soilMoisture} />
+
+        {/* SMART RECOMMENDATION HERO CARD */}
+        <SmartRecommendation
+          result={result}
+          farm={farm}
+          selectedField={selectedField}
+          calculatedLiters={calculatedLiters}
+          onOpenPlan={() => setShowPlanModal(true)}
+        />
       </div>
 
-      {/* 2. TOP 4 KPI CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs hover:border-emerald-200 transition space-y-1">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-[11px] font-semibold">Water Need</span>
-            <Droplets className="w-4 h-4 text-emerald-600" />
-          </div>
-          <p className="text-xl font-black text-slate-900">24 <span className="text-xs font-bold text-slate-500">L/m²</span></p>
-          <p className="text-[10px] font-semibold text-slate-400">Optimal soil depth</p>
-        </div>
+      {/* 14 & 16. WATER USAGE & WATER EFFICIENCY */}
+      <WaterUsageCharts calculatedTodayLiters={calculatedLiters} />
 
-        <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs hover:border-emerald-200 transition space-y-1">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-[11px] font-semibold">Soil Moisture</span>
-            <Gauge className="w-4 h-4 text-emerald-600" />
-          </div>
-          <p className="text-xl font-black text-slate-900">{soilMoisture}%</p>
-          <p className="text-[10px] font-semibold text-emerald-600 flex items-center gap-0.5">
-            <TrendingUp size={10} /> Moderate range
-          </p>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* WATER EFFICIENCY INSIGHT */}
+        <WaterEfficiencyCard
+          usedLiters={calculatedLiters}
+          recommendedLiters={Math.round(calculatedLiters * 1.2)}
+        />
 
-        <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs hover:border-emerald-200 transition space-y-1">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-[11px] font-semibold">Rain Chance</span>
-            <CloudRain className="w-4 h-4 text-emerald-600" />
-          </div>
-          <p className="text-xl font-black text-slate-900">{currentRainProb}%</p>
-          <p className="text-[10px] font-semibold text-slate-400">Low rainfall likelihood</p>
-        </div>
-
-        <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs hover:border-emerald-200 transition space-y-1">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-[11px] font-semibold">Next Irrigation</span>
-            <Clock className="w-4 h-4 text-emerald-600" />
-          </div>
-          <p className="text-xl font-black text-slate-900">6:00 AM</p>
-          <p className="text-[10px] font-semibold text-slate-400">{isIrrigate ? 'Scheduled Today' : 'Tomorrow morning'}</p>
-        </div>
+        {/* ANALYSIS FORM CALCULATOR */}
+        <IrrigationAnalysisForm
+          crop={crop}
+          setCrop={setCrop}
+          landArea={landArea}
+          setLandArea={setLandArea}
+          soilType={soilType}
+          setSoilType={setSoilType}
+          soilMoisture={soilMoisture}
+          setSoilMoisture={setSoilMoisture}
+          analyzing={analyzing}
+          onAnalyze={handleAnalyze}
+        />
       </div>
 
-      {/* 3 & 7. IRRIGATION STATUS & SMARTAG AI RECOMMENDATION GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        
-        {/* IRRIGATION STATUS */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3 hover:border-emerald-200 transition flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <Droplets className="w-4 h-4 text-emerald-600" />
-              <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Irrigation Status</h2>
-            </div>
+      {/* 15. IRRIGATION HISTORY */}
+      <IrrigationHistory
+        history={history}
+        cropName={selectedField.crop}
+      />
 
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold border flex items-center gap-1.5 ${
-              isIrrigate
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                : 'bg-amber-50 text-amber-800 border-amber-200'
-            }`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${isIrrigate ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-              {isIrrigate ? 'Recommended' : 'Monitor'}
-            </span>
-          </div>
+      {/* IRRIGATION PLAN MODAL */}
+      {showPlanModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white max-w-lg w-full rounded-3xl p-6 shadow-large border border-slate-200 space-y-4 relative animate-in fade-in zoom-in duration-200">
+            <button
+              onClick={() => setShowPlanModal(false)}
+              className="absolute top-4 right-4 p-1.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition cursor-pointer"
+            >
+              <X size={18} />
+            </button>
 
-          <div className="grid grid-cols-3 gap-2 text-xs">
-            <div>
-              <span className="text-[11px] font-semibold text-slate-500 block">Water</span>
-              <span className="text-base font-black text-slate-900">24 L/m²</span>
-            </div>
-            <div>
-              <span className="text-[11px] font-semibold text-slate-500 block">Next</span>
-              <span className="text-xs font-bold text-slate-800 block">Tomorrow, 6:00 AM</span>
-            </div>
-            <div>
-              <span className="text-[11px] font-semibold text-slate-500 block">Duration</span>
-              <span className="text-xs font-bold text-slate-800 block">35 min</span>
-            </div>
-          </div>
-
-          {/* Progress bar */}
-          <div className="space-y-1 pt-1">
-            <div className="flex justify-between text-[11px] font-semibold text-slate-500">
-              <span>Moisture Target</span>
-              <span className="text-emerald-700 font-bold">85% Optimal</span>
-            </div>
-            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-              <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: '85%' }} />
-            </div>
-          </div>
-        </div>
-
-        {/* SMARTAG AI RECOMMENDATION */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3 hover:border-emerald-200 transition flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
-              <Sparkles className="w-4 h-4 text-emerald-600 animate-pulse" />
-              <span>SmartAg Explainable AI Recommendation</span>
-            </div>
-            <span className="text-[11px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-              Confidence {confidence}%
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            <span className="text-xs font-bold text-slate-900 block bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100">
-              ✅ Actionable Advice: {result?.reasoning?.actionableAdvice || 'No irrigation required today. Save pumping costs.'}
-            </span>
-            
-            <div className="text-[11px] font-semibold text-slate-600 space-y-1 bg-slate-50 p-2.5 rounded-xl border border-slate-200 leading-relaxed">
-              <p>🌱 <strong>Why:</strong> Soil moisture is balanced ({soilMoisture}%), which matches the optimal transpiration rate for {crop} at this growth stage.</p>
-              <p>💧 <strong>Water Saving Estimate:</strong> Saving ~14,250 Liters today by conserving reservoir stocks.</p>
-              <p>🧬 <strong>Expected Crop Impact:</strong> Prevents root hypoxia/waterlogging, safeguarding vegetative cell density.</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-center text-xs">
-            <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
-              <span className="text-[10px] font-semibold text-slate-500 block">Required Vol</span>
-              <span className="text-xs font-black text-slate-900">0 L/m²</span>
-            </div>
-            <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
-              <span className="text-[10px] font-semibold text-slate-500 block">Pumping Save</span>
-              <span className="text-xs font-black text-slate-900">₹850 Saved</span>
-            </div>
-            <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
-              <span className="text-[10px] font-semibold text-slate-500 block">Next Check</span>
-              <span className="text-xs font-black text-emerald-705">Tomorrow</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* 4 & 5. WATER USAGE & SOIL MOISTURE TREND CHARTS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        
-        {/* WATER USAGE CHART */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3 hover:border-emerald-200 transition min-w-0">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Water Usage</h2>
-            <span className="text-[11px] font-semibold text-slate-400">Last 7 Days (Liters)</span>
-          </div>
-
-          <div className="h-48 w-full pt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={DEFAULT_WATER_SERIES}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="day" stroke="#94a3b8" fontSize={10} />
-                <YAxis stroke="#94a3b8" fontSize={10} domain={['auto', 'auto']} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#0f172a', color: '#fff', borderRadius: '8px', border: 'none', fontSize: '11px' }}
-                  formatter={(val, name) => [`${val} L`, name === 'actual' ? 'Actual Water' : 'Recommended']}
-                />
-                <Line type="monotone" dataKey="actual" stroke="#059669" strokeWidth={2.5} dot={{ r: 3, fill: '#059669' }} />
-                <Line type="monotone" dataKey="recommended" stroke="#0284c7" strokeWidth={1.5} strokeDasharray="4 4" dot={{ r: 2 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* SOIL MOISTURE TREND CHART */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3 hover:border-emerald-200 transition min-w-0">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Soil Moisture</h2>
-            <span className="text-[11px] font-semibold text-slate-400">7-Day Trend (%)</span>
-          </div>
-
-          <div className="h-48 w-full pt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={DEFAULT_MOISTURE_SERIES}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="day" stroke="#94a3b8" fontSize={10} />
-                <YAxis stroke="#94a3b8" fontSize={10} domain={[30, 60]} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#0f172a', color: '#fff', borderRadius: '8px', border: 'none', fontSize: '11px' }}
-                  formatter={(val) => [`${val}%`, 'Moisture']}
-                />
-                <Area type="monotone" dataKey="current" stroke="#059669" fill="#10b98120" strokeWidth={2} />
-                <Line type="monotone" dataKey="recommended" stroke="#64748b" strokeDasharray="3 3" strokeWidth={1} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-      </div>
-
-      {/* 6. FARM CONDITIONS (4 SMALL CARDS) */}
-      <div className="space-y-2">
-        <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Farm Conditions</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs flex items-center gap-3">
-            <Gauge className="w-4 h-4 text-emerald-600 shrink-0" />
-            <div>
-              <span className="text-[11px] font-semibold text-slate-500 block">Soil</span>
-              <span className="text-base font-extrabold text-slate-900">{soilMoisture}%</span>
-            </div>
-          </div>
-
-          <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs flex items-center gap-3">
-            <Sprout className="w-4 h-4 text-emerald-600 shrink-0" />
-            <div>
-              <span className="text-[11px] font-semibold text-slate-500 block">Crop</span>
-              <span className="text-base font-extrabold text-slate-900">{crop}</span>
-            </div>
-          </div>
-
-          <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs flex items-center gap-3">
-            <CloudRain className="w-4 h-4 text-emerald-600 shrink-0" />
-            <div>
-              <span className="text-[11px] font-semibold text-slate-500 block">Rain</span>
-              <span className="text-base font-extrabold text-slate-900">{currentRainProb}%</span>
-            </div>
-          </div>
-
-          <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs flex items-center gap-3">
-            <Thermometer className="w-4 h-4 text-emerald-600 shrink-0" />
-            <div>
-              <span className="text-[11px] font-semibold text-slate-500 block">Temp</span>
-              <span className="text-base font-extrabold text-slate-900">{currentTemp}°C</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 9 & 8. ANALYSIS FORM & WATER EFFICIENCY GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        
-        {/* ANALYSIS FORM */}
-        <form onSubmit={handleAnalyze} className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3 hover:border-emerald-200 transition">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Sliders className="w-4 h-4 text-emerald-600" />
-            <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Analyze Irrigation</h2>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div>
-              <label className="text-[11px] font-bold text-slate-600 block mb-1">Crop</label>
-              <select
-                value={crop}
-                onChange={(e) => setCrop(e.target.value)}
-                className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-semibold focus:outline-none focus:border-emerald-500"
-              >
-                {CROPS.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-slate-600 block mb-1">Area (Acres)</label>
-              <input
-                type="number"
-                min="1"
-                value={landArea}
-                onChange={(e) => setLandArea(e.target.value)}
-                className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-semibold focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-slate-600 block mb-1">Soil Type</label>
-              <select
-                value={soilType}
-                onChange={(e) => setSoilType(e.target.value)}
-                className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-semibold focus:outline-none focus:border-emerald-500"
-              >
-                {SOIL_TYPES.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-slate-600 block mb-1">Soil Moisture (%)</label>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                value={soilMoisture}
-                onChange={(e) => setSoilMoisture(e.target.value)}
-                className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-semibold focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={analyzing}
-            className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition cursor-pointer shadow-2xs flex items-center justify-center gap-1.5 disabled:opacity-50"
-          >
-            {analyzing ? (
-              <>
-                <RefreshCw size={14} className="animate-spin" />
-                <span>Analyzing...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles size={14} />
-                <span>Analyze</span>
-              </>
-            )}
-          </button>
-        </form>
-
-        {/* WATER EFFICIENCY & WATER SAVING INSIGHT */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3 flex flex-col justify-between hover:border-emerald-200 transition">
-          <div>
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Water Efficiency</h2>
-              <span className="text-base font-black text-emerald-700">82%</span>
-            </div>
-
-            {/* Progress bar */}
-            <div className="space-y-1 py-3">
-              <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                <div className="bg-emerald-500 h-2.5 rounded-full" style={{ width: '82%' }} />
+            <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
+              <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-2xl">
+                <FileText size={20} />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-slate-900">Irrigation Action Plan</h3>
+                <p className="text-xs text-slate-500 font-medium">{selectedField.name} • {selectedField.crop}</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
-              <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
-                <span className="text-[10px] font-semibold text-slate-500 block">Used</span>
-                <span className="text-xs font-black text-slate-900">1,000 L</span>
+            <div className="space-y-3 text-xs text-slate-700 font-medium leading-relaxed">
+              <div className="p-3 bg-emerald-50/80 rounded-xl border border-emerald-200 space-y-1">
+                <span className="font-extrabold text-emerald-950 block flex items-center gap-1">
+                  <CheckCircle2 size={14} className="text-emerald-600" />
+                  Recommended Time
+                </span>
+                <p className="text-slate-700">Tomorrow early morning: <strong>6:00 AM – 8:00 AM</strong></p>
               </div>
-              <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
-                <span className="text-[10px] font-semibold text-slate-500 block">Recommended</span>
-                <span className="text-xs font-black text-slate-900">1,200 L</span>
+
+              <div className="p-3 bg-blue-50/80 rounded-xl border border-blue-200 space-y-1">
+                <span className="font-extrabold text-blue-950 block flex items-center gap-1">
+                  <Droplets size={14} className="text-blue-600" />
+                  Total Water Target
+                </span>
+                <p className="text-slate-700">Apply approximately <strong>{calculatedLiters.toLocaleString()} Liters</strong> across your {selectedField.area} Acres.</p>
               </div>
-              <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
-                <span className="text-[10px] font-semibold text-slate-500 block">Saved</span>
-                <span className="text-xs font-black text-emerald-700">200 L</span>
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                <span className="font-extrabold text-slate-900 block flex items-center gap-1">
+                  <Clock size={14} className="text-slate-500" />
+                  Pumping Schedule
+                </span>
+                <p className="text-slate-600">Operate 5 HP pump for <strong>40 minutes</strong> to ensure deep root penetration without surface run-off.</p>
               </div>
             </div>
-          </div>
 
-          <div className="p-2.5 bg-emerald-50 rounded-lg border border-emerald-200 flex items-center justify-between text-xs">
-            <span className="font-bold text-emerald-900 flex items-center gap-1">
-              💧 Water Saving:
-            </span>
-            <span className="font-extrabold text-emerald-700">Saved 200 L this week</span>
+            <button
+              onClick={() => setShowPlanModal(false)}
+              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition cursor-pointer"
+            >
+              Done / Close Plan
+            </button>
           </div>
         </div>
-
-      </div>
-
-      {/* 10. IRRIGATION HISTORY TABLE */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3 hover:border-emerald-200 transition">
-        <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Irrigation History</h2>
-
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[500px] text-left text-xs">
-            <thead>
-              <tr className="border-b border-slate-100 text-slate-500 font-semibold">
-                <th className="pb-2">Date</th>
-                <th className="pb-2">Water</th>
-                <th className="pb-2">Duration</th>
-                <th className="pb-2 text-right">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
-              {history.length > 0 ? (
-                history.slice(0, 5).map((item, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50">
-                    <td className="py-2.5">{new Date(item.date).toLocaleDateString([], { day: '2-digit', month: 'short' })}</td>
-                    <td className="py-2.5 font-bold text-slate-900">1000 L</td>
-                    <td className="py-2.5 text-slate-600">35 min</td>
-                    <td className="py-2.5 text-right">
-                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-bold rounded border border-emerald-200 text-[11px]">
-                        Done
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <>
-                  <tr className="hover:bg-slate-50">
-                    <td className="py-2.5 font-bold">13 Aug</td>
-                    <td className="py-2.5 text-slate-900 font-bold">1000 L</td>
-                    <td className="py-2.5 text-slate-600">35 min</td>
-                    <td className="py-2.5 text-right">
-                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-bold rounded border border-emerald-200 text-[11px]">
-                        Done
-                      </span>
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-slate-50">
-                    <td className="py-2.5 font-bold">12 Aug</td>
-                    <td className="py-2.5 text-slate-900 font-bold">1200 L</td>
-                    <td className="py-2.5 text-slate-600">40 min</td>
-                    <td className="py-2.5 text-right">
-                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-bold rounded border border-emerald-200 text-[11px]">
-                        Done
-                      </span>
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-slate-50">
-                    <td className="py-2.5 font-bold">11 Aug</td>
-                    <td className="py-2.5 text-slate-900 font-bold">1100 L</td>
-                    <td className="py-2.5 text-slate-600">37 min</td>
-                    <td className="py-2.5 text-right">
-                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-bold rounded border border-emerald-200 text-[11px]">
-                        Done
-                      </span>
-                    </td>
-                  </tr>
-                </>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      )}
 
     </div>
   );
