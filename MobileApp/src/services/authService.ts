@@ -39,8 +39,8 @@ export const forgotPassword = async (email: string) => {
 export const getProfile = async (token?: string) => {
   try {
     const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-    const res = await api.get('/farm/profile', { headers });
-    return res.data;
+    const res = await api.get('/farms/me', { headers });
+    return { success: true, profileComplete: true, data: res.data.data };
   } catch (error: any) {
     if (error.response?.status === 404) {
       return { success: true, profileComplete: false };

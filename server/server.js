@@ -1,8 +1,12 @@
 import app from "./app.js";
 import env from "./config/env.js";
 import connectDB from "./config/database.js"; 
+import { validateEnv } from "./config/envValidation.js";
 import dns from "dns";
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
+
+// Validate env variables first
+validateEnv();
 
 // Initialize Database connection client
 connectDB();

@@ -17,6 +17,7 @@ import cropHealthRoutes from "./routes/cropHealthRoutes.js";
 import marketRoutes from "./routes/marketRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import voiceRoutes from "./routes/voiceRoutes.js";
+import healthRoutes from "./routes/healthRoutes.js";
 
 // Optional compression middleware loader
 let compressionMiddleware = (req, res, next) => next();
@@ -105,6 +106,9 @@ app.use("/api/v1/dashboard", dashboardRoutes);
 
 app.use("/api/voice", voiceRoutes);
 app.use("/api/v1/voice", voiceRoutes);
+
+app.use("/api", healthRoutes);
+app.use("/api/v1", healthRoutes);
 
 // Global Error Handler Middleware (MUST be mounted last)
 app.use(errorHandler);
