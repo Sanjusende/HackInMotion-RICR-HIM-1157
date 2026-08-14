@@ -1,6 +1,6 @@
-import bcrypt from "bcryptjs";
-import User from "../../models/User.js";
-import tokenService from "../../services/auth/tokenService.js";
+import bcrypt from 'bcryptjs';
+import User from '../../models/User.js';
+import tokenService from '../../services/auth/tokenService.js';
 
 /**
  * POST /api/auth/register
@@ -13,7 +13,7 @@ export const register = async (req, res) => {
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Name, email, and password are required"
+        message: 'Name, email, and password are required',
       });
     }
 
@@ -21,7 +21,7 @@ export const register = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: "User with this email already exists"
+        message: 'User with this email already exists',
       });
     }
 
@@ -35,8 +35,8 @@ export const register = async (req, res) => {
       email,
       phone,
       password: hashedPassword,
-      role: role || "FARMER",
-      language: language || "EN"
+      role: role || 'FARMER',
+      language: language || 'EN',
     });
 
     // Generate tokens
@@ -48,7 +48,7 @@ export const register = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "User registered successfully",
+      message: 'User registered successfully',
       data: {
         user: {
           id: user._id,
@@ -56,16 +56,16 @@ export const register = async (req, res) => {
           email: user.email,
           phone: user.phone,
           role: user.role,
-          language: user.language
+          language: user.language,
         },
         accessToken,
-        refreshToken
-      }
+        refreshToken,
+      },
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Server Error"
+      message: error.message || 'Server Error',
     });
   }
 };
@@ -81,7 +81,7 @@ export const login = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Email and password are required"
+        message: 'Email and password are required',
       });
     }
 
@@ -89,7 +89,7 @@ export const login = async (req, res) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password"
+        message: 'Invalid email or password',
       });
     }
 
@@ -97,7 +97,7 @@ export const login = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password"
+        message: 'Invalid email or password',
       });
     }
 
@@ -111,7 +111,7 @@ export const login = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Login successful",
+      message: 'Login successful',
       data: {
         user: {
           id: user._id,
@@ -119,16 +119,16 @@ export const login = async (req, res) => {
           email: user.email,
           phone: user.phone,
           role: user.role,
-          language: user.language
+          language: user.language,
         },
         accessToken,
-        refreshToken
-      }
+        refreshToken,
+      },
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Server Error"
+      message: error.message || 'Server Error',
     });
   }
 };
@@ -144,7 +144,7 @@ export const refresh = async (req, res) => {
     if (!refreshToken) {
       return res.status(400).json({
         success: false,
-        message: "Refresh token is required"
+        message: 'Refresh token is required',
       });
     }
 
@@ -154,7 +154,7 @@ export const refresh = async (req, res) => {
     } catch (err) {
       return res.status(401).json({
         success: false,
-        message: "Invalid or expired refresh token"
+        message: 'Invalid or expired refresh token',
       });
     }
 
@@ -162,7 +162,7 @@ export const refresh = async (req, res) => {
     if (!user || user.refreshToken !== refreshToken) {
       return res.status(401).json({
         success: false,
-        message: "Invalid refresh token session"
+        message: 'Invalid refresh token session',
       });
     }
 
@@ -174,16 +174,16 @@ export const refresh = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Token refreshed successfully",
+      message: 'Token refreshed successfully',
       data: {
         accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken
-      }
+        refreshToken: tokens.refreshToken,
+      },
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Server Error"
+      message: error.message || 'Server Error',
     });
   }
 };
@@ -199,7 +199,7 @@ export const logout = async (req, res) => {
     if (!refreshToken) {
       return res.status(400).json({
         success: false,
-        message: "Refresh token is required"
+        message: 'Refresh token is required',
       });
     }
 
@@ -207,22 +207,22 @@ export const logout = async (req, res) => {
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: "Invalid refresh token or already logged out"
+        message: 'Invalid refresh token or already logged out',
       });
     }
 
     // Revoke refresh token
-    user.refreshToken = "";
+    user.refreshToken = '';
     await user.save();
 
     return res.status(200).json({
       success: true,
-      message: "Logged out successfully"
+      message: 'Logged out successfully',
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Server Error"
+      message: error.message || 'Server Error',
     });
   }
 };
@@ -233,23 +233,23 @@ export const logout = async (req, res) => {
  */
 export const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password -refreshToken");
+    const user = await User.findById(req.user.id).select('-password -refreshToken');
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found"
+        message: 'User not found',
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: "User details retrieved successfully",
-      data: { user }
+      message: 'User details retrieved successfully',
+      data: { user },
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Server Error"
+      message: error.message || 'Server Error',
     });
   }
 };
@@ -264,7 +264,7 @@ export const forgotPassword = async (req, res) => {
     if (!email) {
       return res.status(400).json({
         success: false,
-        message: "Email is required"
+        message: 'Email is required',
       });
     }
 
@@ -272,26 +272,27 @@ export const forgotPassword = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User with this email does not exist"
+        message: 'User with this email does not exist',
       });
     }
 
     // Generate token
     const resetToken = tokenService.generateResetToken(user);
-    const resetLink = `${req.protocol}://${req.get("host")}/reset-password?token=${resetToken}`;
+    const resetLink = `${req.protocol}://${req.get('host')}/reset-password?token=${resetToken}`;
 
     return res.status(200).json({
       success: true,
-      message: "Password reset token generated successfully. In a production environment, this would be sent to your email.",
+      message:
+        'Password reset token generated successfully. In a production environment, this would be sent to your email.',
       data: {
         resetToken,
-        resetLink
-      }
+        resetLink,
+      },
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Server Error"
+      message: error.message || 'Server Error',
     });
   }
 };
@@ -306,14 +307,14 @@ export const resetPassword = async (req, res) => {
     if (!token || !newPassword) {
       return res.status(400).json({
         success: false,
-        message: "Token and new password are required"
+        message: 'Token and new password are required',
       });
     }
 
     if (newPassword.length < 6) {
       return res.status(400).json({
         success: false,
-        message: "Password must be at least 6 characters"
+        message: 'Password must be at least 6 characters',
       });
     }
 
@@ -323,7 +324,7 @@ export const resetPassword = async (req, res) => {
     } catch (err) {
       return res.status(401).json({
         success: false,
-        message: "Invalid or expired reset token"
+        message: 'Invalid or expired reset token',
       });
     }
 
@@ -331,7 +332,7 @@ export const resetPassword = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found"
+        message: 'User not found',
       });
     }
 
@@ -341,17 +342,17 @@ export const resetPassword = async (req, res) => {
 
     user.password = hashedPassword;
     // Invalidate current refresh token to force re-auth
-    user.refreshToken = "";
+    user.refreshToken = '';
     await user.save();
 
     return res.status(200).json({
       success: true,
-      message: "Password has been reset successfully"
+      message: 'Password has been reset successfully',
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Server Error"
+      message: error.message || 'Server Error',
     });
   }
 };

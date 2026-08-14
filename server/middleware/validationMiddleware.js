@@ -1,5 +1,5 @@
-import { validationResult } from "express-validator";
-import ApiResponse from "../utils/apiResponse.js";
+import { validationResult } from 'express-validator';
+import ApiResponse from '../utils/apiResponse.js';
 
 /**
  * Middleware to intercept validation errors and respond in unified format
@@ -7,7 +7,13 @@ import ApiResponse from "../utils/apiResponse.js";
 export const validateRequest = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return ApiResponse.error(res, "Input Validation Failed", 400, errors.array());
+    return ApiResponse.error(
+      res,
+      'Input Validation Failed',
+      400,
+      'VALIDATION_ERROR',
+      errors.array()
+    );
   }
   next();
 };

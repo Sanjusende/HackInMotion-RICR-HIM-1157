@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
@@ -6,7 +6,7 @@ const cropHealthSchema = new Schema(
   {
     farmId: {
       type: Schema.Types.ObjectId,
-      ref: "Farm",
+      ref: 'Farm',
       required: true,
       index: true,
     },
@@ -28,7 +28,7 @@ const cropHealthSchema = new Schema(
 
     confidence: {
       type: String,
-      default: "Moderate",
+      default: 'Moderate',
     },
 
     whatToCheck: {
@@ -105,7 +105,7 @@ const cropHealthSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 cropHealthSchema.index({
@@ -113,6 +113,6 @@ cropHealthSchema.index({
   reportedAt: -1,
 });
 
-const CropHealth = mongoose.model("CropHealth", cropHealthSchema);
+const CropHealth = mongoose.model('CropHealth', cropHealthSchema);
 
 export default CropHealth;

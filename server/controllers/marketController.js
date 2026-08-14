@@ -3,40 +3,35 @@ import MarketPrice from '../models/MarketPrice.js';
 import ApiResponse from '../utils/apiResponse.js';
 import { fetchCropMarketData } from '../services/market/marketDataService.js';
 
+const getFarmContext = async (userId) => {
+  try {
+    return await Farm.findOne({ userId });
+  } catch (err) {
+    return null;
+  }
+};
+
 export const getCurrentMarketData = async (req, res, next) => {
   try {
-    const requestedCrop = req.query.crop;
-    let cropName = requestedCrop;
-    let farm = null;
+    const cropName = req.query.crop || 'Wheat';
+    const stateName = req.query.state || '';
+    const districtName = req.query.district || '';
 
-    try {
-      farm = await Farm.findOne({ userId: req.user._id });
-      if (!cropName) {
-        cropName = farm?.currentCrop || 'Wheat';
+    let finalState = stateName;
+    let finalDistrict = districtName;
+
+    if (!finalState || !finalDistrict) {
+      const farm = await getFarmContext(req.user._id);
+      if (farm?.location) {
+        if (!finalState) finalState = farm.location.state;
+        if (!finalDistrict) finalDistrict = farm.location.district;
       }
-    } catch (dbErr) {
-      if (!cropName) cropName = 'Wheat';
     }
 
-    const marketLocation = farmLocationToMandi(req.user);
-    const data = await fetchCropMarketData(cropName, marketLocation);
+    if (!finalState) finalState = 'Madhya Pradesh';
+    if (!finalDistrict) finalDistrict = 'Indore';
 
-    // Save record to DB history (non-blocking)
-    try {
-      await MarketPrice.create({
-        crop: data.crop,
-        market: data.market,
-        price: data.currentPrice,
-        unit: 'Quintal',
-        date: new Date(),
-        trend: data.trend,
-        changePercent: data.changePercent,
-        source: data.source
-      });
-    } catch (saveErr) {
-      console.warn('Market log save failed (non-blocking):', saveErr.message);
-    }
-
+    const data = await fetchCropMarketData(cropName, 'Indore Mandi', finalState, finalDistrict);
     return ApiResponse.success(res, data, 'Current market price data loaded successfully');
   } catch (error) {
     next(error);
@@ -46,42 +41,73 @@ export const getCurrentMarketData = async (req, res, next) => {
 export const getMarketHistory = async (req, res, next) => {
   try {
     const cropName = req.query.crop || 'Wheat';
+    const stateName = req.query.state || '';
+    const districtName = req.query.district || '';
     const period = req.query.period || '7d';
-    
+    const startDate = req.query.startDate ? new Date(req.query.startDate) : null;
+    const endDate = req.query.endDate ? new Date(req.query.endDate) : null;
+
     // Pagination parameters
     const page = parseInt(req.query.page || '1', 10);
     const limit = parseInt(req.query.limit || '20', 10);
     const skip = (page - 1) * limit;
 
-    // Query database for historical prices logged
-    const filter = { crop: new RegExp(`^${cropName}$`, 'i') };
+    let finalState = stateName;
+    let finalDistrict = districtName;
+
+    if (!finalState || !finalDistrict) {
+      const farm = await getFarmContext(req.user._id);
+      if (farm?.location) {
+        if (!finalState) finalState = farm.location.state;
+        if (!finalDistrict) finalDistrict = farm.location.district;
+      }
+    }
+
+    if (!finalState) finalState = 'Madhya Pradesh';
+    if (!finalDistrict) finalDistrict = 'Indore';
+
+    // Verify database cache is seeded/synced
+    const data = await fetchCropMarketData(cropName, 'Indore Mandi', finalState, finalDistrict);
+
+    // Build DB Query Filter
+    const filter = {
+      crop: new RegExp(`^${cropName}$`, 'i'),
+      state: new RegExp(`^${finalState}$`, 'i'),
+      district: new RegExp(`^${finalDistrict}$`, 'i'),
+    };
+
+    // Apply Date Range Filter if provided
+    if (startDate || endDate) {
+      filter.date = {};
+      if (startDate) filter.date.$gte = startDate;
+      if (endDate) filter.date.$lte = endDate;
+    } else {
+      // Otherwise limit by period (7d, 30d, 90d)
+      const cutoffDate = new Date();
+      if (period === '7d') cutoffDate.setDate(cutoffDate.getDate() - 7);
+      else if (period === '30d') cutoffDate.setDate(cutoffDate.getDate() - 30);
+      else cutoffDate.setDate(cutoffDate.getDate() - 90);
+      filter.date = { $gte: cutoffDate };
+    }
+
     const totalCount = await MarketPrice.countDocuments(filter);
-    
-    let historySeries = await MarketPrice.find(filter)
+    const historySeries = await MarketPrice.find(filter)
       .sort({ date: -1 })
       .skip(skip)
-      .limit(limit);
-
-    // If no custom entries in DB, fall back to historical stubs from Service helper
-    if (!historySeries || historySeries.length === 0) {
-      const data = await fetchCropMarketData(cropName);
-      let fullMockSeries = data.history7d;
-      if (period === '30d') fullMockSeries = data.history30d;
-      if (period === '90d') fullMockSeries = data.history90d;
-      
-      // Perform server-side pagination mock slice
-      historySeries = fullMockSeries.slice(skip, skip + limit);
-    }
+      .limit(limit)
+      .lean();
 
     return ApiResponse.success(
       res,
       {
         crop: cropName,
+        state: finalState,
+        district: finalDistrict,
         period,
         page,
         limit,
-        totalCount: totalCount || historySeries.length,
-        series: historySeries
+        totalCount,
+        series: historySeries,
       },
       'Market price history loaded successfully'
     );
@@ -93,16 +119,39 @@ export const getMarketHistory = async (req, res, next) => {
 export const getMarketTrend = async (req, res, next) => {
   try {
     const cropName = req.query.crop || 'Wheat';
-    const data = await fetchCropMarketData(cropName);
+    const stateName = req.query.state || '';
+    const districtName = req.query.district || '';
 
-    return ApiResponse.success(res, {
-      crop: data.crop,
-      currentPrice: data.currentPrice,
-      trend: data.trend,
-      changePercent: data.changePercent,
-      displayText: data.displayText,
-      sellingInsightText: data.sellingInsightText
-    }, 'Market trend insights loaded successfully');
+    let finalState = stateName;
+    let finalDistrict = districtName;
+
+    if (!finalState || !finalDistrict) {
+      const farm = await getFarmContext(req.user._id);
+      if (farm?.location) {
+        if (!finalState) finalState = farm.location.state;
+        if (!finalDistrict) finalDistrict = farm.location.district;
+      }
+    }
+
+    if (!finalState) finalState = 'Madhya Pradesh';
+    if (!finalDistrict) finalDistrict = 'Indore';
+
+    const data = await fetchCropMarketData(cropName, 'Indore Mandi', finalState, finalDistrict);
+
+    return ApiResponse.success(
+      res,
+      {
+        crop: data.crop,
+        state: finalState,
+        district: finalDistrict,
+        currentPrice: data.currentPrice,
+        trend: data.trend,
+        changePercent: data.changePercent,
+        displayText: data.displayText,
+        sellingInsightText: data.sellingInsightText,
+      },
+      'Market trend insights loaded successfully'
+    );
   } catch (error) {
     next(error);
   }
@@ -111,14 +160,31 @@ export const getMarketTrend = async (req, res, next) => {
 export const getNearbyMarkets = async (req, res, next) => {
   try {
     const cropName = req.query.crop || 'Wheat';
-    const data = await fetchCropMarketData(cropName);
+    const stateName = req.query.state || '';
+    const districtName = req.query.district || '';
 
-    return ApiResponse.success(res, data.nearbyMarkets || [], 'Nearby market prices loaded successfully');
+    let finalState = stateName;
+    let finalDistrict = districtName;
+
+    if (!finalState || !finalDistrict) {
+      const farm = await getFarmContext(req.user._id);
+      if (farm?.location) {
+        if (!finalState) finalState = farm.location.state;
+        if (!finalDistrict) finalDistrict = farm.location.district;
+      }
+    }
+
+    if (!finalState) finalState = 'Madhya Pradesh';
+    if (!finalDistrict) finalDistrict = 'Indore';
+
+    const data = await fetchCropMarketData(cropName, 'Indore Mandi', finalState, finalDistrict);
+
+    return ApiResponse.success(
+      res,
+      data.nearbyMarkets || [],
+      'Nearby market prices loaded successfully'
+    );
   } catch (error) {
     next(error);
   }
 };
-
-function farmLocationToMandi(user) {
-  return 'Indore Mandi';
-}

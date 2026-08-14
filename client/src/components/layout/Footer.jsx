@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sprout, Send, Mail, MapPin, ArrowUpRight } from "lucide-react";
+import { Sprout, Send, Mail, MapPin, ArrowUpRight } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import Button from '../ui/Button';
 
@@ -22,11 +22,13 @@ const Footer = () => {
   };
 
   return (
-    <footer id="contact" className="bg-slate-900 text-slate-300 border-t border-slate-800 pt-16 pb-12 transition-colors">
+    <footer
+      id="contact"
+      className="bg-slate-900 text-slate-300 border-t border-slate-800 pt-16 pb-12 transition-colors"
+    >
       <Toaster position="top-right" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 mb-12">
-          
           {/* Brand Column */}
           <div className="md:col-span-4 space-y-4">
             <Link to="/" className="flex items-center space-x-2 text-white font-bold text-2xl">
@@ -38,7 +40,9 @@ const Footer = () => {
               </span>
             </Link>
             <p className="text-xs text-slate-400 font-medium leading-relaxed max-w-sm">
-              KrishiMitra is your AI-powered smart farming companion, helping farmers make better decisions using real-time weather, market prices, crop insights, and intelligent guidance.
+              KrishiMitra is your AI-powered smart farming companion, helping farmers make better
+              decisions using real-time weather, market prices, crop insights, and intelligent
+              guidance.
             </p>
             <div className="flex items-center gap-2 pt-2 text-xs text-emerald-400 font-semibold">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -48,32 +52,80 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div className="md:col-span-2">
-            <h4 className="text-xs font-extrabold text-white tracking-wider uppercase mb-4">Quick Links</h4>
+            <h4 className="text-xs font-extrabold text-white tracking-wider uppercase mb-4">
+              Quick Links
+            </h4>
             <ul className="space-y-2.5 text-xs font-semibold">
-              <li><a href="#" className="hover:text-emerald-400 transition-colors">Home</a></li>
-              <li><a href="#features" className="hover:text-emerald-400 transition-colors">Features</a></li>
-              <li><a href="#how-it-works" className="hover:text-emerald-400 transition-colors">How It Works</a></li>
-              <li><a href="#about" className="hover:text-emerald-400 transition-colors">About Us</a></li>
-              <li><a href="#get-started" className="hover:text-emerald-400 transition-colors">Get Started</a></li>
+              <li>
+                <a href="#" className="hover:text-emerald-400 transition-colors">
+                  Home
+                </a>
+              </li>
+              <li>
+                <a href="#features" className="hover:text-emerald-400 transition-colors">
+                  Features
+                </a>
+              </li>
+              <li>
+                <a href="#how-it-works" className="hover:text-emerald-400 transition-colors">
+                  How It Works
+                </a>
+              </li>
+              <li>
+                <a href="#about" className="hover:text-emerald-400 transition-colors">
+                  About Us
+                </a>
+              </li>
+              <li>
+                <a href="#get-started" className="hover:text-emerald-400 transition-colors">
+                  Get Started
+                </a>
+              </li>
             </ul>
           </div>
 
           {/* Platform & Auth */}
           <div className="md:col-span-2">
-            <h4 className="text-xs font-extrabold text-white tracking-wider uppercase mb-4">Platform</h4>
+            <h4 className="text-xs font-extrabold text-white tracking-wider uppercase mb-4">
+              Platform
+            </h4>
             <ul className="space-y-2.5 text-xs font-semibold">
-              <li><Link to="/login" className="hover:text-emerald-400 transition-colors">Farmer Login</Link></li>
-              <li><Link to="/register" className="hover:text-emerald-400 transition-colors">Register Account</Link></li>
-              <li><a href="#problem-solution" className="hover:text-emerald-400 transition-colors">Problem & Solution</a></li>
-              <li><a href="#tech" className="hover:text-emerald-400 transition-colors">Technologies</a></li>
-              <li><a href="#why-us" className="hover:text-emerald-400 transition-colors">Why KrishiMitra</a></li>
+              <li>
+                <Link to="/login" className="hover:text-emerald-400 transition-colors">
+                  Farmer Login
+                </Link>
+              </li>
+              <li>
+                <Link to="/register" className="hover:text-emerald-400 transition-colors">
+                  Register Account
+                </Link>
+              </li>
+              <li>
+                <a href="#problem-solution" className="hover:text-emerald-400 transition-colors">
+                  Problem & Solution
+                </a>
+              </li>
+              <li>
+                <a href="#tech" className="hover:text-emerald-400 transition-colors">
+                  Technologies
+                </a>
+              </li>
+              <li>
+                <a href="#why-us" className="hover:text-emerald-400 transition-colors">
+                  Why KrishiMitra
+                </a>
+              </li>
             </ul>
           </div>
 
           {/* Newsletter */}
           <div className="md:col-span-4 space-y-4">
-            <h4 className="text-xs font-extrabold text-white tracking-wider uppercase mb-4">Stay Informed</h4>
-            <p className="text-xs text-slate-400 font-medium">Subscribe to receive instant weather alerts, mandi price updates, and crop advice.</p>
+            <h4 className="text-xs font-extrabold text-white tracking-wider uppercase mb-4">
+              Stay Informed
+            </h4>
+            <p className="text-xs text-slate-400 font-medium">
+              Subscribe to receive instant weather alerts, mandi price updates, and crop advice.
+            </p>
             <form onSubmit={handleSubscribe} className="flex gap-2">
               <input
                 type="email"
@@ -82,7 +134,11 @@ const Footer = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full h-10 px-3.5 text-xs text-white bg-slate-800 border border-slate-700 focus:outline-none focus:border-emerald-500 rounded-xl transition-colors placeholder:text-slate-500"
               />
-              <Button type="submit" variant="primary" className="h-10 px-4 shrink-0 font-bold bg-emerald-600 hover:bg-emerald-500">
+              <Button
+                type="submit"
+                variant="primary"
+                className="h-10 px-4 shrink-0 font-bold bg-emerald-600 hover:bg-emerald-500"
+              >
                 <Send size={15} />
               </Button>
             </form>
@@ -95,16 +151,27 @@ const Footer = () => {
               </p>
             </div>
           </div>
-
         </div>
 
         {/* Bottom copyright & legal */}
         <div className="border-t border-slate-800 mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-4">
-          <p>&copy; {new Date().getFullYear()} KrishiMitra Platform. All rights reserved. Data-driven decision making for smart farming.</p>
+          <p>
+            &copy; {new Date().getFullYear()} KrishiMitra Platform. All rights reserved. Data-driven
+            decision making for smart farming.
+          </p>
           <div className="flex space-x-6">
-            <a href="#" className="hover:text-emerald-400 transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-emerald-400 transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-1">Security <ArrowUpRight size={12} /></a>
+            <a href="#" className="hover:text-emerald-400 transition-colors">
+              Privacy Policy
+            </a>
+            <a href="#" className="hover:text-emerald-400 transition-colors">
+              Terms of Service
+            </a>
+            <a
+              href="#"
+              className="hover:text-emerald-400 transition-colors flex items-center gap-1"
+            >
+              Security <ArrowUpRight size={12} />
+            </a>
           </div>
         </div>
       </div>

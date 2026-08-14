@@ -14,10 +14,13 @@ const IrrigationAnalysisForm = ({
   soilMoisture,
   setSoilMoisture,
   analyzing,
-  onAnalyze
+  onAnalyze,
 }) => {
   return (
-    <form onSubmit={onAnalyze} className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3.5">
+    <form
+      onSubmit={onAnalyze}
+      className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3.5"
+    >
       <div className="flex items-center justify-between border-b border-slate-100 pb-2">
         <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
           <Sliders size={14} className="text-emerald-600" />
@@ -34,12 +37,18 @@ const IrrigationAnalysisForm = ({
             onChange={(e) => setCrop(e.target.value)}
             className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-semibold focus:outline-none focus:border-emerald-500 transition-colors"
           >
-            {CROPS.map(c => <option key={c} value={c}>{c}</option>)}
+            {CROPS.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
           </select>
         </div>
 
         <div>
-          <label className="text-[11px] font-bold text-slate-700 block mb-1">Land Area (Acres)</label>
+          <label className="text-[11px] font-bold text-slate-700 block mb-1">
+            Land Area (Acres)
+          </label>
           <input
             type="number"
             min="1"
@@ -57,12 +66,18 @@ const IrrigationAnalysisForm = ({
             onChange={(e) => setSoilType(e.target.value)}
             className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-semibold focus:outline-none focus:border-emerald-500 transition-colors"
           >
-            {SOIL_TYPES.map(s => <option key={s} value={s}>{s}</option>)}
+            {SOIL_TYPES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
           </select>
         </div>
 
         <div>
-          <label className="text-[11px] font-bold text-slate-700 block mb-1">Soil Moisture (%)</label>
+          <label className="text-[11px] font-bold text-slate-700 block mb-1">
+            Soil Moisture (%)
+          </label>
           <input
             type="number"
             min="0"

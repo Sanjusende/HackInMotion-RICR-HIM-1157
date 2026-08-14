@@ -1,10 +1,10 @@
 import MarketPrice from '../../models/MarketPrice.js';
 import { calculatePriceTrend } from '../../utils/calculateTrend.js';
+import axios from 'axios';
 
 // ------------------------------------------------------
-// Base Benchmark Prices
+// Base Benchmark Prices (Default Fallbacks)
 // ------------------------------------------------------
-
 const BASE_CROP_PRICES = Object.freeze({
   Wheat: 2450,
   Rice: 2200,
@@ -17,51 +17,46 @@ const BASE_CROP_PRICES = Object.freeze({
   'Gram/Chickpea': 5100,
   Tomato: 1800,
   Onion: 2100,
+  Chilli: 6500,
 });
 
-// ------------------------------------------------------
-// Configuration
-// ------------------------------------------------------
+const COMMODITY_MAP = Object.freeze({
+  Wheat: 'Wheat',
+  Rice: 'Paddy(Dhan)(Common)',
+  Maize: 'Maize',
+  Soybean: 'Soyabean',
+  Cotton: 'Cotton',
+  Potato: 'Potato',
+  Mustard: 'Mustard',
+  Sugarcane: 'Sugarcane',
+  'Gram/Chickpea': 'Gram(Raw)',
+  Tomato: 'Tomato',
+  Onion: 'Onion',
+  Chilli: 'Chilli',
+});
 
 const DEFAULT_CROP = 'Wheat';
 const DEFAULT_MARKET = 'Indore Mandi';
+const DEFAULT_STATE = 'Madhya Pradesh';
+const DEFAULT_DISTRICT = 'Indore';
 
 const HISTORY_DAYS = 90;
 const SHORT_TERM_DAYS = 7;
 const MEDIUM_TERM_DAYS = 30;
 
 // ------------------------------------------------------
-// Helpers
+// Normalization Helpers
 // ------------------------------------------------------
-
 const normalizeCropName = (cropName) => {
-  if (typeof cropName !== 'string') {
-    return DEFAULT_CROP;
-  }
-
-  const normalizedCrop = cropName.trim();
-
-  if (!normalizedCrop) {
-    return DEFAULT_CROP;
-  }
-
-  return Object.prototype.hasOwnProperty.call(
-    BASE_CROP_PRICES,
-    normalizedCrop
-  )
-    ? normalizedCrop
-    : DEFAULT_CROP;
+  if (typeof cropName !== 'string') return DEFAULT_CROP;
+  const trimmed = cropName.trim();
+  if (!trimmed) return DEFAULT_CROP;
+  return BASE_CROP_PRICES[trimmed] ? trimmed : DEFAULT_CROP;
 };
 
-const normalizeMarketName = (marketLocation) => {
-  if (
-    typeof marketLocation !== 'string' ||
-    !marketLocation.trim()
-  ) {
-    return DEFAULT_MARKET;
-  }
-
-  return marketLocation.trim();
+const normalizeMarketName = (market) => {
+  if (typeof market !== 'string' || !market.trim()) return DEFAULT_MARKET;
+  return market.trim();
 };
 
 const formatDate = (date) => {
@@ -72,53 +67,112 @@ const getBenchmarkPrice = (crop) => {
   return BASE_CROP_PRICES[crop] || BASE_CROP_PRICES[DEFAULT_CROP];
 };
 
-// ------------------------------------------------------
-// Generate Fallback Historical Data
-// ------------------------------------------------------
+// Parse Agmarknet arrival_date (DD/MM/YYYY) to standard Date object
+const parseArrivalDate = (dateStr) => {
+  if (!dateStr) return new Date();
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    return new Date(parts[2], parts[1] - 1, parts[0]);
+  }
+  return new Date(dateStr);
+};
 
-const generateFallbackHistory = ({
-  crop,
-  market,
-  basePrice,
-}) => {
+// ------------------------------------------------------
+// Fetch Real-time Agmarknet API Mandi Prices
+// ------------------------------------------------------
+export const syncAgmarknetPrices = async (cropName, stateName, districtName) => {
+  try {
+    const apiKey = process.env.DATA_GOV_IN_API_KEY;
+    const resourceId = process.env.MANDI_RESOURCE_ID || '9ef84268-d588-465a-a308-a864a43d0070';
+    if (!apiKey) {
+      console.warn('[MarketService] API Key is missing. Skipping data.gov.in fetch.');
+      return false;
+    }
+
+    const commodity = COMMODITY_MAP[cropName] || cropName;
+    const state = stateName || DEFAULT_STATE;
+    const district = districtName || DEFAULT_DISTRICT;
+
+    let url = `https://api.data.gov.in/resource/${resourceId}?api-key=${apiKey}&format=json&limit=100`;
+    url += `&filters[commodity]=${encodeURIComponent(commodity)}`;
+    url += `&filters[state]=${encodeURIComponent(state)}`;
+    url += `&filters[district]=${encodeURIComponent(district)}`;
+
+    console.log(`[MarketService] Syncing real prices from API: ${url}`);
+    const response = await axios.get(url, { timeout: 8000 });
+
+    if (response.data && Array.isArray(response.data.records) && response.data.records.length > 0) {
+      const records = response.data.records;
+      console.log(`[MarketService] Fetched ${records.length} real market records.`);
+
+      for (const record of records) {
+        const modalPrice = Number(record.modal_price);
+        if (isNaN(modalPrice) || modalPrice <= 0) continue;
+
+        const date = parseArrivalDate(record.arrival_date);
+
+        // Upsert record into MongoDB to prevent duplicate entries
+        await MarketPrice.findOneAndUpdate(
+          {
+            crop: cropName,
+            market: record.market || DEFAULT_MARKET,
+            state: record.state || state,
+            district: record.district || district,
+            date: {
+              $gte: new Date(date.setHours(0, 0, 0, 0)),
+              $lte: new Date(date.setHours(23, 59, 59, 999)),
+            },
+          },
+          {
+            crop: cropName,
+            market: record.market || DEFAULT_MARKET,
+            state: record.state || state,
+            district: record.district || district,
+            price: modalPrice,
+            unit: 'Quintal',
+            date: date,
+            trend: 'Stable',
+            changePercent: 0,
+            source: 'agmarknet',
+          },
+          { upsert: true, new: true }
+        );
+      }
+      return true;
+    }
+  } catch (error) {
+    console.error('[MarketService] Failed to sync Agmarknet prices:', error.message);
+  }
+  return false;
+};
+
+// ------------------------------------------------------
+// Generate Fallback Historical Data (NO Math.sin or random)
+// ------------------------------------------------------
+const generateFallbackHistory = ({ crop, market, state, district, basePrice }) => {
   const history90d = [];
   const today = new Date();
 
-  for (
-    let daysAgo = HISTORY_DAYS - 1;
-    daysAgo >= 0;
-    daysAgo--
-  ) {
+  for (let daysAgo = HISTORY_DAYS - 1; daysAgo >= 0; daysAgo--) {
     const date = new Date(today);
+    date.setDate(date.getDate() - daysAgo);
 
-    date.setDate(
-      date.getDate() - daysAgo
-    );
-
-    const seasonalVariation =
-      Math.sin(daysAgo / 5) *
-      (basePrice * 0.03);
-
-    const gradualTrend =
-      (HISTORY_DAYS - 1 - daysAgo) *
-      (basePrice * 0.001);
-
-    const calculatedPrice =
-      basePrice -
-      seasonalVariation +
-      gradualTrend;
-
-    const price = Math.max(
-      1,
-      Math.round(calculatedPrice)
-    );
+    // Deterministic cyclical pattern using daysAgo modulus
+    const seasonalVariation = ((daysAgo % 20) - 10) * (basePrice * 0.002);
+    const gradualTrend = (HISTORY_DAYS - 1 - daysAgo) * (basePrice * 0.0005);
+    const price = Math.max(1, Math.round(basePrice + seasonalVariation + gradualTrend));
 
     history90d.push({
-      date: formatDate(date),
+      crop,
+      market,
+      state: state || DEFAULT_STATE,
+      district: district || DEFAULT_DISTRICT,
       price,
       unit: 'Quintal',
-      market,
-      crop,
+      date,
+      trend: 'Stable',
+      changePercent: 0,
+      source: 'benchmark',
     });
   }
 
@@ -126,261 +180,120 @@ const generateFallbackHistory = ({
 };
 
 // ------------------------------------------------------
-// Fetch Database Market History
+// Main Market Data Service
 // ------------------------------------------------------
-
-const fetchMarketHistory = async (
-  crop,
-  market
+export const fetchCropMarketData = async (
+  cropName = DEFAULT_CROP,
+  marketLocation = DEFAULT_MARKET,
+  stateName = DEFAULT_STATE,
+  districtName = DEFAULT_DISTRICT
 ) => {
-  try {
-    return await MarketPrice.find({
+  const crop = normalizeCropName(cropName);
+  const market = normalizeMarketName(marketLocation);
+  const state = stateName || DEFAULT_STATE;
+  const district = districtName || DEFAULT_DISTRICT;
+
+  // 1. Attempt to sync live data from Agmarknet API (if not already fetched today)
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const todayCount = await MarketPrice.countDocuments({
+    crop,
+    state,
+    district,
+    date: { $gte: todayStart },
+  });
+
+  if (todayCount === 0) {
+    await syncAgmarknetPrices(crop, state, district);
+  }
+
+  // 2. Fetch stored history from database
+  let databaseRecords = await MarketPrice.find({
+    crop,
+    state: new RegExp(`^${state}$`, 'i'),
+    district: new RegExp(`^${district}$`, 'i'),
+  })
+    .sort({ date: 1 })
+    .limit(HISTORY_DAYS)
+    .lean();
+
+  let history90d = databaseRecords;
+  let isLiveData = databaseRecords.length > 0;
+  let dataSource = isLiveData ? 'agmarknet' : 'benchmark';
+
+  // 3. Fallback to generating and seeding deterministic data if DB is empty
+  if (history90d.length === 0) {
+    const fallbackList = generateFallbackHistory({
       crop,
       market,
-    })
-      .sort({ date: -1 })
-      .limit(HISTORY_DAYS)
-      .lean();
-  } catch (error) {
-    console.error(
-      '[MarketService] Failed to fetch market history:',
-      error.message
-    );
+      state,
+      district,
+      basePrice: getBenchmarkPrice(crop),
+    });
 
-    return [];
+    // Seed fallback data to MongoDB so dynamic queries are always served from DB
+    await MarketPrice.insertMany(fallbackList);
+    history90d = fallbackList;
   }
-};
 
-// ------------------------------------------------------
-// Normalize Database History
-// ------------------------------------------------------
+  // 4. Time range histories
+  const history7d = history90d.slice(-SHORT_TERM_DAYS);
+  const history30d = history90d.slice(-MEDIUM_TERM_DAYS);
 
-const normalizeMarketHistory = (records) => {
-  return records
-    .map((record) => ({
-      date: formatDate(new Date(record.date)),
-      price: Number(record.price),
-      unit: record.unit || 'Quintal',
-      market: record.market,
-      crop: record.crop,
-      trend: record.trend || 'Stable',
-      changePercent:
-        Number(record.changePercent) || 0,
-      source: record.source || 'agmarknet',
-    }))
-    .filter(
-      (record) =>
-        Number.isFinite(record.price) &&
-        record.price > 0
-    )
-    .sort(
-      (a, b) =>
-        new Date(a.date) -
-        new Date(b.date)
-    );
-};
+  // 5. Current price calculations
+  const latestRecord = history90d[history90d.length - 1];
+  const currentPrice = Number(latestRecord?.price) || getBenchmarkPrice(crop);
 
-// ------------------------------------------------------
-// Nearby Market Comparison
-// ------------------------------------------------------
+  const previousRecord =
+    history90d.length >= SHORT_TERM_DAYS
+      ? history90d[history90d.length - SHORT_TERM_DAYS]
+      : history90d[0];
+  const price7DaysAgo = Number(previousRecord?.price) || currentPrice;
 
-const buildNearbyMarkets = ({
-  market,
-  currentPrice,
-  changePercent,
-}) => {
-  const safeChangePercent =
-    Number(changePercent) || 0;
+  // Calculate Trend
+  const trendResult = calculatePriceTrend(currentPrice, price7DaysAgo);
 
-  return [
+  // Nearby Market Comparison
+  const nearbyMarkets = [
     {
       market: `${market} (Main)`,
       price: currentPrice,
       distanceKm: 0,
-      changePercent: safeChangePercent,
+      changePercent: trendResult.changePercent,
     },
     {
       market: 'Dewas Mandi',
-      price: Math.round(
-        currentPrice * 1.015
-      ),
+      price: Math.round(currentPrice * 1.015),
       distanceKm: 34,
-      changePercent: Number(
-        (safeChangePercent + 0.5).toFixed(2)
-      ),
+      changePercent: Number((trendResult.changePercent + 0.5).toFixed(2)),
     },
     {
       market: 'Ujjain Mandi',
-      price: Math.round(
-        currentPrice * 0.99
-      ),
+      price: Math.round(currentPrice * 0.99),
       distanceKm: 55,
-      changePercent: Number(
-        (safeChangePercent - 0.8).toFixed(2)
-      ),
+      changePercent: Number((trendResult.changePercent - 0.8).toFixed(2)),
     },
   ];
-};
-
-// ------------------------------------------------------
-// Main Market Data Service
-// ------------------------------------------------------
-
-export const fetchCropMarketData = async (
-  cropName = DEFAULT_CROP,
-  marketLocation = DEFAULT_MARKET
-) => {
-  const crop = normalizeCropName(cropName);
-  const market = normalizeMarketName(
-    marketLocation
-  );
-
-  // ------------------------------------------
-  // Fetch stored market data
-  // ------------------------------------------
-
-  const databaseRecords =
-    await fetchMarketHistory(
-      crop,
-      market
-    );
-
-  let history90d =
-    normalizeMarketHistory(
-      databaseRecords
-    );
-
-  let dataSource = 'benchmark';
-  let isLiveData = false;
-
-  // ------------------------------------------
-  // Database data available
-  // ------------------------------------------
-
-  if (history90d.length > 0) {
-    dataSource =
-      databaseRecords[0]?.source ||
-      'agmarknet';
-
-    isLiveData = true;
-  }
-
-  // ------------------------------------------
-  // Fallback when DB has no data
-  // ------------------------------------------
-
-  if (history90d.length === 0) {
-    history90d =
-      generateFallbackHistory({
-        crop,
-        market,
-        basePrice:
-          getBenchmarkPrice(crop),
-      });
-  }
-
-  // ------------------------------------------
-  // Time range histories
-  // ------------------------------------------
-
-  const history7d =
-    history90d.slice(
-      -SHORT_TERM_DAYS
-    );
-
-  const history30d =
-    history90d.slice(
-      -MEDIUM_TERM_DAYS
-    );
-
-  // ------------------------------------------
-  // Current Price
-  // ------------------------------------------
-
-  const latestRecord =
-    history90d[
-      history90d.length - 1
-    ];
-
-  const currentPrice =
-    Number(latestRecord?.price) ||
-    getBenchmarkPrice(crop);
-
-  // ------------------------------------------
-  // Price 7 Days Ago
-  // ------------------------------------------
-
-  const previousRecord =
-    history90d.length >= SHORT_TERM_DAYS
-      ? history90d[
-          history90d.length -
-            SHORT_TERM_DAYS
-        ]
-      : history90d[0];
-
-  const price7DaysAgo =
-    Number(previousRecord?.price) ||
-    currentPrice;
-
-  // ------------------------------------------
-  // Calculate Trend
-  // ------------------------------------------
-
-  const trendResult =
-    calculatePriceTrend(
-      currentPrice,
-      price7DaysAgo
-    );
-
-  // ------------------------------------------
-  // Nearby Market Comparison
-  // ------------------------------------------
-
-  const nearbyMarkets =
-    buildNearbyMarkets({
-      market,
-      currentPrice,
-      changePercent:
-        trendResult.changePercent,
-    });
-
-  // ------------------------------------------
-  // Final Response
-  // ------------------------------------------
 
   return {
     crop,
     market,
-
+    state,
+    district,
     currentPrice,
-
     unit: '₹/Quintal',
-
-    date: formatDate(new Date()),
-
+    date: formatDate(new Date(latestRecord.date)),
     trend: trendResult.trend,
-
-    changePercent:
-      trendResult.changePercent,
-
-    displayText:
-      trendResult.displayText,
-
-    sellingInsightText:
-      trendResult.sellingInsightText,
-
-    history7d,
-    history30d,
-    history90d,
-
+    changePercent: trendResult.changePercent,
+    displayText: trendResult.displayText,
+    sellingInsightText: trendResult.sellingInsightText,
+    history7d: history7d.map((r) => ({ ...r, date: formatDate(new Date(r.date)) })),
+    history30d: history30d.map((r) => ({ ...r, date: formatDate(new Date(r.date)) })),
+    history90d: history90d.map((r) => ({ ...r, date: formatDate(new Date(r.date)) })),
     nearbyMarkets,
-
     source: dataSource,
-
     isLiveData,
-
-    dataStatus: isLiveData
-      ? 'DATABASE'
-      : 'BENCHMARK_FALLBACK',
+    dataStatus: isLiveData ? 'DATABASE' : 'BENCHMARK_FALLBACK',
   };
 };

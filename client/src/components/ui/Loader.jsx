@@ -26,18 +26,18 @@ export const PageLoader = () => {
 
 export const PageSkeleton = () => (
   <div className="min-h-[70vh] max-w-7xl mx-auto px-4 py-12 space-y-8" aria-label="Loading page">
-    <Skeleton className="h-10 w-64" /><Skeleton className="h-5 w-96 max-w-full" />
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">{Array.from({ length: 8 }).map((_, index) => <SkeletonCard key={index} />)}</div>
+    <Skeleton className="h-10 w-64" />
+    <Skeleton className="h-5 w-96 max-w-full" />
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {Array.from({ length: 8 }).map((_, index) => (
+        <SkeletonCard key={index} />
+      ))}
+    </div>
   </div>
 );
 
 export const Skeleton = ({ className = '', ...props }) => {
-  return (
-    <div
-      className={`animate-shimmer rounded bg-gray-200 ${className}`}
-      {...props}
-    />
-  );
+  return <div className={`animate-shimmer rounded bg-gray-200 ${className}`} {...props} />;
 };
 
 export const SkeletonCard = () => {
@@ -67,7 +67,10 @@ export const SkeletonList = ({ items = 3 }) => {
   return (
     <div className="space-y-4">
       {Array.from({ length: items }).map((_, i) => (
-        <div key={i} className="flex items-center space-x-4 p-4 border border-border-custom rounded-card bg-white">
+        <div
+          key={i}
+          className="flex items-center space-x-4 p-4 border border-border-custom rounded-card bg-white"
+        >
           <Skeleton className="w-12 h-12 rounded-full" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-1/4" />

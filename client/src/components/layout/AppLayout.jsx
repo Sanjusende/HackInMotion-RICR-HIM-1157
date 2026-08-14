@@ -10,9 +10,7 @@ const AppLayout = ({ children }) => {
       <Navbar />
 
       {/* Main Responsive Content Container */}
-      <main className="flex-1">
-        {children}
-      </main>
+      <main className="flex-1">{children}</main>
 
       {/* Floating KrishiMitra Voice Companion Button */}
       <KrishiMitraFloatingButton />

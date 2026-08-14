@@ -54,9 +54,13 @@ const FarmingInsights = ({ weather }) => {
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-900">Irrigation</span>
-              <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded ${
-                isIrrigateRecommended ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'
-              }`}>
+              <span
+                className={`text-[10px] font-extrabold px-2 py-0.5 rounded ${
+                  isIrrigateRecommended
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-amber-100 text-amber-900'
+                }`}
+              >
                 {irrigationTag}
               </span>
             </div>
@@ -72,9 +76,11 @@ const FarmingInsights = ({ weather }) => {
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-900">Spraying</span>
-              <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded ${
-                isSprayingGood ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
-              }`}>
+              <span
+                className={`text-[10px] font-extrabold px-2 py-0.5 rounded ${
+                  isSprayingGood ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                }`}
+              >
                 {sprayingTag}
               </span>
             </div>
@@ -90,9 +96,13 @@ const FarmingInsights = ({ weather }) => {
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-900">Field Work</span>
-              <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded ${
-                isFieldWorkGood ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'
-              }`}>
+              <span
+                className={`text-[10px] font-extrabold px-2 py-0.5 rounded ${
+                  isFieldWorkGood
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-amber-100 text-amber-900'
+                }`}
+              >
                 {fieldWorkTag}
               </span>
             </div>
@@ -108,9 +118,11 @@ const FarmingInsights = ({ weather }) => {
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-900">Rainfall</span>
-              <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded ${
-                isRainTomorrow ? 'bg-indigo-100 text-indigo-900' : 'bg-slate-200 text-slate-700'
-              }`}>
+              <span
+                className={`text-[10px] font-extrabold px-2 py-0.5 rounded ${
+                  isRainTomorrow ? 'bg-indigo-100 text-indigo-900' : 'bg-slate-200 text-slate-700'
+                }`}
+              >
                 {rainTag}
               </span>
             </div>

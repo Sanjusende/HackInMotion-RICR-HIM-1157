@@ -10,16 +10,21 @@ const AuthLayout = ({ children, title, subtitle }) => {
       <div className="absolute top-10 left-10 w-72 h-72 rounded-full bg-primary/5 blur-3xl -z-10 animate-pulse" />
       <div className="absolute bottom-10 right-10 w-80 h-80 rounded-full bg-accent/5 blur-3xl -z-10 animate-pulse" />
 
-      <Card shadow="large" className="w-full max-w-md p-8 bg-white border border-border-custom" hoverLift={false}>
+      <Card
+        shadow="large"
+        className="w-full max-w-md p-8 bg-white border border-border-custom"
+        hoverLift={false}
+      >
         <div className="flex flex-col items-center mb-8">
-          <Link to="/" className="p-3 bg-primary/10 rounded-full text-primary mb-3 hover:scale-105 transition-transform">
+          <Link
+            to="/"
+            className="p-3 bg-primary/10 rounded-full text-primary mb-3 hover:scale-105 transition-transform"
+          >
             <Sprout size={32} />
           </Link>
           <h2 className="text-2xl font-extrabold text-dark-text tracking-tight">{title}</h2>
           {subtitle && (
-            <p className="text-secondary-text font-medium text-sm mt-1.5 text-center">
-              {subtitle}
-            </p>
+            <p className="text-secondary-text font-medium text-sm mt-1.5 text-center">{subtitle}</p>
           )}
         </div>
 

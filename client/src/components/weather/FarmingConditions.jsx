@@ -17,7 +17,7 @@ const FarmingConditions = ({ weather, cropName }) => {
     badgeText = '🔴 Poor conditions';
     badgeColor = 'bg-rose-50 text-rose-800 border-rose-200';
     icon = <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />;
-    
+
     if (rainProb >= 70) {
       explanation = `High chance of heavy rain (${rainProb}%). Delay chemical sprays and hold off irrigation to prevent soil erosion & runoff.`;
     } else if (temp >= 39) {
@@ -40,7 +40,9 @@ const FarmingConditions = ({ weather, cropName }) => {
           <ShieldCheck size={14} className="text-emerald-600" />
           Farming Conditions
         </h2>
-        <span className={`px-3 py-1 text-xs font-black rounded-full border flex items-center gap-1.5 ${badgeColor}`}>
+        <span
+          className={`px-3 py-1 text-xs font-black rounded-full border flex items-center gap-1.5 ${badgeColor}`}
+        >
           {badgeText}
         </span>
       </div>

@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 import theme from '../theme/theme';
 
@@ -31,21 +25,13 @@ const ThemeContext = createContext(null);
 
 const getInitialMode = () => {
   try {
-    const savedMode = localStorage.getItem(
-      THEME_STORAGE_KEY
-    );
+    const savedMode = localStorage.getItem(THEME_STORAGE_KEY);
 
-    if (
-      savedMode === THEME_MODES.LIGHT ||
-      savedMode === THEME_MODES.DARK
-    ) {
+    if (savedMode === THEME_MODES.LIGHT || savedMode === THEME_MODES.DARK) {
       return savedMode;
     }
   } catch (error) {
-    console.warn(
-      '[Theme] Unable to read saved theme:',
-      error
-    );
+    console.warn('[Theme] Unable to read saved theme:', error);
   }
 
   return THEME_MODES.LIGHT;
@@ -65,21 +51,12 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     const root = document.documentElement;
 
-    root.classList.toggle(
-      'dark',
-      mode === THEME_MODES.DARK
-    );
+    root.classList.toggle('dark', mode === THEME_MODES.DARK);
 
     try {
-      localStorage.setItem(
-        THEME_STORAGE_KEY,
-        mode
-      );
+      localStorage.setItem(THEME_STORAGE_KEY, mode);
     } catch (error) {
-      console.warn(
-        '[Theme] Unable to save theme preference:',
-        error
-      );
+      console.warn('[Theme] Unable to save theme preference:', error);
     }
   }, [mode]);
 
@@ -89,9 +66,7 @@ export const ThemeProvider = ({ children }) => {
 
   const toggleMode = () => {
     setMode((previousMode) =>
-      previousMode === THEME_MODES.LIGHT
-        ? THEME_MODES.DARK
-        : THEME_MODES.LIGHT
+      previousMode === THEME_MODES.LIGHT ? THEME_MODES.DARK : THEME_MODES.LIGHT
     );
   };
 
@@ -110,11 +85,7 @@ export const ThemeProvider = ({ children }) => {
     [mode]
   );
 
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
 // ------------------------------------------------------
@@ -125,9 +96,7 @@ export const useTheme = () => {
   const context = useContext(ThemeContext);
 
   if (!context) {
-    throw new Error(
-      'useTheme must be used within a ThemeProvider.'
-    );
+    throw new Error('useTheme must be used within a ThemeProvider.');
   }
 
   return context;

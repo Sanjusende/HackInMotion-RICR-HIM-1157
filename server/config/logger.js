@@ -1,19 +1,26 @@
-import morgan from "morgan";
-import env from "./env.js";
+import morgan from 'morgan';
+import env from './env.js';
 
-const format = env.NODE_ENV === "production" ? "combined" : "dev";
+import winstonLogger from '../utils/logger.js';
 
-export const loggerMiddleware = morgan(format);
+const format = env.NODE_ENV === 'production' ? 'combined' : 'dev';
+
+// Redirect Morgan HTTP request logs to Winston
+const stream = {
+  write: (message) => winstonLogger.info(message.trim()),
+};
+
+export const loggerMiddleware = morgan(format, { stream });
 
 export const logger = {
-  info: (...args) => console.log("[INFO]", new Date().toISOString(), ...args),
-  warn: (...args) => console.warn("[WARN]", new Date().toISOString(), ...args),
-  error: (...args) => console.error("[ERROR]", new Date().toISOString(), ...args),
+  info: (...args) => winstonLogger.info(args.join(' ')),
+  warn: (...args) => winstonLogger.warn(args.join(' ')),
+  error: (...args) => winstonLogger.error(args.join(' ')),
   debug: (...args) => {
-    if (env.NODE_ENV !== "production") {
-      console.log("[DEBUG]", new Date().toISOString(), ...args);
+    if (env.NODE_ENV !== 'production') {
+      winstonLogger.debug(args.join(' '));
     }
-  }
+  },
 };
 
 export default loggerMiddleware;

@@ -1,16 +1,6 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import {
-  getMyFarm,
-  saveFarmProfile as saveFarmApi,
-} from '../services/farmService';
+import { getMyFarm, saveFarmProfile as saveFarmApi } from '../services/farmService';
 
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
@@ -61,10 +51,7 @@ export const FarmProvider = ({ children }) => {
       const status = error?.response?.status;
 
       if (status !== 404) {
-        console.error(
-          '[FarmContext] Failed to fetch farm profile:',
-          error
-        );
+        console.error('[FarmContext] Failed to fetch farm profile:', error);
       }
 
       setFarm(null);
@@ -88,9 +75,7 @@ export const FarmProvider = ({ children }) => {
 
   const saveFarm = useCallback(async (farmData) => {
     if (!farmData || typeof farmData !== 'object') {
-      const error = new Error(
-        'Valid farm data is required.'
-      );
+      const error = new Error('Valid farm data is required.');
 
       toast.error(error.message);
       throw error;
@@ -102,20 +87,14 @@ export const FarmProvider = ({ children }) => {
       const response = await saveFarmApi(farmData);
 
       if (!response?.success) {
-        throw new Error(
-          response?.error ||
-            response?.message ||
-            'Failed to save farm profile.'
-        );
+        throw new Error(response?.error || response?.message || 'Failed to save farm profile.');
       }
 
       const savedFarm = response.data || null;
 
       setFarm(savedFarm);
 
-      toast.success(
-        'Farm profile saved successfully!'
-      );
+      toast.success('Farm profile saved successfully!');
 
       return savedFarm;
     } catch (error) {
@@ -125,10 +104,7 @@ export const FarmProvider = ({ children }) => {
         error?.message ||
         'Failed to save farm profile.';
 
-      console.error(
-        '[FarmContext] Failed to save farm profile:',
-        error
-      );
+      console.error('[FarmContext] Failed to save farm profile:', error);
 
       toast.error(message);
 
@@ -156,24 +132,14 @@ export const FarmProvider = ({ children }) => {
       fetchFarm,
       isProfileComplete,
     }),
-    [
-      farm,
-      loading,
-      saveFarm,
-      fetchFarm,
-      isProfileComplete,
-    ]
+    [farm, loading, saveFarm, fetchFarm, isProfileComplete]
   );
 
   // ----------------------------------------------------
   // Provider
   // ----------------------------------------------------
 
-  return (
-    <FarmContext.Provider value={contextValue}>
-      {children}
-    </FarmContext.Provider>
-  );
+  return <FarmContext.Provider value={contextValue}>{children}</FarmContext.Provider>;
 };
 
 // ------------------------------------------------------
@@ -184,9 +150,7 @@ export const useFarm = () => {
   const context = useContext(FarmContext);
 
   if (!context) {
-    throw new Error(
-      'useFarm must be used within a FarmProvider.'
-    );
+    throw new Error('useFarm must be used within a FarmProvider.');
   }
 
   return context;

@@ -77,7 +77,9 @@ export const normalizeLanguage = (languageStr) => {
   if (lang === 'ml-in') return 'ml-IN';
   if (lang.startsWith('ml')) return 'ml-IN';
 
-  console.warn(`[VoiceAssistant] Unsupported language code received: "${languageStr}". Falling back to "en-US".`);
+  console.warn(
+    `[VoiceAssistant] Unsupported language code received: "${languageStr}". Falling back to "en-US".`
+  );
   return 'en-US';
 };
 
@@ -119,10 +121,7 @@ const voiceQuerySchema = new mongoose.Schema(
       required: [true, 'Voice query is required'],
       trim: true,
       minlength: [1, 'Query cannot be empty'],
-      maxlength: [
-        MAX_QUERY_LENGTH,
-        `Query cannot exceed ${MAX_QUERY_LENGTH} characters`,
-      ],
+      maxlength: [MAX_QUERY_LENGTH, `Query cannot exceed ${MAX_QUERY_LENGTH} characters`],
     },
 
     // ------------------------------------------
@@ -148,10 +147,7 @@ const voiceQuerySchema = new mongoose.Schema(
       type: String,
       required: [true, 'Response text is required'],
       trim: true,
-      maxlength: [
-        MAX_RESPONSE_LENGTH,
-        `Response cannot exceed ${MAX_RESPONSE_LENGTH} characters`,
-      ],
+      maxlength: [MAX_RESPONSE_LENGTH, `Response cannot exceed ${MAX_RESPONSE_LENGTH} characters`],
     },
 
     // ------------------------------------------
@@ -208,9 +204,6 @@ voiceQuerySchema.index({
 // Model
 // ------------------------------------------------------
 
-const VoiceQuery = mongoose.model(
-  'VoiceQuery',
-  voiceQuerySchema
-);
+const VoiceQuery = mongoose.model('VoiceQuery', voiceQuerySchema);
 
 export default VoiceQuery;

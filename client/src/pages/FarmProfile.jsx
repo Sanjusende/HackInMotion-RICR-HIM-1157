@@ -12,7 +12,7 @@ import {
   Edit3,
   AlertTriangle,
   RefreshCw,
-  Check
+  Check,
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 
@@ -23,7 +23,7 @@ const SOIL_TYPES = [
   'Clay Soil',
   'Sandy Soil',
   'Loamy Soil',
-  'Unknown/Not sure'
+  'Unknown/Not sure',
 ];
 
 const CROPS = [
@@ -37,7 +37,7 @@ const CROPS = [
   'Sugarcane',
   'Gram/Chickpea',
   'Tomato',
-  'Onion'
+  'Onion',
 ];
 
 const GROWTH_STAGES = [
@@ -45,7 +45,7 @@ const GROWTH_STAGES = [
   'Vegetative',
   'Flowering',
   'Yield Formation / Fruiting',
-  'Ripening / Harvesting'
+  'Ripening / Harvesting',
 ];
 
 const SEASONS = ['Kharif', 'Rabi', 'Zaid'];
@@ -72,7 +72,7 @@ const FarmProfile = () => {
     currentCrop: 'Wheat',
     plannedCrop: '',
     growthStage: 'Vegetative',
-    season: 'Kharif'
+    season: 'Kharif',
   });
 
   const [locationStatus, setLocationStatus] = useState('idle'); // 'idle' | 'detecting' | 'success' | 'permission_denied' | 'unavailable' | 'geocoding_failed'
@@ -85,7 +85,8 @@ const FarmProfile = () => {
     if (farm) {
       const savedLat = farm.location?.lat || '';
       const savedLng = farm.location?.lng || '';
-      const savedName = farm.location?.name || farm.location?.display || (savedLat ? 'Farm Location' : '');
+      const savedName =
+        farm.location?.name || farm.location?.display || (savedLat ? 'Farm Location' : '');
       const savedAddress = farm.location?.fullAddress || farm.location?.display || '';
 
       setFormData({
@@ -106,7 +107,7 @@ const FarmProfile = () => {
         currentCrop: farm.currentCrop || 'Wheat',
         plannedCrop: farm.plannedCrop || '',
         growthStage: farm.growthStage || 'Vegetative',
-        season: farm.season || 'Kharif'
+        season: farm.season || 'Kharif',
       });
 
       if (savedLat && savedLng) {
@@ -122,15 +123,22 @@ const FarmProfile = () => {
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
         {
           headers: {
-            'Accept-Language': 'en'
-          }
+            'Accept-Language': 'en',
+          },
         }
       );
       if (!res.ok) throw new Error('Geocoding service unavailable');
       const data = await res.json();
       const addr = data.address || {};
 
-      const city = addr.city || addr.town || addr.village || addr.suburb || addr.county || addr.state_district || '';
+      const city =
+        addr.city ||
+        addr.town ||
+        addr.village ||
+        addr.suburb ||
+        addr.county ||
+        addr.state_district ||
+        '';
       const district = addr.state_district || addr.county || addr.district || '';
       const state = addr.state || '';
       const country = addr.country || 'India';
@@ -149,7 +157,8 @@ const FarmProfile = () => {
       }
 
       const addressParts = [street, city, district, state, postcode, country].filter(Boolean);
-      const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : `${locationName}, India`;
+      const fullAddress =
+        addressParts.length > 0 ? addressParts.join(', ') : `${locationName}, India`;
 
       return {
         locationName,
@@ -158,7 +167,7 @@ const FarmProfile = () => {
         district,
         state,
         pincode: postcode,
-        address: street
+        address: street,
       };
     } catch (err) {
       console.warn('Reverse geocoding failed:', err);
@@ -173,7 +182,9 @@ const FarmProfile = () => {
 
     if (!navigator.geolocation) {
       setLocationStatus('unavailable');
-      setErrorMessage('Unable to detect your current location. Please enable GPS/location services and try again.');
+      setErrorMessage(
+        'Unable to detect your current location. Please enable GPS/location services and try again.'
+      );
       return;
     }
 
@@ -196,7 +207,7 @@ const FarmProfile = () => {
             state: geocodeResult.state || prev.state,
             pincode: geocodeResult.pincode || prev.pincode,
             address: geocodeResult.address || prev.address,
-            manualLocation: geocodeResult.locationName
+            manualLocation: geocodeResult.locationName,
           }));
           setLocationStatus('success');
         } else {
@@ -207,7 +218,7 @@ const FarmProfile = () => {
             lng: longitude,
             locationName: `${Number(latitude).toFixed(4)}, ${Number(longitude).toFixed(4)}`,
             fullAddress: `Coordinates: ${latitude}, ${longitude}`,
-            manualLocation: `${Number(latitude).toFixed(4)}, ${Number(longitude).toFixed(4)}`
+            manualLocation: `${Number(latitude).toFixed(4)}, ${Number(longitude).toFixed(4)}`,
           }));
           setLocationStatus('geocoding_failed');
         }
@@ -219,7 +230,9 @@ const FarmProfile = () => {
           setErrorMessage('Location permission is required to detect your current location.');
         } else {
           setLocationStatus('unavailable');
-          setErrorMessage('Unable to detect your current location. Please enable GPS/location services and try again.');
+          setErrorMessage(
+            'Unable to detect your current location. Please enable GPS/location services and try again.'
+          );
         }
       },
       { timeout: 12000, enableHighAccuracy: true }
@@ -242,8 +255,8 @@ const FarmProfile = () => {
           city: formData.city,
           district: formData.district,
           state: formData.state,
-          pincode: formData.pincode
-        }
+          pincode: formData.pincode,
+        },
       };
       await saveFarm(payload);
       navigate('/dashboard');
@@ -262,17 +275,16 @@ const FarmProfile = () => {
           {farm ? 'Update Your Farm Profile' : 'Set Up Your Farm Profile'}
         </h1>
         <p className="text-slate-600 text-sm mt-1 font-medium">
-          Personalize KrishiMitra with your location, soil, and crop details to get customized irrigation, weather risk, and market advice.
+          Personalize KrishiMitra with your location, soil, and crop details to get customized
+          irrigation, weather risk, and market advice.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        
         {/* ======================================================== */}
         {/* STEP 1: FARM LOCATION CARD (IMPROVED READABLE LOCATION UI) */}
         {/* ======================================================== */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/90 hover:shadow-md transition space-y-4">
-          
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-emerald-600" />
@@ -290,7 +302,6 @@ const FarmProfile = () => {
 
           {/* LOCATION STATUS CARD */}
           <div className="bg-slate-50/80 rounded-xl border border-slate-200/80 p-4 space-y-3">
-            
             {/* 1. DETECTING STATE */}
             {locationStatus === 'detecting' && (
               <div className="flex items-center gap-3 text-slate-700 text-sm font-bold p-2">
@@ -342,7 +353,10 @@ const FarmProfile = () => {
               <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-2 text-xs">
                 <div className="flex items-center gap-2 text-amber-800 font-bold">
                   <AlertTriangle size={16} className="text-amber-600" />
-                  <span>{errorMessage || 'Location permission is required to detect your current location.'}</span>
+                  <span>
+                    {errorMessage ||
+                      'Location permission is required to detect your current location.'}
+                  </span>
                 </div>
                 <Button
                   type="button"
@@ -359,7 +373,10 @@ const FarmProfile = () => {
               <div className="p-3 bg-rose-50 rounded-xl border border-rose-200 space-y-2 text-xs">
                 <div className="flex items-center gap-2 text-rose-800 font-bold">
                   <AlertTriangle size={16} className="text-rose-600" />
-                  <span>{errorMessage || 'Unable to detect your current location. Please enable GPS/location services and try again.'}</span>
+                  <span>
+                    {errorMessage ||
+                      'Unable to detect your current location. Please enable GPS/location services and try again.'}
+                  </span>
                 </div>
                 <Button
                   type="button"
@@ -393,13 +410,14 @@ const FarmProfile = () => {
                 )}
               </Button>
             </div>
-
           </div>
 
           {/* EDITABLE LOCATION FORM (TOGGLED VIA EDIT BUTTON OR WHEN EDITING IS ACTIVE) */}
           {isEditingLocation && (
             <div className="pt-3 border-t border-slate-100 space-y-4 text-xs font-semibold text-slate-700">
-              <span className="text-xs font-extrabold text-slate-900 block">Manual Address Details:</span>
+              <span className="text-xs font-extrabold text-slate-900 block">
+                Manual Address Details:
+              </span>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -418,7 +436,15 @@ const FarmProfile = () => {
                   <input
                     type="text"
                     value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value, locationName: e.target.value ? `${e.target.value}, ${formData.state || 'India'}` : formData.locationName })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        city: e.target.value,
+                        locationName: e.target.value
+                          ? `${e.target.value}, ${formData.state || 'India'}`
+                          : formData.locationName,
+                      })
+                    }
                     placeholder="e.g. Bhopal"
                     className="w-full px-3.5 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800"
                   />
@@ -440,7 +466,15 @@ const FarmProfile = () => {
                   <input
                     type="text"
                     value={formData.state}
-                    onChange={(e) => setFormData({ ...formData, state: e.target.value, locationName: formData.city ? `${formData.city}, ${e.target.value}` : e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        state: e.target.value,
+                        locationName: formData.city
+                          ? `${formData.city}, ${e.target.value}`
+                          : e.target.value,
+                      })
+                    }
                     placeholder="e.g. Madhya Pradesh"
                     className="w-full px-3.5 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800"
                   />
@@ -472,9 +506,7 @@ const FarmProfile = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1">
-                Land Size
-              </label>
+              <label className="block text-sm font-semibold text-slate-700 mb-1">Land Size</label>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
@@ -498,9 +530,7 @@ const FarmProfile = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1">
-                Soil Type
-              </label>
+              <label className="block text-sm font-semibold text-slate-700 mb-1">Soil Type</label>
               <select
                 value={formData.soilType}
                 onChange={(e) => setFormData({ ...formData, soilType: e.target.value })}
@@ -561,9 +591,7 @@ const FarmProfile = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1">
-                Season
-              </label>
+              <label className="block text-sm font-semibold text-slate-700 mb-1">Season</label>
               <select
                 value={formData.season}
                 onChange={(e) => setFormData({ ...formData, season: e.target.value })}

@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Sprout, LayoutDashboard, CloudRain, Droplets, TrendingUp, Mic, LogOut, User, Sparkles, Menu, X } from 'lucide-react';
+import {
+  Sprout,
+  LayoutDashboard,
+  CloudRain,
+  Droplets,
+  TrendingUp,
+  Mic,
+  LogOut,
+  User,
+  Sparkles,
+  Menu,
+  X,
+} from 'lucide-react';
 import Button from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
 
@@ -33,7 +45,7 @@ const Navbar = () => {
     { label: 'Irrigation', path: '/irrigation', icon: Droplets },
     { label: 'Crop Health', path: '/crop-health', icon: Sprout },
     { label: 'Market', path: '/market', icon: TrendingUp },
-    { label: 'KrishiMitra', path: '/voice-assistant', icon: Mic }
+    { label: 'KrishiMitra', path: '/voice-assistant', icon: Mic },
   ];
 
   const publicLandingLinks = [
@@ -41,7 +53,7 @@ const Navbar = () => {
     { label: 'Features', href: '#features' },
     { label: 'How It Works', href: '#how-it-works' },
     { label: 'About', href: '#about' },
-    { label: 'Get Started', href: '#get-started' }
+    { label: 'Get Started', href: '#get-started' },
   ];
 
   return (
@@ -54,7 +66,6 @@ const Navbar = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center gap-4">
-          
           {/* KrishiMitra Logo */}
           <Link
             to={isAuthenticated ? '/dashboard' : '/'}
@@ -115,7 +126,12 @@ const Navbar = () => {
                   <User className="w-3.5 h-3.5 text-emerald-600" />
                   Farm Setup
                 </Link>
-                <Button variant="secondary" size="sm" onClick={logout} className="flex items-center gap-1 text-xs">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={logout}
+                  className="flex items-center gap-1 text-xs"
+                >
                   <LogOut className="w-3.5 h-3.5" />
                   Logout
                 </Button>
@@ -128,7 +144,11 @@ const Navbar = () => {
                   </Button>
                 </Link>
                 <Link to="/register">
-                  <Button variant="primary" size="sm" className="font-bold text-xs px-3.5 py-1.5 flex items-center gap-1 shadow-sm">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="font-bold text-xs px-3.5 py-1.5 flex items-center gap-1 shadow-sm"
+                  >
                     <Sparkles size={13} /> Get Started
                   </Button>
                 </Link>
@@ -145,7 +165,6 @@ const Navbar = () => {
               {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
-
         </div>
       </div>
 
@@ -181,7 +200,12 @@ const Navbar = () => {
                     <User className="w-4 h-4 text-emerald-600" />
                     Farm Setup
                   </Link>
-                  <Button variant="secondary" size="sm" onClick={logout} className="w-full flex items-center justify-center gap-2 text-sm py-2.5 font-bold">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={logout}
+                    className="w-full flex items-center justify-center gap-2 text-sm py-2.5 font-bold"
+                  >
                     <LogOut className="w-4 h-4" />
                     Logout
                   </Button>
@@ -200,12 +224,20 @@ const Navbar = () => {
                 ))}
                 <div className="border-t border-slate-100 my-2 pt-2 flex flex-col gap-2">
                   <Link to="/login" className="w-full">
-                    <Button variant="secondary" size="sm" className="w-full font-bold text-sm py-2.5">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="w-full font-bold text-sm py-2.5"
+                    >
                       Login
                     </Button>
                   </Link>
                   <Link to="/register" className="w-full">
-                    <Button variant="primary" size="sm" className="w-full font-bold text-sm py-2.5 flex items-center justify-center gap-1.5 shadow-sm">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      className="w-full font-bold text-sm py-2.5 flex items-center justify-center gap-1.5 shadow-sm"
+                    >
                       <Sparkles size={14} /> Get Started
                     </Button>
                   </Link>

@@ -19,7 +19,7 @@ router.get('/metrics', (req, res) => {
   res.status(200).json({
     memoryUsage: process.memoryUsage(),
     uptime: process.uptime(),
-    cpuUsage: process.cpuUsage()
+    cpuUsage: process.cpuUsage(),
   });
 });
 

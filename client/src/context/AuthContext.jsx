@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
       const { data } = await api.get('/auth/me');
       if (data.success && data.data.user) {
         setCurrentUser(data.data.user);
-        setSession((prev) => prev ? { ...prev, user: data.data.user } : null);
+        setSession((prev) => (prev ? { ...prev, user: data.data.user } : null));
         return data.data.user;
       }
     } catch (err) {
@@ -59,7 +59,11 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const saveSession = (data) => {
-    const next = { user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken };
+    const next = {
+      user: data.user,
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+    };
     setSession(next);
     localStorage.setItem('token', data.accessToken);
     return next.user;
@@ -91,12 +95,12 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(null);
       localStorage.removeItem('krishimitra-session');
       localStorage.removeItem('token');
-      
+
       // Clear cookies
-      document.cookie.split(";").forEach((cookie) => {
-        const eqPos = cookie.indexOf("=");
+      document.cookie.split(';').forEach((cookie) => {
+        const eqPos = cookie.indexOf('=');
         const name = eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim();
-        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
       });
     }
   };
@@ -123,7 +127,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     refreshUser,
-    checkProfile
+    checkProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

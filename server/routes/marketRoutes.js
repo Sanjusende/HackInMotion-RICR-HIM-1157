@@ -3,7 +3,7 @@ import {
   getCurrentMarketData,
   getMarketHistory,
   getMarketTrend,
-  getNearbyMarkets
+  getNearbyMarkets,
 } from '../controllers/marketController.js';
 import protect from '../middleware/authMiddleware.js';
 

@@ -14,7 +14,9 @@ const WeatherHeader = ({ locationName, refreshing, onRefresh, lastUpdated }) => 
         </div>
         <p className="text-xs text-slate-500 font-medium flex items-center gap-1.5 mt-1">
           <MapPin size={13} className="text-emerald-600 shrink-0" />
-          <span className="font-semibold text-slate-700">{locationName || 'Bhopal, Madhya Pradesh'}</span>
+          <span className="font-semibold text-slate-700">
+            {locationName || 'Bhopal, Madhya Pradesh'}
+          </span>
           <span className="text-slate-300">•</span>
           <span>Updated {lastUpdated || '5 min ago'}</span>
         </p>

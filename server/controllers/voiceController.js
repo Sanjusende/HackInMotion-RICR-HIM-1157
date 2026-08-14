@@ -1,7 +1,7 @@
 import Farm from '../models/Farm.js';
+import ApiResponse from '../utils/apiResponse.js';
 import VoiceQuery from '../models/VoiceQuery.js';
 import { processVoiceQuery } from '../services/voice/voiceService.js';
-
 
 const DEFAULT_HISTORY_LIMIT = 15;
 const MAX_QUERY_LENGTH = 500;
@@ -49,27 +49,13 @@ export const handleVoiceQuery = async (req, res) => {
     const { query, language } = req.body || {};
 
     // ------------------------------------------
-    // Authentication Check
-    // ------------------------------------------
-
-    if (!req.user?._id) {
-      return res.status(401).json({
-        success: false,
-        error: 'Authentication required.',
-      });
-    }
-
-    // ------------------------------------------
     // Query Validation
     // ------------------------------------------
 
     const validation = validateQuery(query);
 
     if (!validation.valid) {
-      return res.status(400).json({
-        success: false,
-        error: validation.message,
-      });
+      return ApiResponse.error(res, validation.message, 400, 'VALIDATION_ERROR');
     }
 
     // ------------------------------------------
@@ -84,16 +70,10 @@ export const handleVoiceQuery = async (req, res) => {
     // Process Voice Query
     // ------------------------------------------
 
-    const result = await processVoiceQuery(
-      validation.value,
-      language,
-      farm
-    );
+    const result = await processVoiceQuery(validation.value, language, farm);
 
     if (!result?.responseText) {
-      throw new Error(
-        'Voice service returned an invalid response.'
-      );
+      throw new Error('Voice service returned an invalid response.');
     }
 
     // ------------------------------------------
@@ -136,8 +116,7 @@ export const handleVoiceQuery = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      error:
-        'Unable to process your voice query right now. Please try again later.',
+      error: 'Unable to process your voice query right now. Please try again later.',
     });
   }
 };
@@ -148,17 +127,6 @@ export const handleVoiceQuery = async (req, res) => {
 
 export const getVoiceHistory = async (req, res) => {
   try {
-    // ------------------------------------------
-    // Authentication Check
-    // ------------------------------------------
-
-    if (!req.user?._id) {
-      return res.status(401).json({
-        success: false,
-        error: 'Authentication required.',
-      });
-    }
-
     // ------------------------------------------
     // Fetch Voice History
     // ------------------------------------------
@@ -174,11 +142,7 @@ export const getVoiceHistory = async (req, res) => {
     // Success Response
     // ------------------------------------------
 
-    return res.status(200).json({
-      success: true,
-      count: history.length,
-      data: history,
-    });
+    return ApiResponse.success(res, history, 'Voice history retrieved successfully');
   } catch (error) {
     console.error('[VoiceController] History retrieval failed:', {
       message: error.message,
@@ -186,9 +150,11 @@ export const getVoiceHistory = async (req, res) => {
       stack: error.stack,
     });
 
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to retrieve voice history. Please try again later.',
-    });
+    return ApiResponse.error(
+      res,
+      'Failed to retrieve voice history. Please try again later.',
+      500,
+      'SERVER_ERROR'
+    );
   }
 };

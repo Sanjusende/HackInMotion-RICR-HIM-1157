@@ -27,11 +27,11 @@ const Weather = () => {
       if (res && res.success) {
         setWeather(res.data);
       } else {
-        setError('Weather unavailable. We couldn\'t load the latest weather information.');
+        setError("Weather unavailable. We couldn't load the latest weather information.");
       }
     } catch (err) {
       console.error('Weather error:', err);
-      setError('Weather unavailable. We couldn\'t load the latest weather information.');
+      setError("Weather unavailable. We couldn't load the latest weather information.");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -94,13 +94,19 @@ const Weather = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 text-slate-900 selection:bg-emerald-600 selection:text-white">
-      
       {/* 1. HEADER */}
       <WeatherHeader
         locationName={locationDisplay}
         refreshing={refreshing}
         onRefresh={handleRefresh}
-        lastUpdated={weather?.fetchedAt ? new Date(weather.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+        lastUpdated={
+          weather?.fetchedAt
+            ? new Date(weather.fetchedAt).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })
+            : 'Just now'
+        }
       />
 
       {/* 2. CURRENT WEATHER HERO & METRICS */}
@@ -133,7 +139,6 @@ const Weather = () => {
 
       {/* 9. WEATHER -> IRRIGATION CONNECTION BRIDGE */}
       <WeatherIrrigationBridge weather={weather} cropName={cropName} />
-
     </div>
   );
 };

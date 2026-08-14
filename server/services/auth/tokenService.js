@@ -1,5 +1,5 @@
-import jwt from "jsonwebtoken";
-import env from "../../config/env.js";
+import jwt from 'jsonwebtoken';
+import env from '../../config/env.js';
 
 /**
  * Service to manage JWT signing and validation
@@ -12,14 +12,10 @@ class TokenService {
     const accessToken = jwt.sign(
       { id: user._id, role: user.role, email: user.email },
       env.JWT_SECRET,
-      { expiresIn: "24h" }
+      { expiresIn: '24h' }
     );
 
-    const refreshToken = jwt.sign(
-      { id: user._id },
-      env.JWT_REFRESH_SECRET,
-      { expiresIn: "7d" }
-    );
+    const refreshToken = jwt.sign({ id: user._id }, env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
 
     return { accessToken, refreshToken };
   }
@@ -42,11 +38,7 @@ class TokenService {
    * Generate a stateless password reset token valid for 1 hour
    */
   generateResetToken(user) {
-    return jwt.sign(
-      { id: user._id, email: user.email },
-      env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    return jwt.sign({ id: user._id, email: user.email }, env.JWT_SECRET, { expiresIn: '1h' });
   }
 
   /**

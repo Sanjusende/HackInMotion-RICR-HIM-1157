@@ -1,18 +1,18 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  Sprout, 
-  LayoutDashboard, 
-  User, 
-  CloudRain, 
-  Sparkles, 
-  Droplets, 
-  TrendingUp, 
-  Layers, 
-  Settings, 
-  LogOut, 
-  X 
+import {
+  Sprout,
+  LayoutDashboard,
+  User,
+  CloudRain,
+  Sparkles,
+  Droplets,
+  TrendingUp,
+  Layers,
+  Settings,
+  LogOut,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -51,8 +51,8 @@ const Sidebar = ({ isOpen, onClose }) => {
           </span>
         </Link>
         {onClose && (
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="md:hidden p-1.5 hover:bg-bg-custom rounded-xl text-secondary-text cursor-pointer transition-colors"
           >
             <X size={18} />
@@ -86,7 +86,9 @@ const Sidebar = ({ isOpen, onClose }) => {
                     transition={{ type: 'spring', stiffness: 350, damping: 30 }}
                   />
                 )}
-                <Icon className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${active ? 'text-primary' : 'text-secondary-text group-hover:text-primary'}`} />
+                <Icon
+                  className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${active ? 'text-primary' : 'text-secondary-text group-hover:text-primary'}`}
+                />
                 <span>{item.label}</span>
               </div>
             </Link>
@@ -116,8 +118,8 @@ const Sidebar = ({ isOpen, onClose }) => {
 
       {/* Mobile Drawer (Collapsible) Overlay */}
       {isOpen && (
-        <div 
-          className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-40 transition-opacity" 
+        <div
+          className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-40 transition-opacity"
           onClick={onClose}
         />
       )}

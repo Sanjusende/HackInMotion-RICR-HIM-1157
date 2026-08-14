@@ -1,16 +1,13 @@
-const winston = require('winston');
-require('winston-daily-rotate-file');
+import winston from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
 
-const transport = new winston.transports.DailyRotateFile({
+const transport = new DailyRotateFile({
   filename: 'logs/krishimitra-%DATE%.log',
   datePattern: 'YYYY-MM-DD',
   zippedArchive: true,
   maxSize: '20m',
   maxFiles: '14d',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  )
+  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
 });
 
 const logger = winston.createLogger({
@@ -18,12 +15,9 @@ const logger = winston.createLogger({
   transports: [
     transport,
     new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      )
-    })
-  ]
+      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
+    }),
+  ],
 });
 
-module.exports = logger;
+export default logger;

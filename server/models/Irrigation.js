@@ -6,17 +6,17 @@ const irrigationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Farm',
       required: true,
-      index: true
+      index: true,
     },
     date: {
       type: Date,
       default: Date.now,
-      index: true
+      index: true,
     },
     decision: {
       type: String,
       enum: ['IRRIGATE', 'DONT_IRRIGATE', 'NEED_MORE_INFO'],
-      required: true
+      required: true,
     },
     reasoning: {
       rainProbability: Number,
@@ -24,17 +24,17 @@ const irrigationSchema = new mongoose.Schema(
       cropWaterNeedMm: Number,
       thresholdsUsed: mongoose.Schema.Types.Mixed,
       summaryText: String,
-      actionableAdvice: String
+      actionableAdvice: String,
     },
     confidence: {
       type: Number,
       min: 0,
       max: 1,
-      default: 0.9
-    }
+      default: 0.9,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 

@@ -57,7 +57,8 @@ const ForgotPassword = () => {
               <CheckCircle2 size={48} />
             </div>
             <p className="text-sm text-secondary-text max-w-xs mx-auto">
-              If a registered user matches <strong className="text-dark-text">{email}</strong>, we have sent instructions to reset your password.
+              If a registered user matches <strong className="text-dark-text">{email}</strong>, we
+              have sent instructions to reset your password.
             </p>
           </div>
 
@@ -66,9 +67,7 @@ const ForgotPassword = () => {
               <span className="text-xs font-bold text-amber-800 dark:text-amber-200 uppercase tracking-wider block">
                 Developer Test Link:
               </span>
-              <p className="text-xs text-secondary-text break-all">
-                {devResetLink}
-              </p>
+              <p className="text-xs text-secondary-text break-all">{devResetLink}</p>
               <a
                 href={devResetLink}
                 className="inline-block text-xs font-bold text-primary hover:underline mt-1"

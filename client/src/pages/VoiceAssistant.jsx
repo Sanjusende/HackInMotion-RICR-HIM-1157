@@ -16,7 +16,7 @@ import {
   TrendingUp,
   HeartPulse,
   Droplets,
-  Play
+  Play,
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 
@@ -25,14 +25,14 @@ const LANGUAGES = [
   { code: 'en-US', label: 'English' },
   { code: 'hi-EN', label: 'Hinglish' },
   { code: 'mr-IN', label: 'Marathi' },
-  { code: 'gu-IN', label: 'Gujarati' }
+  { code: 'gu-IN', label: 'Gujarati' },
 ];
 
 const QUICK_ACTIONS = [
   { label: 'Weather', icon: CloudSun, query: 'Aaj ka weather batao.' },
   { label: 'Market', icon: TrendingUp, query: 'Aaj wheat ka mandi rate kya hai?' },
   { label: 'Crop Health', icon: HeartPulse, query: 'Meri crop ki health kaisi hai?' },
-  { label: 'Irrigation', icon: Droplets, query: 'Fasal ko paani kab dena hai?' }
+  { label: 'Irrigation', icon: Droplets, query: 'Fasal ko paani kab dena hai?' },
 ];
 
 const VoiceAssistant = () => {
@@ -98,23 +98,43 @@ const VoiceAssistant = () => {
   // Handle direct navigation commands
   const handleNavigationCommand = (query) => {
     const lower = query.toLowerCase();
-    if (lower.includes('open dashboard') || lower.includes('dashboard kholo') || lower.includes('go to dashboard')) {
+    if (
+      lower.includes('open dashboard') ||
+      lower.includes('dashboard kholo') ||
+      lower.includes('go to dashboard')
+    ) {
       navigate('/dashboard');
       return true;
     }
-    if (lower.includes('open crop health') || lower.includes('crop health dikhao') || lower.includes('go to crop health')) {
+    if (
+      lower.includes('open crop health') ||
+      lower.includes('crop health dikhao') ||
+      lower.includes('go to crop health')
+    ) {
       navigate('/crop-health');
       return true;
     }
-    if (lower.includes('open irrigation') || lower.includes('irrigation dekho') || lower.includes('go to irrigation')) {
+    if (
+      lower.includes('open irrigation') ||
+      lower.includes('irrigation dekho') ||
+      lower.includes('go to irrigation')
+    ) {
       navigate('/irrigation');
       return true;
     }
-    if (lower.includes('open market') || lower.includes('market analysis') || lower.includes('go to market')) {
+    if (
+      lower.includes('open market') ||
+      lower.includes('market analysis') ||
+      lower.includes('go to market')
+    ) {
       navigate('/market');
       return true;
     }
-    if (lower.includes('open weather') || lower.includes('weather report') || lower.includes('go to weather')) {
+    if (
+      lower.includes('open weather') ||
+      lower.includes('weather report') ||
+      lower.includes('go to weather')
+    ) {
       navigate('/weather');
       return true;
     }
@@ -181,14 +201,20 @@ const VoiceAssistant = () => {
         fetchHistory();
       } else {
         const fallbackText = "I couldn't retrieve the latest data right now.";
-        setChatMessages((prev) => [...prev, { id: Date.now() + 1, sender: 'krishiMitra', text: fallbackText }]);
+        setChatMessages((prev) => [
+          ...prev,
+          { id: Date.now() + 1, sender: 'krishiMitra', text: fallbackText },
+        ]);
         speakText(fallbackText, selectedLang);
         setVoiceState('error');
       }
     } catch (err) {
       console.error('Voice processing error:', err);
       const fallbackText = "KrishiMitra couldn't process that request.";
-      setChatMessages((prev) => [...prev, { id: Date.now() + 1, sender: 'krishiMitra', text: fallbackText }]);
+      setChatMessages((prev) => [
+        ...prev,
+        { id: Date.now() + 1, sender: 'krishiMitra', text: fallbackText },
+      ]);
       setVoiceState('error');
     }
   };
@@ -216,7 +242,6 @@ const VoiceAssistant = () => {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 text-slate-900 selection:bg-emerald-600 selection:text-white">
-      
       {/* 1 & 2. PAGE HEADER SECTION */}
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3.5 py-1 rounded-full shadow-2xs">
@@ -237,11 +262,20 @@ const VoiceAssistant = () => {
 
         {/* Farm Telemetry Badge */}
         <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-white border border-slate-200 px-4 py-1 rounded-2xl text-xs font-semibold text-slate-600 shadow-2xs mt-1">
-          <span>🌾 Active Crop: <strong>{farm?.currentCrop || 'Wheat'}</strong></span>
+          <span>
+            🌾 Active Crop: <strong>{farm?.currentCrop || 'Wheat'}</strong>
+          </span>
           <span>•</span>
-          <span>Land: <strong>{farm?.landSize?.value || 5} {farm?.landSize?.unit || 'Acres'}</strong></span>
+          <span>
+            Land:{' '}
+            <strong>
+              {farm?.landSize?.value || 5} {farm?.landSize?.unit || 'Acres'}
+            </strong>
+          </span>
           <span>•</span>
-          <span>📍 <strong>{farm?.location?.display || 'Indore, Madhya Pradesh'}</strong></span>
+          <span>
+            📍 <strong>{farm?.location?.display || 'Indore, Madhya Pradesh'}</strong>
+          </span>
         </div>
       </div>
 
@@ -264,7 +298,6 @@ const VoiceAssistant = () => {
 
       {/* 3, 4, 5, 6. MAIN VOICE MICROPHONE SECTION */}
       <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-sm text-center space-y-4 max-w-2xl mx-auto">
-        
         {/* Centered Medium 80px Microphone Button */}
         <div className="flex justify-center relative">
           <button
@@ -276,12 +309,12 @@ const VoiceAssistant = () => {
               voiceState === 'listening'
                 ? 'bg-rose-600 ring-4 ring-rose-200 animate-pulse text-white scale-[1.03]'
                 : voiceState === 'processing'
-                ? 'bg-amber-500 text-white opacity-90 cursor-not-allowed'
-                : voiceState === 'speaking'
-                ? 'bg-emerald-700 ring-4 ring-emerald-200 text-white'
-                : voiceState === 'error'
-                ? 'bg-rose-500 text-white'
-                : 'bg-emerald-600 hover:bg-emerald-700 hover:scale-[1.03] text-white shadow-emerald-600/20'
+                  ? 'bg-amber-500 text-white opacity-90 cursor-not-allowed'
+                  : voiceState === 'speaking'
+                    ? 'bg-emerald-700 ring-4 ring-emerald-200 text-white'
+                    : voiceState === 'error'
+                      ? 'bg-rose-500 text-white'
+                      : 'bg-emerald-600 hover:bg-emerald-700 hover:scale-[1.03] text-white shadow-emerald-600/20'
             }`}
           >
             {voiceState === 'listening' && <MicOff className="w-8 h-8" />}
@@ -297,7 +330,9 @@ const VoiceAssistant = () => {
           {voiceState === 'idle' && (
             <>
               <p className="text-lg font-bold text-slate-900">Ask KrishiMitra</p>
-              <p className="text-xs sm:text-sm text-slate-500 font-medium">Tap the microphone and speak naturally</p>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium">
+                Tap the microphone and speak naturally
+              </p>
             </>
           )}
 
@@ -306,11 +341,26 @@ const VoiceAssistant = () => {
               <p className="text-lg font-bold text-rose-600">Listening...</p>
               {/* Subtle Waveform */}
               <div className="flex gap-1 justify-center items-center py-1.5">
-                <span className="w-1 h-3.5 bg-rose-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-1 h-6 bg-rose-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-1 h-8 bg-rose-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                <span className="w-1 h-6 bg-rose-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-1 h-3.5 bg-rose-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span
+                  className="w-1 h-3.5 bg-rose-500 rounded-full animate-bounce"
+                  style={{ animationDelay: '0ms' }}
+                />
+                <span
+                  className="w-1 h-6 bg-rose-500 rounded-full animate-bounce"
+                  style={{ animationDelay: '150ms' }}
+                />
+                <span
+                  className="w-1 h-8 bg-rose-500 rounded-full animate-bounce"
+                  style={{ animationDelay: '300ms' }}
+                />
+                <span
+                  className="w-1 h-6 bg-rose-500 rounded-full animate-bounce"
+                  style={{ animationDelay: '150ms' }}
+                />
+                <span
+                  className="w-1 h-3.5 bg-rose-500 rounded-full animate-bounce"
+                  style={{ animationDelay: '0ms' }}
+                />
               </div>
               <p className="text-xs sm:text-sm text-slate-500 font-medium">Speak your question</p>
             </>
@@ -319,7 +369,9 @@ const VoiceAssistant = () => {
           {voiceState === 'processing' && (
             <>
               <p className="text-lg font-bold text-amber-600">Thinking...</p>
-              <p className="text-xs sm:text-sm text-slate-500 font-medium">KrishiMitra is processing your request</p>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium">
+                KrishiMitra is processing your request
+              </p>
             </>
           )}
 
@@ -328,11 +380,26 @@ const VoiceAssistant = () => {
               <p className="text-lg font-bold text-emerald-700">Speaking...</p>
               {/* Waveform */}
               <div className="flex gap-1 justify-center items-center py-1.5">
-                <span className="w-1 h-3 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-1 h-6 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
-                <span className="w-1 h-8 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '400ms' }} />
-                <span className="w-1 h-5 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
-                <span className="w-1 h-3 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span
+                  className="w-1 h-3 bg-emerald-600 rounded-full animate-bounce"
+                  style={{ animationDelay: '0ms' }}
+                />
+                <span
+                  className="w-1 h-6 bg-emerald-600 rounded-full animate-bounce"
+                  style={{ animationDelay: '200ms' }}
+                />
+                <span
+                  className="w-1 h-8 bg-emerald-600 rounded-full animate-bounce"
+                  style={{ animationDelay: '400ms' }}
+                />
+                <span
+                  className="w-1 h-5 bg-emerald-600 rounded-full animate-bounce"
+                  style={{ animationDelay: '200ms' }}
+                />
+                <span
+                  className="w-1 h-3 bg-emerald-600 rounded-full animate-bounce"
+                  style={{ animationDelay: '0ms' }}
+                />
               </div>
               <button
                 onClick={handleStopSpeaking}
@@ -378,7 +445,9 @@ const VoiceAssistant = () => {
           <div className="space-y-3">
             {/* User Message */}
             <div className="space-y-1">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">You</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                You
+              </span>
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-medium text-slate-800">
                 "{latestUserMsg.text}"
               </div>
@@ -415,7 +484,9 @@ const VoiceAssistant = () => {
 
       {/* 8. QUICK ACTIONS */}
       <div className="max-w-2xl mx-auto space-y-2 text-center">
-        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Quick actions</span>
+        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+          Quick actions
+        </span>
         <div className="flex flex-wrap items-center justify-center gap-2.5">
           {QUICK_ACTIONS.map((action, idx) => {
             const ActionIcon = action.icon;
@@ -507,22 +578,30 @@ const VoiceAssistant = () => {
 
       {/* 12. RECENT CONVERSATIONS */}
       <div className="max-w-2xl mx-auto bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs space-y-3">
-        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Recent</span>
+        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+          Recent
+        </span>
 
         {history.length > 0 ? (
           <div className="space-y-2 text-xs">
             {history.slice(0, 4).map((item, idx) => (
-              <div key={idx} className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+              <div
+                key={idx}
+                className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1"
+              >
                 <p className="font-bold text-slate-900">You: "{item.query}"</p>
-                <p className="text-emerald-900 font-semibold text-[11px]">KrishiMitra: {item.responseText}</p>
+                <p className="text-emerald-900 font-semibold text-[11px]">
+                  KrishiMitra: {item.responseText}
+                </p>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-xs text-slate-400 font-medium text-center py-2">No recent conversations</p>
+          <p className="text-xs text-slate-400 font-medium text-center py-2">
+            No recent conversations
+          </p>
         )}
       </div>
-
     </div>
   );
 };

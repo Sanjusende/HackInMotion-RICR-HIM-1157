@@ -28,7 +28,7 @@ export const AppProvider = ({ children }) => {
     globalLoading,
     setGlobalLoading,
     language,
-    setLanguage
+    setLanguage,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
