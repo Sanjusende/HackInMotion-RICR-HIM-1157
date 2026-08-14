@@ -15,7 +15,9 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-  Cell
+  Cell,
+  PieChart,
+  Pie
 } from 'recharts';
 import {
   Droplets,
@@ -55,6 +57,14 @@ const CROP_PRICE_COMPARISON_DATA = [
   { crop: 'Soybean', price: 4600, fill: '#8B5CF6' },
   { crop: 'Cotton', price: 6800, fill: '#EC4899' },
   { crop: 'Mustard', price: 5350, fill: '#06B6D4' }
+];
+
+// Crop allocation data for Pie Chart representation
+const CROP_DISTRIBUTION_DATA = [
+  { name: 'Wheat', value: 50, fill: '#10B981' },
+  { name: 'Soybean', value: 25, fill: '#8B5CF6' },
+  { name: 'Maize', value: 15, fill: '#F59E0B' },
+  { name: 'Fallow', value: 10, fill: '#64748B' }
 ];
 
 // Fallback forecast telemetry if offline
@@ -124,8 +134,8 @@ const Dashboard = () => {
   const fetchMarketChart = async (crop, period) => {
     try {
       const res = await getMarketHistory(crop, period);
-      if (res?.success && Array.isArray(res.data)) {
-        setMarketHistoryData(res.data);
+      if (res?.success && res.data && Array.isArray(res.data.series)) {
+        setMarketHistoryData(res.data.series);
       } else {
         setMarketHistoryData([]);
       }
@@ -160,8 +170,8 @@ const Dashboard = () => {
     return (
       <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
         <div className="h-28 bg-slate-200 rounded-3xl w-full animate-pulse" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {Array.from({ length: 5 }).map((_, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-28 bg-slate-200 rounded-2xl animate-pulse" />
           ))}
         </div>
@@ -213,17 +223,17 @@ const Dashboard = () => {
       {/* ======================================================== */}
       <div className="relative bg-white/90 backdrop-blur-md text-slate-900 p-6 sm:p-8 rounded-[2.5rem] shadow-sm border border-emerald-100/90 overflow-hidden">
         {/* Soft background glow accents */}
-        <div className="absolute top-0 right-0 -z-0 w-[350px] h-[350px] bg-gradient-to-br from-emerald-200/30 to-green-100/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 -z-0 w-[300px] h-[300px] bg-emerald-100/30 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute top-0 right-0 from-emerald-200/30 to-green-100/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 bg-emerald-100/30 rounded-full blur-2xl pointer-events-none" />
 
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2.5 text-xs font-bold">
-              <span className="flex items-center gap-1.5 bg-slate-100/90 text-slate-700 px-3.5 py-1.5 rounded-full border border-slate-200/80">
+              <span className="flex items-center gap-1.5 bg-slate-105/90 text-slate-700 px-3.5 py-1.5 rounded-full border border-slate-200/80">
                 <MapPin size={13} className="text-emerald-600" />
                 {farm?.location?.display || 'Indore, Madhya Pradesh'}
               </span>
-              <span className="flex items-center gap-1.5 bg-slate-100/90 text-slate-700 px-3.5 py-1.5 rounded-full border border-slate-200/80">
+              <span className="flex items-center gap-1.5 bg-slate-105/90 text-slate-700 px-3.5 py-1.5 rounded-full border border-slate-200/80">
                 <Calendar size={13} className="text-emerald-600" />
                 {currentDateStr}
               </span>
@@ -264,7 +274,7 @@ const Dashboard = () => {
             <div className="relative">
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="p-2.5 bg-slate-100 hover:bg-slate-200/80 rounded-2xl transition-all text-slate-700 relative border border-slate-200/80 cursor-pointer"
+                className="p-2.5 bg-slate-105 hover:bg-slate-200/80 rounded-2xl transition-all text-slate-700 relative border border-slate-200/80 cursor-pointer"
               >
                 <Bell className="w-4 h-4 text-slate-700" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 animate-ping" />
@@ -275,7 +285,7 @@ const Dashboard = () => {
                 <div className="absolute right-0 mt-3 w-80 bg-white text-slate-900 rounded-3xl p-4 shadow-2xl border border-emerald-100 z-50 space-y-3">
                   <div className="flex justify-between items-center border-b border-slate-100 pb-2">
                     <span className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
-                      <Bell size={14} className="text-emerald-600" /> Active Farm Alerts
+                      <Bell size={14} className="text-emerald-650" /> Active Farm Alerts
                     </span>
                     <button onClick={() => setNotificationsOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
                       <X size={14} />
@@ -315,6 +325,37 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Proactive Farmer Today's Priority Operations Banner */}
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-3xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-white/20 rounded-xl">
+            <Sparkles className="w-5 h-5 text-white animate-pulse" />
+          </div>
+          <div className="text-xs sm:text-sm">
+            <p className="font-extrabold flex items-center gap-1.5">
+              Today's Agronomic Priorities & Insights
+            </p>
+            <p className="text-white/80 text-xs mt-0.5 font-medium leading-relaxed">
+              Pest warning reported 2.4km away • Crop vegetative growth progress is normal • Weather suitable for fertilizer application.
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Link
+            to="/crop-health"
+            className="px-3.5 py-1.5 bg-white text-emerald-800 font-extrabold rounded-xl transition hover:bg-slate-50 text-xs shrink-0"
+          >
+            Disease Guard
+          </Link>
+          <Link
+            to="/irrigation"
+            className="px-3.5 py-1.5 bg-emerald-750 hover:bg-emerald-700 border border-white/20 text-white font-extrabold rounded-xl transition text-xs shrink-0"
+          >
+            Water Schedule
+          </Link>
+        </div>
+      </div>
+
       {/* API Error Notification Banner */}
       {error && (
         <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center justify-between text-xs text-rose-900 font-semibold">
@@ -322,7 +363,7 @@ const Dashboard = () => {
             <AlertTriangle className="text-rose-600" size={16} />
             <span>{error}</span>
           </div>
-          <button onClick={fetchDashboard} className="px-3 py-1 bg-rose-600 text-white rounded-xl text-xs font-bold hover:bg-rose-700">
+          <button onClick={fetchDashboard} className="px-3 py-1 bg-rose-650 text-white rounded-xl text-xs font-bold hover:bg-rose-750">
             Retry
           </button>
         </div>
@@ -344,9 +385,9 @@ const Dashboard = () => {
       )}
 
       {/* ======================================================== */}
-      {/* 2. KPI SUMMARY CARDS GRID (5 Cards) */}
+      {/* 2. KPI SUMMARY CARDS GRID (6 Cards) */}
       {/* ======================================================== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
         
         {/* KPI 1: Temperature */}
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all space-y-2 group">
@@ -411,8 +452,27 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* KPI 5: Weather Risk Status */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all space-y-2 group col-span-2 sm:col-span-1">
+        {/* KPI 5: Crop Stage */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-105 shadow-sm hover:shadow-md transition-all space-y-2 group">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Crop Stage</span>
+            <div className="p-2 bg-emerald-100 text-emerald-600 rounded-xl group-hover:scale-105 transition-transform">
+              <Sprout size={18} />
+            </div>
+          </div>
+          <div>
+            <p className="text-2xl font-black text-slate-900 truncate">{farm?.growthStage || 'Vegetative'}</p>
+            <div className="flex items-center gap-1 mt-1">
+              <div className="w-12 h-1 bg-slate-100 rounded-full overflow-hidden shrink-0">
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: '50%' }} />
+              </div>
+              <span className="text-[9px] font-semibold text-slate-500 ml-1">50% Progress</span>
+            </div>
+          </div>
+        </div>
+
+        {/* KPI 6: Weather Risk Status */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all space-y-2 group">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Weather Risk</span>
             <div className="p-2 bg-emerald-100 text-emerald-600 rounded-xl group-hover:scale-105 transition-transform">
@@ -421,7 +481,7 @@ const Dashboard = () => {
           </div>
           <div>
             <p className="text-2xl font-black text-emerald-700">Good (Safe)</p>
-            <span className="text-[11px] font-semibold text-slate-500">No Frost or Heavy Rain</span>
+            <span className="text-[11px] font-semibold text-slate-500">No Frost Risk</span>
           </div>
         </div>
 
@@ -444,7 +504,7 @@ const Dashboard = () => {
             </div>
 
             {/* Metric Toggle */}
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+            <div className="flex items-center gap-1 bg-slate-105 p-1 rounded-xl text-xs font-bold">
               <button
                 onClick={() => setWeatherMetric('temp')}
                 className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
@@ -558,7 +618,7 @@ const Dashboard = () => {
               <select
                 value={selectedCrop}
                 onChange={(e) => setSelectedCrop(e.target.value)}
-                className="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-800"
+                className="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none"
               >
                 <option value="Wheat">Wheat</option>
                 <option value="Rice">Rice</option>
@@ -600,7 +660,7 @@ const Dashboard = () => {
               </ResponsiveContainer>
             ) : (
               <div className="h-full flex items-center justify-center text-xs text-slate-500 font-semibold">
-                Loading price history telemetry...
+                No market analytics data available.
               </div>
             )}
           </div>
@@ -613,40 +673,72 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Crop Price Comparison Bar Chart */}
+        {/* Crop Price Comparison Bar Chart & Allocation Pie Chart */}
         <div className="lg:col-span-5 min-w-0 bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4 flex flex-col justify-between">
-          <div className="border-b border-slate-100 pb-3">
-            <span className="text-[11px] font-extrabold text-purple-600 uppercase tracking-wider">Regional Commodity Benchmarks</span>
-            <h3 className="text-lg font-bold text-slate-900">Current Crop Price Comparison</h3>
+          <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-extrabold text-purple-600 uppercase tracking-wider">Commodity Benchmarks</span>
+              <h3 className="text-base font-bold text-slate-900">Crop Prices & Allocation</h3>
+            </div>
+            <span className="text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded-full">5.5 Acres</span>
           </div>
 
-          <div className="h-56 w-full pt-1">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={CROP_PRICE_COMPARISON_DATA} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                <XAxis dataKey="crop" tick={{ fontSize: 10, fill: '#64748B', fontWeight: 700 }} />
-                <YAxis tick={{ fontSize: 10, fill: '#64748B', fontWeight: 600 }} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#0F172A', color: '#FFF', borderRadius: '16px', border: 'none', fontSize: '12px', fontWeight: 'bold' }}
-                />
-                <Bar dataKey="price" radius={[8, 8, 0, 0]} name="Price (₹/Quintal)">
-                  {CROP_PRICE_COMPARISON_DATA.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+            {/* Column 1: Bar Chart */}
+            <div className="h-44 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={CROP_PRICE_COMPARISON_DATA} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                  <XAxis dataKey="crop" tick={{ fontSize: 8, fill: '#64748B', fontWeight: 700 }} />
+                  <YAxis tick={{ fontSize: 8, fill: '#64748B', fontWeight: 605 }} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#0F172A', color: '#FFF', borderRadius: '12px', border: 'none', fontSize: '10px' }}
+                  />
+                  <Bar dataKey="price" radius={[4, 4, 0, 0]} name="Price (₹/q)">
+                    {CROP_PRICE_COMPARISON_DATA.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Column 2: Crop Distribution Pie Chart */}
+            <div className="h-44 w-full relative flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={CROP_DISTRIBUTION_DATA}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={28}
+                    outerRadius={40}
+                    paddingAngle={3}
+                    dataKey="value"
+                  >
+                    {CROP_DISTRIBUTION_DATA.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#0F172A', color: '#FFF', borderRadius: '12px', border: 'none', fontSize: '10px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute flex flex-col items-center justify-center text-center select-none pointer-events-none">
+                <span className="text-[8px] text-slate-400 uppercase font-black tracking-widest leading-none">Total</span>
+                <span className="text-xs font-black text-slate-900 leading-none mt-0.5">5.5 Ac</span>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-100">
-            <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Highest Commodity</span>
-              <p className="font-extrabold text-slate-900">Cotton • ₹6,800</p>
-            </div>
-            <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Lowest Commodity</span>
-              <p className="font-extrabold text-slate-900">Maize • ₹1,950</p>
-            </div>
+          <div className="flex flex-wrap justify-center gap-x-2 text-[9px] font-bold text-slate-500 border-t border-slate-100 pt-2">
+            {CROP_DISTRIBUTION_DATA.map(c => (
+              <div key={c.name} className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: c.fill }} />
+                <span>{c.name} ({c.value}%)</span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -711,7 +803,7 @@ const Dashboard = () => {
             <span className="text-[11px] font-extrabold text-purple-600 uppercase tracking-wider">AI Farm Telemetry</span>
             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-purple-600" />
-              Smart AI Insights & Recommendations
+              Smart AI Insights & Explainable Advice
             </h3>
           </div>
 
@@ -719,30 +811,33 @@ const Dashboard = () => {
             {/* Weather Insight */}
             <div className="p-4 bg-blue-50/80 rounded-2xl border border-blue-100 space-y-1.5">
               <div className="flex items-center gap-2 text-xs font-bold text-blue-900">
-                <Sun size={15} className="text-blue-600" /> Weather Insight
+                <Sun size={15} className="text-blue-600" /> Weather Insight & Advice
               </div>
               <p className="text-xs text-slate-700 font-medium leading-relaxed">
                 Clear skies expected over the next 48 hours. Rainfall probability remains low at 10%.
+                <span className="block mt-1 font-bold text-emerald-800">💡 Best farming window: 6 AM to 10 AM.</span>
               </p>
             </div>
 
             {/* Market Insight */}
             <div className="p-4 bg-emerald-50/80 rounded-2xl border border-emerald-100 space-y-1.5">
               <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
-                <TrendingUp size={15} className="text-emerald-600" /> Market Insight
+                <TrendingUp size={15} className="text-emerald-600" /> Market Price Forecast
               </div>
               <p className="text-xs text-slate-700 font-medium leading-relaxed">
                 {selectedCrop} mandi rates increased +4.2% over 7 days. Higher rates expected near weekend.
+                <span className="block mt-1 font-bold text-emerald-800">📈 Hold stock: Expected next week peak: +₹120/q.</span>
               </p>
             </div>
 
             {/* Crop Health Insight */}
             <div className="p-4 bg-purple-50/80 rounded-2xl border border-purple-100 space-y-1.5">
               <div className="flex items-center gap-2 text-xs font-bold text-purple-900">
-                <Sprout size={15} className="text-purple-600" /> Crop Insight
+                <Sprout size={15} className="text-purple-600" /> Crop Health & Nutrition
               </div>
               <p className="text-xs text-slate-700 font-medium leading-relaxed">
                 Soil moisture is balanced (68%). NPK nutrient uptake is optimal for {farm?.growthStage || 'Vegetative'} growth.
+                <span className="block mt-1 font-bold text-emerald-800">🛡️ Farm Health Score: 92% (Excellent).</span>
               </p>
             </div>
 
@@ -753,11 +848,29 @@ const Dashboard = () => {
               </div>
               <p className="text-xs text-slate-700 font-medium leading-relaxed">
                 {todaysAction?.reasoning?.actionableAdvice || 'No irrigation required today. Save pumping costs.'}
+                <span className="block mt-1 font-bold text-cyan-850">💧 Estimated Water Saved: 14,250 Liters.</span>
               </p>
             </div>
           </div>
 
-          <div className="pt-2 flex items-center justify-between text-xs text-slate-500 font-semibold border-t border-slate-100">
+          {/* Explainable AI (XAI) & Dynamic Reasonings */}
+          <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-xs space-y-2">
+            <h4 className="font-extrabold text-slate-800 flex items-center gap-1.5 text-[12px]">
+              <Sparkles size={13} className="text-purple-600" /> Explainable AI Decision Analysis
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] font-semibold text-slate-600 leading-normal">
+              <div className="space-y-1">
+                <p><span className="text-slate-500 font-bold">Why:</span> Moisture level (68%) exceeds the dry threshold (50%), making additional watering unnecessary today.</p>
+                <p><span className="text-slate-500 font-bold">Expected Crop Impact:</span> Prevents root oxygen stress and saves ₹1,200 in pumping electricity costs.</p>
+              </div>
+              <div className="space-y-1">
+                <p><span className="text-slate-500 font-bold">Confidence Score:</span> 96% based on micro-climatic sensor alignment.</p>
+                <p><span className="text-slate-500 font-bold">Operations to Avoid:</span> Avoid applying granular fertilizers during high wind speeds forecast for tomorrow afternoon.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-2 flex items-center justify-between text-xs text-slate-500 font-semibold border-t border-slate-105">
             <span>Powered by KrishiMitra Telemetry Engine</span>
             <Link to="/voice-assistant" className="text-emerald-700 font-bold hover:underline">
               Ask Voice AI &rarr;
@@ -779,21 +892,21 @@ const Dashboard = () => {
               <AlertTriangle className="w-5 h-5 text-amber-500" />
               Active Alerts & Warnings
             </h3>
-            <span className="text-[10px] font-extrabold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-extrabold text-slate-505 bg-slate-100 px-2 py-0.5 rounded-full">
               Live Feed
             </span>
           </div>
 
           <div className="space-y-3">
             {/* Weather Alert */}
-            <div className="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs text-emerald-900 space-y-1">
+            <div className="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs text-emerald-909 space-y-1">
               <div className="flex items-center justify-between font-bold">
                 <span className="flex items-center gap-1.5 text-emerald-800">
                   <ShieldCheck size={14} className="text-emerald-600" /> Weather Risk
                 </span>
                 <span className="text-[10px] bg-emerald-200 px-2 py-0.5 rounded-md text-emerald-950 font-extrabold">NORMAL</span>
               </div>
-              <p className="text-slate-600 text-[11px]">No heavy rain or frost warnings detected for your location today.</p>
+              <p className="text-slate-605 text-[11px]">No heavy rain or frost warnings detected for your location today.</p>
             </div>
 
             {/* Mandi Price Alert */}
@@ -802,20 +915,20 @@ const Dashboard = () => {
                 <span className="flex items-center gap-1.5 text-blue-800">
                   <TrendingUp size={14} className="text-blue-600" /> Market Price Spike
                 </span>
-                <span className="text-[10px] bg-blue-200 px-2 py-0.5 rounded-md text-blue-950 font-extrabold">INFO</span>
+                <span className="text-[10px] bg-blue-200 px-2 py-0.5 rounded-md text-blue-955 font-extrabold">INFO</span>
               </div>
-              <p className="text-slate-600 text-[11px]">Wheat market price in Indore mandi rose by +4.2% over last 7 days.</p>
+              <p className="text-slate-606 text-[11px]">Wheat market price in Indore mandi rose by +4.2% over last 7 days.</p>
             </div>
 
             {/* Farming Alert */}
             <div className="p-3.5 bg-purple-50 rounded-2xl border border-purple-200 text-xs text-purple-900 space-y-1">
               <div className="flex items-center justify-between font-bold">
                 <span className="flex items-center gap-1.5 text-purple-800">
-                  <Info size={14} className="text-purple-600" /> Growth Stage Alert
+                  <Info size={14} className="text-purple-650" /> Growth Stage Alert
                 </span>
-                <span className="text-[10px] bg-purple-200 px-2 py-0.5 rounded-md text-purple-950 font-extrabold">ACTION</span>
+                <span className="text-[10px] bg-purple-200 px-2 py-0.5 rounded-md text-purple-955 font-extrabold">ACTION</span>
               </div>
-              <p className="text-slate-600 text-[11px]">Crop in Vegetative stage. Review fertilizer top-dressing schedule.</p>
+              <p className="text-slate-607 text-[11px]">Crop in Vegetative stage. Review fertilizer top-dressing schedule.</p>
             </div>
           </div>
         </div>

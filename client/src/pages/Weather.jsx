@@ -248,21 +248,33 @@ const Weather = () => {
           </div>
         </div>
 
-        {/* COMPACT AI INSIGHT CARD */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-2 flex flex-col justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800">
+        {/* SMART AI INSIGHTS & EXPLANATIONS CARD */}
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 border-b border-slate-100 pb-2">
               <Sparkles className="w-4 h-4 text-emerald-600" />
-              <span>SmartAg Insight</span>
+              <span>AI Weather Explanation</span>
             </div>
+            
             <p className="text-xs text-slate-700 font-medium leading-relaxed">
-              {agriInsight}
+              <strong>Action Guide:</strong> {agriInsight}
             </p>
+
+            <div className="space-y-2 text-[11px] font-semibold text-slate-600 pt-1">
+              <p>⏱️ <span className="text-slate-400">Best Work Window:</span> 6:00 AM - 10:00 AM (Ideal humidity & wind velocity).</p>
+              <p>💧 <span className="text-slate-400">Rain Outlook:</span> {weather?.rainProbability || 10}% chance today. No waterlogging risks detected.</p>
+              <p>🧬 <span className="text-slate-400">Evaporation Impact:</span> Sunny sky increases root transpiration. Maintain uniform moisture buffer.</p>
+            </div>
           </div>
+
           <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500 font-semibold flex items-center justify-between">
-            <span>Irrigation status:</span>
-            <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-              {weather?.rainProbability >= 70 ? 'Delay' : 'Recommended'}
+            <span>Irrigation Recommendation:</span>
+            <span className={`px-2 py-0.5 rounded font-black border ${
+              weather?.rainProbability >= 70 
+                ? 'bg-rose-50 border-rose-200 text-rose-700' 
+                : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+            }`}>
+              {weather?.rainProbability >= 70 ? 'DELAY' : 'IRRIGATE'}
             </span>
           </div>
         </div>

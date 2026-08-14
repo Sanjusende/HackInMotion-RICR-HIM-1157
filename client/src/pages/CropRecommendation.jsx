@@ -30,6 +30,57 @@ const RECOMMENDATION_RULES = [
     ]
   }
 ];
+// Detailed telemetry suitability specifications for recommended crops
+const CROP_SUITABILITY_DETAILS = {
+  'Soybean': {
+    npk: 'N: 20, P: 60, K: 40 (Low Nitrogen demand due to root nodulation)',
+    yield: '8 - 10 Quintals / Acre',
+    profit: '₹22,000 - ₹28,000 / Acre',
+    water: 'Medium (Rainfall-dependent)',
+    risk: 'Low (Ideal clay moisture response)',
+    demand: 'High (Indore oil mills hub demand)'
+  },
+  'Maize': {
+    npk: 'N: 120, P: 60, K: 40 (High Nitrogen response)',
+    yield: '20 - 24 Quintals / Acre',
+    profit: '₹18,000 - ₹24,000 / Acre',
+    water: 'Medium',
+    risk: 'Medium (Prone to excess water lodging)',
+    demand: 'Moderate (Feed industry benchmark)'
+  },
+  'Cotton': {
+    npk: 'N: 80, P: 40, K: 40',
+    yield: '10 - 12 Quintals / Acre',
+    profit: '₹35,000 - ₹45,000 / Acre',
+    water: 'Medium-High',
+    risk: 'High (Bollworm pest vulnerability)',
+    demand: 'Very High (Textile hub preference)'
+  },
+  'Wheat': {
+    npk: 'N: 120, P: 60, K: 40 (Balanced nutrition required)',
+    yield: '18 - 22 Quintals / Acre',
+    profit: '₹28,500 - ₹35,000 / Acre',
+    water: 'Medium (Rabi residual moisture + 4 irrigations)',
+    risk: 'Low (Ideal cool Rabi winter alignment)',
+    demand: 'High (Indore Sharbati grade premium rates)'
+  },
+  'Gram / Chickpea': {
+    npk: 'N: 20, P: 50, K: 20 (Self nitrogen-fixing pulse)',
+    yield: '6 - 8 Quintals / Acre',
+    profit: '₹24,000 - ₹30,005 / Acre',
+    water: 'Low (Requires minimal winter irrigation)',
+    risk: 'Low (Drought-tolerant root system)',
+    demand: 'High (Pulses processing industry demand)'
+  },
+  'Rice': {
+    npk: 'N: 120, P: 60, K: 60',
+    yield: '22 - 26 Quintals / Acre',
+    profit: '₹25,000 - ₹32,000 / Acre',
+    water: 'High (Flooded conditions required)',
+    risk: 'Medium (Requires assured water supply)',
+    demand: 'High (Local food supply chains)'
+  }
+};
 
 const CropRecommendation = () => {
   const { farm } = useFarm();
@@ -43,7 +94,7 @@ const CropRecommendation = () => {
     <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-3">
-          <Sprout className="w-8 h-8 text-emerald-600" />
+          <Sprout className="w-8 h-8 text-emerald-600 animate-pulse" />
           Crop Recommendation Engine
         </h1>
         <p className="text-slate-600 text-sm mt-1">
@@ -90,7 +141,7 @@ const CropRecommendation = () => {
         </h2>
 
         {ruleMatch.crops.map((crop, idx) => (
-          <div key={idx} className="bg-white rounded-3xl p-6 border border-slate-100 shadow-md space-y-3 hover:border-emerald-200 transition">
+          <div key={idx} className="bg-white rounded-3xl p-6 border border-slate-100 shadow-md space-y-4 hover:border-emerald-200 transition">
             <div className="flex items-center justify-between">
               <span className="text-2xl font-black text-slate-900 flex items-center gap-2">
                 <CheckCircle2 className="w-6 h-6 text-emerald-600" />
@@ -104,6 +155,36 @@ const CropRecommendation = () => {
             <p className="text-sm text-slate-700 bg-slate-50 p-4 rounded-2xl border border-slate-100">
               💡 <strong>Agronomic Reasoning:</strong> {crop.reasoning}
             </p>
+
+            {/* AI TELEMETRY METRICS GRID */}
+            {CROP_SUITABILITY_DETAILS[crop.name] && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 pt-3 border-t border-slate-100 text-left">
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-150">
+                  <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">NPK Suitability</span>
+                  <span className="text-xs font-black text-slate-900">{CROP_SUITABILITY_DETAILS[crop.name].npk}</span>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-150">
+                  <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Estimated Yield / Acre</span>
+                  <span className="text-xs font-black text-emerald-800">{CROP_SUITABILITY_DETAILS[crop.name].yield}</span>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-150">
+                  <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Net Profit Est. / Acre</span>
+                  <span className="text-xs font-black text-emerald-800">{CROP_SUITABILITY_DETAILS[crop.name].profit}</span>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-150">
+                  <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Water Demand Index</span>
+                  <span className="text-xs font-black text-slate-900">{CROP_SUITABILITY_DETAILS[crop.name].water}</span>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-150">
+                  <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Operational Risk</span>
+                  <span className="text-xs font-black text-slate-900">{CROP_SUITABILITY_DETAILS[crop.name].risk}</span>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-150">
+                  <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Mandi Market Demand</span>
+                  <span className="text-xs font-black text-slate-900">{CROP_SUITABILITY_DETAILS[crop.name].demand}</span>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
