@@ -44,7 +44,7 @@ const validateQuery = (query) => {
 // POST /voice/query
 // ------------------------------------------------------
 
-export const handleVoiceQuery = async (req, res) => {
+export const handleVoiceQuery = async (req, res, next) => {
   try {
     const { query, language } = req.body || {};
 
@@ -108,16 +108,7 @@ export const handleVoiceQuery = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('[VoiceController] Query processing failed:', {
-      message: error.message,
-      userId: req.user?._id,
-      stack: error.stack,
-    });
-
-    return res.status(500).json({
-      success: false,
-      error: 'Unable to process your voice query right now. Please try again later.',
-    });
+    next(error);
   }
 };
 
@@ -125,7 +116,7 @@ export const handleVoiceQuery = async (req, res) => {
 // GET /voice/history
 // ------------------------------------------------------
 
-export const getVoiceHistory = async (req, res) => {
+export const getVoiceHistory = async (req, res, next) => {
   try {
     // ------------------------------------------
     // Fetch Voice History
@@ -144,17 +135,6 @@ export const getVoiceHistory = async (req, res) => {
 
     return ApiResponse.success(res, history, 'Voice history retrieved successfully');
   } catch (error) {
-    console.error('[VoiceController] History retrieval failed:', {
-      message: error.message,
-      userId: req.user?._id,
-      stack: error.stack,
-    });
-
-    return ApiResponse.error(
-      res,
-      'Failed to retrieve voice history. Please try again later.',
-      500,
-      'SERVER_ERROR'
-    );
+    next(error);
   }
 };

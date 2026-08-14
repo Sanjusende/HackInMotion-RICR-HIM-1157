@@ -3,7 +3,7 @@ import ApiResponse from '../utils/apiResponse.js';
 import { reverseGeocode, forwardGeocode } from '../services/geocodingService.js';
 
 // Get current user's farm profile
-export const getMyFarm = async (req, res) => {
+export const getMyFarm = async (req, res, next) => {
   try {
     const farm = await Farm.findOne({ userId: req.user._id });
     if (!farm) {
@@ -18,15 +18,12 @@ export const getMyFarm = async (req, res) => {
       data: farm,
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to retrieve farm profile',
-    });
+    next(error);
   }
 };
 
 // Create or update farm profile
-export const createOrUpdateFarm = async (req, res) => {
+export const createOrUpdateFarm = async (req, res, next) => {
   try {
     const {
       name,
@@ -103,16 +100,12 @@ export const createOrUpdateFarm = async (req, res) => {
       data: farm,
     });
   } catch (error) {
-    console.error('Error saving farm profile:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to save farm profile',
-    });
+    next(error);
   }
 };
 
 // Get farm by ID
-export const getFarmById = async (req, res) => {
+export const getFarmById = async (req, res, next) => {
   try {
     const farm = await Farm.findById(req.params.id);
     if (!farm) {
@@ -131,6 +124,6 @@ export const getFarmById = async (req, res) => {
 
     return ApiResponse.success(res, farm, 'Farm profile retrieved successfully');
   } catch (error) {
-    return ApiResponse.error(res, 'Failed to fetch farm', 500, 'SERVER_ERROR');
+    next(error);
   }
 };
