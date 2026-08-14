@@ -41,25 +41,47 @@ export const analyzeCropHealth = async (req, res) => {
     const observationDescription =
       description || 'Leaf observation report';
 
-    const engineResult = evaluateCropHealth(
+    const engineResult = await evaluateCropHealth(
       description || '',
-      farm.currentCrop
+      farm.currentCrop,
+      req.file ? req.file.originalname : '',
+      req.file ? req.file.buffer : null,
+      req.file ? req.file.mimetype : ''
     );
+
+    if (!engineResult.isValid) {
+      return res.status(400).json({
+        success: false,
+        error: engineResult.message || 'Invalid crop image'
+      });
+    }
 
     const log = await CropHealth.create({
       farmId: farm._id,
       imageUrl,
       description: observationDescription,
       possibleIssue: engineResult.possibleIssue,
-      confidence: engineResult.confidence,
+      confidence: `${engineResult.confidence}%`,
       whatToCheck: engineResult.whatToCheck,
       nextAction: engineResult.nextAction,
       location: farmLocation,
-      reportedAt: new Date()
+      reportedAt: new Date(),
+
+      crop: engineResult.crop,
+      health: engineResult.health,
+      disease: engineResult.disease,
+      severity: engineResult.severity,
+      affectedArea: engineResult.affectedArea,
+      causes: engineResult.causes,
+      treatment: engineResult.treatment,
+      prevention: engineResult.prevention,
+      fertilizerRecommendation: engineResult.fertilizerRecommendation,
+      irrigationRecommendation: engineResult.irrigationRecommendation,
+      analysisTime: engineResult.analysisTime
     });
 
     const hasIssue =
-      !engineResult.possibleIssue.includes('No Critical Issue');
+      !engineResult.possibleIssue.includes('Healthy');
 
     if (hasIssue) {
       await CommunityReport.create({
@@ -74,7 +96,19 @@ export const analyzeCropHealth = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: log
+      data: log,
+      crop: engineResult.crop,
+      health: engineResult.health,
+      disease: engineResult.disease,
+      confidence: `${engineResult.confidence}%`,
+      severity: engineResult.severity,
+      affectedArea: engineResult.affectedArea,
+      causes: engineResult.causes,
+      treatment: engineResult.treatment,
+      prevention: engineResult.prevention,
+      fertilizerRecommendation: engineResult.fertilizerRecommendation,
+      irrigationRecommendation: engineResult.irrigationRecommendation,
+      analysisTime: engineResult.analysisTime
     });
   } catch (error) {
     console.error('Crop health analysis error:', error);
