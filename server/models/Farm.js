@@ -6,71 +6,85 @@ const farmSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true
+      index: true,
     },
     name: {
       type: String,
       default: 'My Farm',
-      trim: true
+      trim: true,
     },
     location: {
       display: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
       },
       lat: {
         type: Number,
-        required: true
+        required: true,
       },
       lng: {
         type: Number,
-        required: true
+        required: true,
       },
       state: String,
       district: String,
-      village: String
+      village: String,
     },
     landSize: {
       value: {
         type: Number,
         required: true,
-        min: 0.1
+        min: 0.1,
       },
       unit: {
         type: String,
         enum: ['acres', 'hectares', 'bigha'],
-        default: 'acres'
-      }
+        default: 'acres',
+      },
     },
     soilType: {
       type: String,
-      enum: ['Black Soil', 'Red Soil', 'Alluvial Soil', 'Clay Soil', 'Sandy Soil', 'Loamy Soil', 'Unknown/Not sure'],
-      default: 'Unknown/Not sure'
+      enum: [
+        'Black Soil',
+        'Red Soil',
+        'Alluvial Soil',
+        'Clay Soil',
+        'Sandy Soil',
+        'Loamy Soil',
+        'Unknown/Not sure',
+      ],
+      default: 'Unknown/Not sure',
     },
     currentCrop: {
       type: String,
       required: true,
       trim: true,
-      index: true
+      index: true,
     },
     plannedCrop: {
       type: String,
-      trim: true
+      trim: true,
     },
     growthStage: {
       type: String,
-      enum: ['Initial / Germination', 'Vegetative', 'Flowering', 'Yield Formation / Fruiting', 'Ripening / Harvesting'],
-      default: 'Vegetative'
+      enum: [
+        'Initial / Germination',
+        'Vegetative',
+        'Flowering',
+        'Yield Formation / Fruiting',
+        'Ripening / Harvesting',
+      ],
+      default: 'Vegetative',
     },
     season: {
       type: String,
       enum: ['Kharif', 'Rabi', 'Zaid'],
-      default: 'Kharif'
-    }
+      default: 'Kharif',
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 

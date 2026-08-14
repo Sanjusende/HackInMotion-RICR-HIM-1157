@@ -24,22 +24,12 @@ export const getCurrentWeather = async (req, res, next) => {
 
     const weatherData = await fetchOpenMeteoWeather(lat, lng);
 
-    if (farm) {
+    // Associate cached record with farm if available
+    if (farm && weatherData && (weatherData._id || weatherData.id)) {
       try {
-        await Weather.create({
-          farmId: farm._id,
-          fetchedAt: weatherData.fetchedAt,
-          temperature: weatherData.temperature,
-          humidity: weatherData.humidity,
-          windSpeed: weatherData.windSpeed,
-          rainProbability: weatherData.rainProbability,
-          rainfallMm: weatherData.rainfallMm,
-          weatherCondition: weatherData.weatherCondition,
-          forecast: weatherData.forecast,
-          source: weatherData.source
-        });
+        await Weather.findByIdAndUpdate(weatherData._id || weatherData.id, { farmId: farm._id });
       } catch (saveErr) {
-        console.warn('Weather log save failed (non-blocking):', saveErr.message);
+        console.warn('Failed to associate weather record with farm:', saveErr.message);
       }
     }
 
@@ -69,7 +59,11 @@ export const getWeatherForecast = async (req, res, next) => {
 
     const weatherData = await fetchOpenMeteoWeather(lat, lng);
 
-    return ApiResponse.success(res, weatherData.forecast || [], 'Weather forecast loaded successfully');
+    return ApiResponse.success(
+      res,
+      weatherData.forecast || [],
+      'Weather forecast loaded successfully'
+    );
   } catch (error) {
     next(error);
   }

@@ -42,7 +42,9 @@ const Login = () => {
       toast.success('Successfully logged in!');
       navigate('/dashboard');
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message || 'Unable to sign in. Please try again.');
+      toast.error(
+        error.response?.data?.message || error.message || 'Unable to sign in. Please try again.'
+      );
     } finally {
       setIsLoading(false);
     }

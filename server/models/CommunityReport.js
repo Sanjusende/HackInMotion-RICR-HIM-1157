@@ -5,32 +5,32 @@ const communityReportSchema = new mongoose.Schema(
     crop: {
       type: String,
       required: true,
-      index: true
+      index: true,
     },
     possibleIssue: {
       type: String,
-      required: true
+      required: true,
     },
     location: {
       lat: { type: Number, required: true },
-      lng: { type: Number, required: true }
+      lng: { type: Number, required: true },
     },
     reportCount: {
       type: Number,
-      default: 1
+      default: 1,
     },
     nearbyDistanceKm: {
       type: Number,
-      default: 2.4
+      default: 2.4,
     },
     lastReportedAt: {
       type: Date,
       default: Date.now,
-      index: true
-    }
+      index: true,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 

@@ -14,7 +14,8 @@ export const calculatePriceTrend = (currentPrice, previousPrice) => {
       trend: 'Stable',
       changePercent: 0,
       displayText: 'Recent prices have been stable.',
-      sellingInsightText: 'Market price is steady. Compare against your target selling price and storage cost before making a decision.'
+      sellingInsightText:
+        'Market price is steady. Compare against your target selling price and storage cost before making a decision.',
     };
   }
 
@@ -22,22 +23,25 @@ export const calculatePriceTrend = (currentPrice, previousPrice) => {
 
   let trend = 'Stable';
   let displayText = 'Recent prices have been stable.';
-  let sellingInsightText = 'Market price is steady. Compare current mandi rates against your target threshold and harvest storage timeline.';
+  let sellingInsightText =
+    'Market price is steady. Compare current mandi rates against your target threshold and harvest storage timeline.';
 
   if (changePercent >= 2.0) {
     trend = 'Rising';
     displayText = 'Recent prices have been trending upward.';
-    sellingInsightText = 'Recent prices have been trending upward. Compare current market rates with your local mandi and target selling price.';
+    sellingInsightText =
+      'Recent prices have been trending upward. Compare current market rates with your local mandi and target selling price.';
   } else if (changePercent <= -2.0) {
     trend = 'Falling';
     displayText = 'Recent prices have been trending downward.';
-    sellingInsightText = 'Recent prices have been trending downward. Evaluate holding capacity versus immediate liquidity needs before selling.';
+    sellingInsightText =
+      'Recent prices have been trending downward. Evaluate holding capacity versus immediate liquidity needs before selling.';
   }
 
   return {
     trend,
     changePercent,
     displayText,
-    sellingInsightText
+    sellingInsightText,
   };
 };

@@ -63,22 +63,120 @@ const AppRoutes = () => {
     <Suspense fallback={<PageSkeleton />}>
       <Routes>
         {/* Public auth pages */}
-        <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
-        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-        <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-        <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
-        <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+        <Route
+          path="/"
+          element={
+            <PublicRoute>
+              <Landing />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <ForgotPassword />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <PublicRoute>
+              <ResetPassword />
+            </PublicRoute>
+          }
+        />
 
         {/* Protected Agricultural App Routes */}
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/farm-profile" element={<ProtectedRoute><FarmProfile /></ProtectedRoute>} />
-        <Route path="/weather" element={<ProtectedRoute><Weather /></ProtectedRoute>} />
-        <Route path="/irrigation" element={<ProtectedRoute><Irrigation /></ProtectedRoute>} />
-        <Route path="/crop-health" element={<ProtectedRoute><CropHealth /></ProtectedRoute>} />
-        <Route path="/market" element={<ProtectedRoute><MarketIntelligence /></ProtectedRoute>} />
-        <Route path="/voice-assistant" element={<ProtectedRoute><VoiceAssistant /></ProtectedRoute>} />
-        <Route path="/fertilizer-planning" element={<ProtectedRoute><FertilizerPlanning /></ProtectedRoute>} />
-        <Route path="/crop-recommendation" element={<ProtectedRoute><CropRecommendation /></ProtectedRoute>} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farm-profile"
+          element={
+            <ProtectedRoute>
+              <FarmProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/weather"
+          element={
+            <ProtectedRoute>
+              <Weather />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/irrigation"
+          element={
+            <ProtectedRoute>
+              <Irrigation />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/crop-health"
+          element={
+            <ProtectedRoute>
+              <CropHealth />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/market"
+          element={
+            <ProtectedRoute>
+              <MarketIntelligence />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/voice-assistant"
+          element={
+            <ProtectedRoute>
+              <VoiceAssistant />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/fertilizer-planning"
+          element={
+            <ProtectedRoute>
+              <FertilizerPlanning />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/crop-recommendation"
+          element={
+            <ProtectedRoute>
+              <CropRecommendation />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Catch all 404 route */}
         <Route path="*" element={<NotFound />} />

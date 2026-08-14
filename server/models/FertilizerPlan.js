@@ -6,31 +6,31 @@ const fertilizerPlanSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Farm',
       required: true,
-      index: true
+      index: true,
     },
     crop: {
       type: String,
-      required: true
+      required: true,
     },
     soilType: {
       type: String,
-      required: true
+      required: true,
     },
     growthStage: {
       type: String,
-      required: true
+      required: true,
     },
     recommendations: [
       {
         nutrientType: String,
         applicationWindow: String,
         method: String,
-        generalGuidance: String
-      }
-    ]
+        generalGuidance: String,
+      },
+    ],
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 

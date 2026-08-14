@@ -5,12 +5,14 @@ const SmartRecommendation = ({ result, farm, selectedField, calculatedLiters, on
   const crop = selectedField?.crop || farm?.currentCrop || 'Wheat';
   const fieldName = selectedField?.name || 'Field 01';
   const confidence = result?.confidence ? Math.round(result.confidence * 100) : 92;
-  const decision = result?.decision || (selectedField?.soilMoisture < 45 ? 'IRRIGATE' : 'DONT_IRRIGATE');
+  const decision =
+    result?.decision || (selectedField?.soilMoisture < 45 ? 'IRRIGATE' : 'DONT_IRRIGATE');
   const isIrrigate = decision === 'IRRIGATE';
 
   const waterVol = calculatedLiters || 1200;
   const recommendedTime = isIrrigate ? 'Tomorrow 6:00 AM – 8:00 AM' : 'No Irrigation Scheduled';
-  const reasonText = result?.reasoning?.actionableAdvice ||
+  const reasonText =
+    result?.reasoning?.actionableAdvice ||
     (isIrrigate
       ? `Soil moisture (${selectedField?.soilMoisture ?? 38}%) is below requirement for ${crop} and low rainfall is forecast.`
       : `Soil moisture (${selectedField?.soilMoisture ?? 61}%) is optimal for ${crop}. Conserve water today.`);
@@ -33,12 +35,16 @@ const SmartRecommendation = ({ result, farm, selectedField, calculatedLiters, on
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-emerald-200">🌾 {fieldName} ({crop})</span>
-          <span className={`px-3 py-1 text-xs font-black rounded-full border ${
-            isIrrigate
-              ? 'bg-emerald-500 text-slate-950 border-emerald-400'
-              : 'bg-amber-400/20 text-amber-200 border-amber-400/30'
-          }`}>
+          <span className="text-xs font-bold text-emerald-200">
+            🌾 {fieldName} ({crop})
+          </span>
+          <span
+            className={`px-3 py-1 text-xs font-black rounded-full border ${
+              isIrrigate
+                ? 'bg-emerald-500 text-slate-950 border-emerald-400'
+                : 'bg-amber-400/20 text-amber-200 border-amber-400/30'
+            }`}
+          >
             {isIrrigate ? '🟢 Irrigation Recommended' : '🟡 Hold Off Irrigation'}
           </span>
         </div>

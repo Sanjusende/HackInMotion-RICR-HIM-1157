@@ -6,7 +6,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  CartesianGrid
+  CartesianGrid,
 } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 
@@ -21,7 +21,7 @@ const WeatherChart = ({ weather }) => {
     { time: '12 PM', temp: Math.round(baseTemp + 2), rain: baseRain },
     { time: '3 PM', temp: Math.round(baseTemp + 4), rain: Math.min(100, baseRain + 10) },
     { time: '6 PM', temp: Math.round(baseTemp + 1), rain: Math.max(0, baseRain - 2) },
-    { time: '9 PM', temp: Math.round(baseTemp - 2), rain: Math.max(0, baseRain - 10) }
+    { time: '9 PM', temp: Math.round(baseTemp - 2), rain: Math.max(0, baseRain - 10) },
   ];
 
   return (
@@ -55,8 +55,20 @@ const WeatherChart = ({ weather }) => {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-            <XAxis dataKey="time" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
-            <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} domain={['auto', 'auto']} />
+            <XAxis
+              dataKey="time"
+              stroke="#94a3b8"
+              fontSize={11}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              stroke="#94a3b8"
+              fontSize={11}
+              tickLine={false}
+              axisLine={false}
+              domain={['auto', 'auto']}
+            />
             <Tooltip
               contentStyle={{
                 backgroundColor: '#0f172a',
@@ -64,11 +76,11 @@ const WeatherChart = ({ weather }) => {
                 borderRadius: '12px',
                 border: 'none',
                 fontSize: '11px',
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
               }}
               formatter={(val, name) => [
                 name === 'temp' ? `${val}°C` : `${val}%`,
-                name === 'temp' ? 'Temperature' : 'Rain Chance'
+                name === 'temp' ? 'Temperature' : 'Rain Chance',
               ]}
             />
             <Area

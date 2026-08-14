@@ -6,29 +6,29 @@ const notificationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true
+      index: true,
     },
     category: {
       type: String,
       enum: ['weather', 'irrigation', 'crop_health', 'community', 'market'],
-      required: true
+      required: true,
     },
     title: {
       type: String,
-      required: true
+      required: true,
     },
     message: {
       type: String,
-      required: true
+      required: true,
     },
     read: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    metadata: mongoose.Schema.Types.Mixed
+    metadata: mongoose.Schema.Types.Mixed,
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 

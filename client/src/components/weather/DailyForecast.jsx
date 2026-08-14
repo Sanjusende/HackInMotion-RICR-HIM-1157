@@ -4,13 +4,34 @@ import { Calendar } from 'lucide-react';
 
 const DailyForecast = ({ forecast }) => {
   // If API forecast data exists, use it; otherwise fallback cleanly
-  const daysList = (forecast && forecast.length > 0) ? forecast.slice(0, 5) : [
-    { date: 'Today', tempMax: 28, tempMin: 21, condition: 'Partly Cloudy', rainProbability: 25 },
-    { date: 'Tomorrow', tempMax: 27, tempMin: 20, condition: 'Light Rain', rainProbability: 60 },
-    { date: 'Sat', tempMax: 29, tempMin: 21, condition: 'Sunny', rainProbability: 10 },
-    { date: 'Sun', tempMax: 28, tempMin: 22, condition: 'Partly Cloudy', rainProbability: 30 },
-    { date: 'Mon', tempMax: 30, tempMin: 23, condition: 'Clear Sky', rainProbability: 5 }
-  ];
+  const daysList =
+    forecast && forecast.length > 0
+      ? forecast.slice(0, 5)
+      : [
+          {
+            date: 'Today',
+            tempMax: 28,
+            tempMin: 21,
+            condition: 'Partly Cloudy',
+            rainProbability: 25,
+          },
+          {
+            date: 'Tomorrow',
+            tempMax: 27,
+            tempMin: 20,
+            condition: 'Light Rain',
+            rainProbability: 60,
+          },
+          { date: 'Sat', tempMax: 29, tempMin: 21, condition: 'Sunny', rainProbability: 10 },
+          {
+            date: 'Sun',
+            tempMax: 28,
+            tempMin: 22,
+            condition: 'Partly Cloudy',
+            rainProbability: 30,
+          },
+          { date: 'Mon', tempMax: 30, tempMin: 23, condition: 'Clear Sky', rainProbability: 5 },
+        ];
 
   const formatDateLabel = (rawDate, index) => {
     if (index === 0) return 'Today';
@@ -51,7 +72,7 @@ const DailyForecast = ({ forecast }) => {
               }`}
             >
               <div className="flex items-center gap-3 min-w-[120px]">
-                {getWeatherIcon(day.condition, "w-5 h-5 text-emerald-600 shrink-0")}
+                {getWeatherIcon(day.condition, 'w-5 h-5 text-emerald-600 shrink-0')}
                 <span className="font-extrabold text-slate-900">{dayLabel}</span>
               </div>
 

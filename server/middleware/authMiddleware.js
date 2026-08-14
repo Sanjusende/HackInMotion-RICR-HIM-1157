@@ -1,4 +1,5 @@
-import tokenService from "../services/auth/tokenService.js";
+import tokenService from '../services/auth/tokenService.js';
+import ApiResponse from '../utils/apiResponse.js';
 
 /**
  * Access token verification middleware
@@ -7,8 +8,8 @@ const authMiddleware = async (req, res, next) => {
   try {
     let token = null;
     const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      token = authHeader.split(" ")[1];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
     } else if (req.cookies?.accessToken) {
       token = req.cookies.accessToken;
     } else if (req.cookies?.token) {
@@ -16,20 +17,14 @@ const authMiddleware = async (req, res, next) => {
     }
 
     if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: "Authorization access token required"
-      });
+      return ApiResponse.error(res, 'Authorization access token required', 401, 'UNAUTHORIZED');
     }
 
     let decoded;
     try {
       decoded = tokenService.verifyAccessToken(token);
     } catch (err) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid or expired access token"
-      });
+      return ApiResponse.error(res, 'Invalid or expired access token', 401, 'INVALID_TOKEN');
     }
 
     decoded._id = decoded.id || decoded._id;
@@ -37,10 +32,7 @@ const authMiddleware = async (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Authentication server error"
-    });
+    return ApiResponse.error(res, 'Authentication server error', 500, 'AUTH_SERVER_ERROR');
   }
 };
 

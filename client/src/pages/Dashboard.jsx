@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useFarm } from '../context/FarmContext';
 import { useAuth } from '../context/AuthContext';
-import { getDashboardSummary } from '../services/dashboardService';
+import { getDashboardSummary, getDashboardAnalytics } from '../services/dashboardService';
 import { getWeatherForecast } from '../services/weatherService';
 import { getMarketHistory } from '../services/marketService';
 import { Link, useNavigate } from 'react-router-dom';
@@ -17,7 +17,7 @@ import {
   CartesianGrid,
   Cell,
   PieChart,
-  Pie
+  Pie,
 } from 'recharts';
 import {
   Droplets,
@@ -45,7 +45,7 @@ import {
   Wind,
   Layers,
   Clock,
-  X
+  X,
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 
@@ -56,7 +56,7 @@ const CROP_PRICE_COMPARISON_DATA = [
   { crop: 'Maize', price: 1950, fill: '#F59E0B' },
   { crop: 'Soybean', price: 4600, fill: '#8B5CF6' },
   { crop: 'Cotton', price: 6800, fill: '#EC4899' },
-  { crop: 'Mustard', price: 5350, fill: '#06B6D4' }
+  { crop: 'Mustard', price: 5350, fill: '#06B6D4' },
 ];
 
 // Crop allocation data for Pie Chart representation
@@ -64,18 +64,88 @@ const CROP_DISTRIBUTION_DATA = [
   { name: 'Wheat', value: 50, fill: '#10B981' },
   { name: 'Soybean', value: 25, fill: '#8B5CF6' },
   { name: 'Maize', value: 15, fill: '#F59E0B' },
-  { name: 'Fallow', value: 10, fill: '#64748B' }
+  { name: 'Fallow', value: 10, fill: '#64748B' },
 ];
 
 // Fallback forecast telemetry if offline
 const FALLBACK_FORECAST = [
-  { day: 'Today', date: 'Aug 13', tempMax: 30, tempMin: 22, tempAvg: 26, rainProbability: 10, rainfallMm: 0, humidity: 62, condition: 'Sunny' },
-  { day: 'Fri', date: 'Aug 14', tempMax: 29, tempMin: 21, tempAvg: 25, rainProbability: 15, rainfallMm: 0, humidity: 60, condition: 'Clear' },
-  { day: 'Sat', date: 'Aug 15', tempMax: 28, tempMin: 21, tempAvg: 24, rainProbability: 40, rainfallMm: 2.5, humidity: 68, condition: 'Partly Cloudy' },
-  { day: 'Sun', date: 'Aug 16', tempMax: 27, tempMin: 20, tempAvg: 23, rainProbability: 60, rainfallMm: 8.0, humidity: 75, condition: 'Light Rain' },
-  { day: 'Mon', date: 'Aug 17', tempMax: 29, tempMin: 21, tempAvg: 25, rainProbability: 20, rainfallMm: 0.5, humidity: 65, condition: 'Passing Showers' },
-  { day: 'Tue', date: 'Aug 18', tempMax: 30, tempMin: 22, tempAvg: 26, rainProbability: 10, rainfallMm: 0, humidity: 58, condition: 'Clear' },
-  { day: 'Wed', date: 'Aug 19', tempMax: 31, tempMin: 23, tempAvg: 27, rainProbability: 5, rainfallMm: 0, humidity: 55, condition: 'Sunny' }
+  {
+    day: 'Today',
+    date: 'Aug 13',
+    tempMax: 30,
+    tempMin: 22,
+    tempAvg: 26,
+    rainProbability: 10,
+    rainfallMm: 0,
+    humidity: 62,
+    condition: 'Sunny',
+  },
+  {
+    day: 'Fri',
+    date: 'Aug 14',
+    tempMax: 29,
+    tempMin: 21,
+    tempAvg: 25,
+    rainProbability: 15,
+    rainfallMm: 0,
+    humidity: 60,
+    condition: 'Clear',
+  },
+  {
+    day: 'Sat',
+    date: 'Aug 15',
+    tempMax: 28,
+    tempMin: 21,
+    tempAvg: 24,
+    rainProbability: 40,
+    rainfallMm: 2.5,
+    humidity: 68,
+    condition: 'Partly Cloudy',
+  },
+  {
+    day: 'Sun',
+    date: 'Aug 16',
+    tempMax: 27,
+    tempMin: 20,
+    tempAvg: 23,
+    rainProbability: 60,
+    rainfallMm: 8.0,
+    humidity: 75,
+    condition: 'Light Rain',
+  },
+  {
+    day: 'Mon',
+    date: 'Aug 17',
+    tempMax: 29,
+    tempMin: 21,
+    tempAvg: 25,
+    rainProbability: 20,
+    rainfallMm: 0.5,
+    humidity: 65,
+    condition: 'Passing Showers',
+  },
+  {
+    day: 'Tue',
+    date: 'Aug 18',
+    tempMax: 30,
+    tempMin: 22,
+    tempAvg: 26,
+    rainProbability: 10,
+    rainfallMm: 0,
+    humidity: 58,
+    condition: 'Clear',
+  },
+  {
+    day: 'Wed',
+    date: 'Aug 19',
+    tempMax: 31,
+    tempMin: 23,
+    tempAvg: 27,
+    rainProbability: 5,
+    rainfallMm: 0,
+    humidity: 55,
+    condition: 'Sunny',
+  },
 ];
 
 const Dashboard = () => {
@@ -90,7 +160,9 @@ const Dashboard = () => {
   const [selectedCrop, setSelectedCrop] = useState('Wheat');
   const [selectedPeriod, setSelectedPeriod] = useState('7d');
   const [weatherMetric, setWeatherMetric] = useState('temp'); // 'temp' | 'rain' | 'humidity'
-  
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [analyticsPeriod, setAnalyticsPeriod] = useState('monthly');
+
   // UI States
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -144,11 +216,23 @@ const Dashboard = () => {
     }
   };
 
+  // Fetch Analytics (Weekly, Monthly, Yearly MongoDB aggregation)
+  const fetchAnalytics = async (p = analyticsPeriod) => {
+    try {
+      const res = await getDashboardAnalytics(p);
+      if (res?.success) {
+        setAnalyticsData(res.data);
+      }
+    } catch (err) {
+      console.error('Analytics fetch error:', err);
+    }
+  };
+
   // Initial Load
   useEffect(() => {
     const init = async () => {
       setLoading(true);
-      await Promise.all([fetchDashboard(), fetchForecast()]);
+      await Promise.all([fetchDashboard(), fetchForecast(), fetchAnalytics(analyticsPeriod)]);
       setLoading(false);
     };
     init();
@@ -159,9 +243,19 @@ const Dashboard = () => {
     fetchMarketChart(selectedCrop, selectedPeriod);
   }, [selectedCrop, selectedPeriod]);
 
+  // Update Aggregated Analytics when period changes
+  useEffect(() => {
+    fetchAnalytics(analyticsPeriod);
+  }, [analyticsPeriod]);
+
   const handleRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([fetchDashboard(), fetchForecast(), fetchMarketChart(selectedCrop, selectedPeriod)]);
+    await Promise.all([
+      fetchDashboard(),
+      fetchForecast(),
+      fetchMarketChart(selectedCrop, selectedPeriod),
+      fetchAnalytics(analyticsPeriod),
+    ]);
     setRefreshing(false);
   };
 
@@ -192,32 +286,36 @@ const Dashboard = () => {
         </div>
         <h2 className="text-2xl font-extrabold text-slate-900">Set Up Your Farm Profile</h2>
         <p className="text-slate-600 max-w-md mx-auto text-sm">
-          To receive personalized irrigation guidance, real-time weather risk alerts, and mandi commodity intelligence, please complete your farm setup.
+          To receive personalized irrigation guidance, real-time weather risk alerts, and mandi
+          commodity intelligence, please complete your farm setup.
         </p>
-        <Button onClick={() => navigate('/farm-profile')} className="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg">
+        <Button
+          onClick={() => navigate('/farm-profile')}
+          className="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg"
+        >
           Complete Setup
         </Button>
       </div>
     );
   }
 
-  const { todaysAction, weatherAlert, cropHealth, market, communityAlert, fertilizerShortcut } = dashboardData || {};
+  const { todaysAction, weatherAlert, cropHealth, market, communityAlert, fertilizerShortcut } =
+    dashboardData || {};
 
   // Formatted Current Date String
   const currentDateStr = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'short',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
   });
 
   // Calculate Market Overview Stats
-  const topCropPrice = Math.max(...CROP_PRICE_COMPARISON_DATA.map(c => c.price));
-  const lowestCropPrice = Math.min(...CROP_PRICE_COMPARISON_DATA.map(c => c.price));
+  const topCropPrice = Math.max(...CROP_PRICE_COMPARISON_DATA.map((c) => c.price));
+  const lowestCropPrice = Math.min(...CROP_PRICE_COMPARISON_DATA.map((c) => c.price));
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8 text-slate-900 selection:bg-emerald-600 selection:text-white">
-      
       {/* ======================================================== */}
       {/* 1. DASHBOARD HEADER */}
       {/* ======================================================== */}
@@ -251,11 +349,22 @@ const Dashboard = () => {
               <span className="flex items-center gap-1 text-emerald-800 font-bold">
                 <Sprout size={15} className="text-emerald-600" /> Active Crop:
               </span>
-              <strong className="text-slate-900 font-extrabold">{farm?.currentCrop || 'Wheat'}</strong>
+              <strong className="text-slate-900 font-extrabold">
+                {farm?.currentCrop || 'Wheat'}
+              </strong>
               <span className="text-slate-400">•</span>
-              <span className="text-slate-600">Stage: <strong className="text-slate-900">{farm?.growthStage || 'Vegetative'}</strong></span>
+              <span className="text-slate-600">
+                Stage:{' '}
+                <strong className="text-slate-900">{farm?.growthStage || 'Vegetative'}</strong>
+              </span>
               <span className="text-slate-400">•</span>
-              <span className="text-slate-600">Land: <strong className="text-slate-900">{farm?.landSize?.value || 5} {farm?.landSize?.unit || 'Acres'}</strong> ({farm?.soilType || 'Black Soil'})</span>
+              <span className="text-slate-600">
+                Land:{' '}
+                <strong className="text-slate-900">
+                  {farm?.landSize?.value || 5} {farm?.landSize?.unit || 'Acres'}
+                </strong>{' '}
+                ({farm?.soilType || 'Black Soil'})
+              </span>
             </div>
           </div>
 
@@ -266,7 +375,9 @@ const Dashboard = () => {
               onClick={handleRefresh}
               className="p-2.5 bg-slate-100 hover:bg-slate-200/80 rounded-2xl transition-all text-slate-700 flex items-center gap-2 text-xs font-bold border border-slate-200/80 cursor-pointer"
             >
-              <RefreshCw className={`w-4 h-4 text-emerald-600 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-4 h-4 text-emerald-600 ${refreshing ? 'animate-spin' : ''}`}
+              />
               <span>Refresh</span>
             </button>
 
@@ -287,18 +398,25 @@ const Dashboard = () => {
                     <span className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
                       <Bell size={14} className="text-emerald-600" /> Active Farm Alerts
                     </span>
-                    <button onClick={() => setNotificationsOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                    <button
+                      onClick={() => setNotificationsOpen(false)}
+                      className="text-slate-400 hover:text-slate-600 p-1"
+                    >
                       <X size={14} />
                     </button>
                   </div>
                   <div className="space-y-2 text-xs">
                     <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-100">
                       <p className="font-bold text-emerald-900">Weather Risk: Clear</p>
-                      <p className="text-slate-600 text-[11px]">No rainfall risk forecasted for next 48 hrs.</p>
+                      <p className="text-slate-600 text-[11px]">
+                        No rainfall risk forecasted for next 48 hrs.
+                      </p>
                     </div>
                     <div className="p-2.5 bg-amber-50 rounded-xl border border-amber-100">
                       <p className="font-bold text-amber-900">Mandi Price Spike</p>
-                      <p className="text-slate-600 text-[11px]">Wheat market price rose +4.2% this week.</p>
+                      <p className="text-slate-600 text-[11px]">
+                        Wheat market price rose +4.2% this week.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -336,7 +454,8 @@ const Dashboard = () => {
               Today's Agronomic Priorities & Insights
             </p>
             <p className="text-white/80 text-xs mt-0.5 font-medium leading-relaxed">
-              Pest warning reported 2.4km away • Crop vegetative growth progress is normal • Weather suitable for fertilizer application.
+              Pest warning reported 2.4km away • Crop vegetative growth progress is normal • Weather
+              suitable for fertilizer application.
             </p>
           </div>
         </div>
@@ -363,7 +482,10 @@ const Dashboard = () => {
             <AlertTriangle className="text-rose-600" size={16} />
             <span>{error}</span>
           </div>
-          <button onClick={fetchDashboard} className="px-3 py-1 bg-rose-600 text-white rounded-xl text-xs font-bold hover:bg-rose-700">
+          <button
+            onClick={fetchDashboard}
+            className="px-3 py-1 bg-rose-600 text-white rounded-xl text-xs font-bold hover:bg-rose-700"
+          >
             Retry
           </button>
         </div>
@@ -376,7 +498,9 @@ const Dashboard = () => {
           <div className="flex-1 text-xs sm:text-sm">
             <div className="flex items-center justify-between">
               <span className="font-bold text-amber-900">{communityAlert.title}</span>
-              <span className="text-xs text-amber-700 font-semibold">{communityAlert.distanceKm} km away • {communityAlert.reportsCount} reports</span>
+              <span className="text-xs text-amber-700 font-semibold">
+                {communityAlert.distanceKm} km away • {communityAlert.reportsCount} reports
+              </span>
             </div>
             <p className="text-amber-800 mt-1 text-xs">{communityAlert.message}</p>
             <p className="text-amber-900 font-bold mt-1 text-xs">💡 {communityAlert.recommended}</p>
@@ -388,11 +512,12 @@ const Dashboard = () => {
       {/* 2. KPI SUMMARY CARDS GRID (6 Cards) */}
       {/* ======================================================== */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-        
         {/* KPI 1: Temperature */}
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all space-y-2 group">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Temperature</span>
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              Temperature
+            </span>
             <div className="p-2 bg-amber-100 text-amber-600 rounded-xl group-hover:scale-105 transition-transform">
               <Thermometer size={18} />
             </div>
@@ -406,7 +531,9 @@ const Dashboard = () => {
         {/* KPI 2: Rainfall */}
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all space-y-2 group">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Rainfall</span>
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              Rainfall
+            </span>
             <div className="p-2 bg-cyan-100 text-cyan-600 rounded-xl group-hover:scale-105 transition-transform">
               <CloudRain size={18} />
             </div>
@@ -422,7 +549,9 @@ const Dashboard = () => {
         {/* KPI 3: Market Price */}
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all space-y-2 group">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Market Price</span>
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              Market Price
+            </span>
             <div className="p-2 bg-emerald-100 text-emerald-600 rounded-xl group-hover:scale-105 transition-transform">
               <TrendingUp size={18} />
             </div>
@@ -431,7 +560,9 @@ const Dashboard = () => {
             <p className="text-2xl font-black text-slate-900">₹{market?.currentPrice || 2450}</p>
             <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-700">
               <ArrowUpRight size={13} />
-              <span>{farm?.currentCrop || 'Wheat'} (+{market?.changePercent || 4.2}%)</span>
+              <span>
+                {farm?.currentCrop || 'Wheat'} (+{market?.changePercent || 4.2}%)
+              </span>
             </div>
           </div>
         </div>
@@ -439,7 +570,9 @@ const Dashboard = () => {
         {/* KPI 4: Crop Recommendation */}
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all space-y-2 group">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Crop Match</span>
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              Crop Match
+            </span>
             <div className="p-2 bg-purple-100 text-purple-600 rounded-xl group-hover:scale-105 transition-transform">
               <Sprout size={18} />
             </div>
@@ -455,13 +588,17 @@ const Dashboard = () => {
         {/* KPI 5: Crop Stage */}
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all space-y-2 group">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Crop Stage</span>
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              Crop Stage
+            </span>
             <div className="p-2 bg-emerald-100 text-emerald-600 rounded-xl group-hover:scale-105 transition-transform">
               <Sprout size={18} />
             </div>
           </div>
           <div>
-            <p className="text-2xl font-black text-slate-900 truncate">{farm?.growthStage || 'Vegetative'}</p>
+            <p className="text-2xl font-black text-slate-900 truncate">
+              {farm?.growthStage || 'Vegetative'}
+            </p>
             <div className="flex items-center gap-1 mt-1">
               <div className="w-12 h-1 bg-slate-100 rounded-full overflow-hidden shrink-0">
                 <div className="h-full bg-emerald-500 rounded-full" style={{ width: '50%' }} />
@@ -474,7 +611,9 @@ const Dashboard = () => {
         {/* KPI 6: Weather Risk Status */}
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all space-y-2 group">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Weather Risk</span>
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              Weather Risk
+            </span>
             <div className="p-2 bg-emerald-100 text-emerald-600 rounded-xl group-hover:scale-105 transition-transform">
               <ShieldCheck size={18} />
             </div>
@@ -484,19 +623,77 @@ const Dashboard = () => {
             <span className="text-[11px] font-semibold text-slate-500">No Frost Risk</span>
           </div>
         </div>
-
       </div>
+
+      {/* Real-time Database Diagnostics & Telemetry stats */}
+      {dashboardData?.stats && (
+        <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm space-y-4">
+          <div className="border-b border-slate-100 pb-3">
+            <span className="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider">
+              Real-time Database Diagnostics
+            </span>
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <Activity className="w-5 h-5 text-emerald-600" />
+              Live KrishiMitra Telemetry & Faceted Statistics
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div className="p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100/60 text-center">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Total Farms</span>
+              <p className="text-xl font-black text-slate-950 mt-1">{dashboardData.stats.totalFarms}</p>
+            </div>
+            <div className="p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100/60 text-center">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Total Farmers</span>
+              <p className="text-xl font-black text-slate-950 mt-1">{dashboardData.stats.totalFarmers}</p>
+            </div>
+            <div className="p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100/60 text-center">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Healthy Scans</span>
+              <p className="text-xl font-black text-emerald-600 mt-1">{dashboardData.stats.healthyCrops}</p>
+            </div>
+            <div className="p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100/60 text-center">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Diseased Scans</span>
+              <p className="text-xl font-black text-rose-600 mt-1">{dashboardData.stats.diseasedCrops}</p>
+            </div>
+            <div className="p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100/60 text-center">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Irrigations</span>
+              <p className="text-xl font-black text-blue-600 mt-1">{dashboardData.stats.totalIrrigationEvents}</p>
+            </div>
+            <div className="p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100/60 text-center">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Weather Records</span>
+              <p className="text-xl font-black text-slate-950 mt-1">{dashboardData.stats.totalWeatherForecasts}</p>
+            </div>
+            <div className="p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100/60 text-center">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Market Records</span>
+              <p className="text-xl font-black text-emerald-800 mt-1">{dashboardData.stats.marketRecords}</p>
+            </div>
+            <div className="p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100/60 text-center col-span-2 sm:col-span-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Revenue Predict</span>
+              <p className="text-xl font-black text-slate-950 mt-1">₹{dashboardData.stats.revenueAnalytics.toLocaleString()}</p>
+            </div>
+            <div className="p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100/60 text-center col-span-2 sm:col-span-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Water Usage</span>
+              <p className="text-xl font-black text-blue-800 mt-1">{dashboardData.stats.waterUsage.toLocaleString()} L</p>
+            </div>
+            <div className="p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100/60 text-center col-span-2 sm:col-span-2">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Yield Prediction</span>
+              <p className="text-xl font-black text-emerald-700 mt-1">{dashboardData.stats.yieldPrediction.toLocaleString()} Q</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ======================================================== */}
       {/* 3. WEATHER ANALYTICS & FORECAST */}
       {/* ======================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
         {/* Weather Trend Line Chart */}
         <div className="lg:col-span-7 min-w-0 bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div>
-              <span className="text-[11px] font-extrabold text-blue-600 uppercase tracking-wider">Micro-Climate Telemetry</span>
+              <span className="text-[11px] font-extrabold text-blue-600 uppercase tracking-wider">
+                Micro-Climate Telemetry
+              </span>
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <CloudRain className="w-5 h-5 text-blue-600" />
                 7-Day Weather Trend Analytics
@@ -508,7 +705,9 @@ const Dashboard = () => {
               <button
                 onClick={() => setWeatherMetric('temp')}
                 className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-                  weatherMetric === 'temp' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  weatherMetric === 'temp'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 Temp (°C)
@@ -516,7 +715,9 @@ const Dashboard = () => {
               <button
                 onClick={() => setWeatherMetric('rain')}
                 className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-                  weatherMetric === 'rain' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  weatherMetric === 'rain'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 Rain (%)
@@ -524,7 +725,9 @@ const Dashboard = () => {
               <button
                 onClick={() => setWeatherMetric('humidity')}
                 className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-                  weatherMetric === 'humidity' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  weatherMetric === 'humidity'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 Humidity (%)
@@ -540,20 +743,62 @@ const Dashboard = () => {
                 <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#64748B', fontWeight: 600 }} />
                 <YAxis tick={{ fontSize: 11, fill: '#64748B', fontWeight: 600 }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#0F172A', color: '#FFF', borderRadius: '16px', border: 'none', fontSize: '12px', fontWeight: 'bold' }}
+                  contentStyle={{
+                    backgroundColor: '#0F172A',
+                    color: '#FFF',
+                    borderRadius: '16px',
+                    border: 'none',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                  }}
                 />
                 {weatherMetric === 'temp' && (
                   <>
-                    <Line type="monotone" dataKey="tempMax" stroke="#EF4444" strokeWidth={2.5} name="Max Temp (°C)" dot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="tempAvg" stroke="#10B981" strokeWidth={2.5} name="Avg Temp (°C)" dot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="tempMin" stroke="#3B82F6" strokeWidth={2.5} name="Min Temp (°C)" dot={{ r: 4 }} />
+                    <Line
+                      type="monotone"
+                      dataKey="tempMax"
+                      stroke="#EF4444"
+                      strokeWidth={2.5}
+                      name="Max Temp (°C)"
+                      dot={{ r: 4 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="tempAvg"
+                      stroke="#10B981"
+                      strokeWidth={2.5}
+                      name="Avg Temp (°C)"
+                      dot={{ r: 4 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="tempMin"
+                      stroke="#3B82F6"
+                      strokeWidth={2.5}
+                      name="Min Temp (°C)"
+                      dot={{ r: 4 }}
+                    />
                   </>
                 )}
                 {weatherMetric === 'rain' && (
-                  <Line type="monotone" dataKey="rainProbability" stroke="#06B6D4" strokeWidth={3} name="Rain Probability (%)" dot={{ r: 4 }} />
+                  <Line
+                    type="monotone"
+                    dataKey="rainProbability"
+                    stroke="#06B6D4"
+                    strokeWidth={3}
+                    name="Rain Probability (%)"
+                    dot={{ r: 4 }}
+                  />
                 )}
                 {weatherMetric === 'humidity' && (
-                  <Line type="monotone" dataKey="humidity" stroke="#8B5CF6" strokeWidth={3} name="Relative Humidity (%)" dot={{ r: 4 }} />
+                  <Line
+                    type="monotone"
+                    dataKey="humidity"
+                    stroke="#8B5CF6"
+                    strokeWidth={3}
+                    name="Relative Humidity (%)"
+                    dot={{ r: 4 }}
+                  />
                 )}
               </LineChart>
             </ResponsiveContainer>
@@ -594,19 +839,19 @@ const Dashboard = () => {
             ))}
           </div>
         </div>
-
       </div>
 
       {/* ======================================================== */}
       {/* 4. MARKET PRICE ANALYTICS & 5. CROP PRICE COMPARISON */}
       {/* ======================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
         {/* Market Price Line Chart */}
         <div className="lg:col-span-7 min-w-0 bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
-              <span className="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider">Mandi Analytics</span>
+              <span className="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider">
+                Mandi Analytics
+              </span>
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-emerald-600" />
                 Market Price Trend ({selectedCrop})
@@ -634,7 +879,9 @@ const Dashboard = () => {
                     key={p}
                     onClick={() => setSelectedPeriod(p)}
                     className={`px-2.5 py-1 rounded-lg uppercase transition-all cursor-pointer ${
-                      selectedPeriod === p ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                      selectedPeriod === p
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
                     {p}
@@ -648,14 +895,34 @@ const Dashboard = () => {
           <div className="h-64 w-full pt-2">
             {marketHistoryData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={marketHistoryData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                <LineChart
+                  data={marketHistoryData}
+                  margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
                   <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#64748B', fontWeight: 600 }} />
-                  <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10, fill: '#64748B', fontWeight: 600 }} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#0F172A', color: '#FFF', borderRadius: '16px', border: 'none', fontSize: '12px', fontWeight: 'bold' }}
+                  <YAxis
+                    domain={['auto', 'auto']}
+                    tick={{ fontSize: 10, fill: '#64748B', fontWeight: 600 }}
                   />
-                  <Line type="monotone" dataKey="price" stroke="#10B981" strokeWidth={3} name="Mandi Rate (₹/Quintal)" dot={false} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#0F172A',
+                      color: '#FFF',
+                      borderRadius: '16px',
+                      border: 'none',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="price"
+                    stroke="#10B981"
+                    strokeWidth={3}
+                    name="Mandi Rate (₹/Quintal)"
+                    dot={false}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
@@ -666,111 +933,152 @@ const Dashboard = () => {
           </div>
 
           <div className="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-between text-xs text-emerald-900 font-semibold">
-            <span>Market Selling Insight: Prices for {selectedCrop} are trending upward over recent intervals.</span>
-            <Link to="/market" className="font-extrabold text-emerald-700 hover:underline shrink-0 ml-2">
+            <span>
+              Market Selling Insight: Prices for {selectedCrop} are trending upward over recent
+              intervals.
+            </span>
+            <Link
+              to="/market"
+              className="font-extrabold text-emerald-700 hover:underline shrink-0 ml-2"
+            >
               Full Mandi Feeds &rarr;
             </Link>
           </div>
         </div>
 
-        {/* Crop Price Comparison Bar Chart & Allocation Pie Chart */}
+        {/* MongoDB Aggregation Analytics Charts */}
         <div className="lg:col-span-5 min-w-0 bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4 flex flex-col justify-between">
           <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
             <div>
-              <span className="text-[11px] font-extrabold text-purple-600 uppercase tracking-wider">Commodity Benchmarks</span>
-              <h3 className="text-base font-bold text-slate-900">Crop Prices & Allocation</h3>
+              <span className="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider">
+                MongoDB faceted aggregations
+              </span>
+              <h3 className="text-base font-bold text-slate-900">Database Analytics History</h3>
             </div>
-            <span className="text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded-full">5.5 Acres</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
-            {/* Column 1: Bar Chart */}
-            <div className="h-44 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={CROP_PRICE_COMPARISON_DATA} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                  <XAxis dataKey="crop" tick={{ fontSize: 8, fill: '#64748B', fontWeight: 700 }} />
-                  <YAxis tick={{ fontSize: 8, fill: '#64748B', fontWeight: 605 }} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#0F172A', color: '#FFF', borderRadius: '12px', border: 'none', fontSize: '10px' }}
-                  />
-                  <Bar dataKey="price" radius={[4, 4, 0, 0]} name="Price (₹/q)">
-                    {CROP_PRICE_COMPARISON_DATA.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Column 2: Crop Distribution Pie Chart */}
-            <div className="h-44 w-full relative flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={CROP_DISTRIBUTION_DATA}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={28}
-                    outerRadius={40}
-                    paddingAngle={3}
-                    dataKey="value"
-                  >
-                    {CROP_DISTRIBUTION_DATA.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#0F172A', color: '#FFF', borderRadius: '12px', border: 'none', fontSize: '10px' }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute flex flex-col items-center justify-center text-center select-none pointer-events-none">
-                <span className="text-[8px] text-slate-400 uppercase font-black tracking-widest leading-none">Total</span>
-                <span className="text-xs font-black text-slate-900 leading-none mt-0.5">5.5 Ac</span>
-              </div>
+            
+            {/* Period selector */}
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-[10px] font-bold">
+              {['weekly', 'monthly', 'yearly'].map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setAnalyticsPeriod(p)}
+                  className={`px-2 py-0.5 rounded-lg capitalize transition-all cursor-pointer ${
+                    analyticsPeriod === p
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-x-2 text-[9px] font-bold text-slate-500 border-t border-slate-100 pt-2">
-            {CROP_DISTRIBUTION_DATA.map(c => (
-              <div key={c.name} className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: c.fill }} />
-                <span>{c.name} ({c.value}%)</span>
+          <div className="grid grid-cols-1 gap-4">
+            {/* Water usage bar chart */}
+            <div>
+              <span className="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                Aggregated Water Usage (mm)
+              </span>
+              <div className="h-28 w-full">
+                {analyticsData?.waterUsage && analyticsData.waterUsage.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={analyticsData.waterUsage} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                      <XAxis dataKey="_id" tick={{ fontSize: 7, fill: '#64748B', fontWeight: 700 }} />
+                      <YAxis tick={{ fontSize: 7, fill: '#64748B' }} />
+                      <Tooltip contentStyle={{ fontSize: '9px', borderRadius: '8px' }} />
+                      <Bar dataKey="totalWaterMm" fill="#3b82f6" radius={[2, 2, 0, 0]} name="Water (mm)" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-[10px] text-slate-400 font-semibold">
+                    No water usage events in this range
+                  </div>
+                )}
               </div>
-            ))}
+            </div>
+
+            {/* Crop Health stacked bar chart */}
+            <div>
+              <span className="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                Aggregated Leaf Diagnostic Scans
+              </span>
+              <div className="h-28 w-full">
+                {analyticsData?.cropHealth && analyticsData.cropHealth.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={analyticsData.cropHealth} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                      <XAxis dataKey="_id" tick={{ fontSize: 7, fill: '#64748B', fontWeight: 700 }} />
+                      <YAxis tick={{ fontSize: 7, fill: '#64748B' }} />
+                      <Tooltip contentStyle={{ fontSize: '9px', borderRadius: '8px' }} />
+                      <Bar dataKey="healthyCount" stackId="a" fill="#10b981" name="Healthy" />
+                      <Bar dataKey="diseasedCount" stackId="a" fill="#ef4444" name="Diseased" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-[10px] text-slate-400 font-semibold">
+                    No leaf health reports in this range
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-
       </div>
 
       {/* ======================================================== */}
       {/* 6. CROP RECOMMENDATION ANALYTICS & 7. AI SMART INSIGHTS */}
       {/* ======================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
         {/* AI Crop Recommendation Cards */}
         <div className="lg:col-span-6 bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
-              <span className="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider">NPK & Climate Matching</span>
+              <span className="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider">
+                NPK & Climate Matching
+              </span>
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <Sprout className="w-5 h-5 text-emerald-600" />
                 AI Crop Suitability Recommendations
               </h3>
             </div>
-            <Link to="/crop-recommendation" className="text-xs font-bold text-emerald-700 hover:underline">
+            <Link
+              to="/crop-recommendation"
+              className="text-xs font-bold text-emerald-700 hover:underline"
+            >
               Engine Settings &rarr;
             </Link>
           </div>
 
           <div className="space-y-3">
             {[
-              { crop: 'Soybean', score: 95, season: 'Kharif (Monsoon)', soil: 'Black Soil', reason: 'High clay retention matches current precipitation index.' },
-              { crop: 'Wheat (Sharbati)', score: 98, season: 'Rabi (Winter)', soil: 'Black / Alluvial', reason: 'Optimal temperature window for high protein grain formation.' },
-              { crop: 'Hybrid Maize', score: 88, season: 'Kharif', soil: 'Loamy Soil', reason: 'Strong NPK uptake response with moderate water demand.' }
+              {
+                crop: 'Soybean',
+                score: 95,
+                season: 'Kharif (Monsoon)',
+                soil: 'Black Soil',
+                reason: 'High clay retention matches current precipitation index.',
+              },
+              {
+                crop: 'Wheat (Sharbati)',
+                score: 98,
+                season: 'Rabi (Winter)',
+                soil: 'Black / Alluvial',
+                reason: 'Optimal temperature window for high protein grain formation.',
+              },
+              {
+                crop: 'Hybrid Maize',
+                score: 88,
+                season: 'Kharif',
+                soil: 'Loamy Soil',
+                reason: 'Strong NPK uptake response with moderate water demand.',
+              },
             ].map((rec, idx) => (
-              <div key={idx} className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-2.5">
+              <div
+                key={idx}
+                className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-2.5"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 size={16} className="text-emerald-600" />
@@ -786,12 +1094,13 @@ const Dashboard = () => {
 
                 {/* Progress bar */}
                 <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                  <div className="bg-emerald-500 h-full rounded-full transition-all duration-500" style={{ width: `${rec.score}%` }} />
+                  <div
+                    className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                    style={{ width: `${rec.score}%` }}
+                  />
                 </div>
 
-                <p className="text-xs text-slate-600 font-medium">
-                  💡 {rec.reason}
-                </p>
+                <p className="text-xs text-slate-600 font-medium">💡 {rec.reason}</p>
               </div>
             ))}
           </div>
@@ -800,7 +1109,9 @@ const Dashboard = () => {
         {/* AI Smart Insights */}
         <div className="lg:col-span-6 bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4 flex flex-col justify-between">
           <div className="border-b border-slate-100 pb-3">
-            <span className="text-[11px] font-extrabold text-purple-600 uppercase tracking-wider">AI Farm Telemetry</span>
+            <span className="text-[11px] font-extrabold text-purple-600 uppercase tracking-wider">
+              AI Farm Telemetry
+            </span>
             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-purple-600" />
               Smart AI Insights & Explainable Advice
@@ -814,8 +1125,11 @@ const Dashboard = () => {
                 <Sun size={15} className="text-blue-600" /> Weather Insight & Advice
               </div>
               <p className="text-xs text-slate-700 font-medium leading-relaxed">
-                Clear skies expected over the next 48 hours. Rainfall probability remains low at 10%.
-                <span className="block mt-1 font-bold text-emerald-800">💡 Best farming window: 6 AM to 10 AM.</span>
+                Clear skies expected over the next 48 hours. Rainfall probability remains low at
+                10%.
+                <span className="block mt-1 font-bold text-emerald-800">
+                  💡 Best farming window: 6 AM to 10 AM.
+                </span>
               </p>
             </div>
 
@@ -825,8 +1139,11 @@ const Dashboard = () => {
                 <TrendingUp size={15} className="text-emerald-600" /> Market Price Forecast
               </div>
               <p className="text-xs text-slate-700 font-medium leading-relaxed">
-                {selectedCrop} mandi rates increased +4.2% over 7 days. Higher rates expected near weekend.
-                <span className="block mt-1 font-bold text-emerald-800">📈 Hold stock: Expected next week peak: +₹120/q.</span>
+                {selectedCrop} mandi rates increased +4.2% over 7 days. Higher rates expected near
+                weekend.
+                <span className="block mt-1 font-bold text-emerald-800">
+                  📈 Hold stock: Expected next week peak: +₹120/q.
+                </span>
               </p>
             </div>
 
@@ -836,8 +1153,11 @@ const Dashboard = () => {
                 <Sprout size={15} className="text-purple-600" /> Crop Health & Nutrition
               </div>
               <p className="text-xs text-slate-700 font-medium leading-relaxed">
-                Soil moisture is balanced (68%). NPK nutrient uptake is optimal for {farm?.growthStage || 'Vegetative'} growth.
-                <span className="block mt-1 font-bold text-emerald-800">🛡️ Farm Health Score: 92% (Excellent).</span>
+                Soil moisture is balanced (68%). NPK nutrient uptake is optimal for{' '}
+                {farm?.growthStage || 'Vegetative'} growth.
+                <span className="block mt-1 font-bold text-emerald-800">
+                  🛡️ Farm Health Score: 92% (Excellent).
+                </span>
               </p>
             </div>
 
@@ -847,8 +1167,11 @@ const Dashboard = () => {
                 <Droplets size={15} className="text-amber-600" /> Recommended Action
               </div>
               <p className="text-xs text-slate-700 font-medium leading-relaxed">
-                {todaysAction?.reasoning?.actionableAdvice || 'No irrigation required today. Save pumping costs.'}
-                <span className="block mt-1 font-bold text-cyan-800">💧 Estimated Water Saved: 14,250 Liters.</span>
+                {todaysAction?.reasoning?.actionableAdvice ||
+                  'No irrigation required today. Save pumping costs.'}
+                <span className="block mt-1 font-bold text-cyan-800">
+                  💧 Estimated Water Saved: 14,250 Liters.
+                </span>
               </p>
             </div>
           </div>
@@ -860,12 +1183,25 @@ const Dashboard = () => {
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] font-semibold text-slate-600 leading-normal">
               <div className="space-y-1">
-                <p><span className="text-slate-500 font-bold">Why:</span> Moisture level (68%) exceeds the dry threshold (50%), making additional watering unnecessary today.</p>
-                <p><span className="text-slate-500 font-bold">Expected Crop Impact:</span> Prevents root oxygen stress and saves ₹1,200 in pumping electricity costs.</p>
+                <p>
+                  <span className="text-slate-500 font-bold">Why:</span> Moisture level (68%)
+                  exceeds the dry threshold (50%), making additional watering unnecessary today.
+                </p>
+                <p>
+                  <span className="text-slate-500 font-bold">Expected Crop Impact:</span> Prevents
+                  root oxygen stress and saves ₹1,200 in pumping electricity costs.
+                </p>
               </div>
               <div className="space-y-1">
-                <p><span className="text-slate-500 font-bold">Confidence Score:</span> 96% based on micro-climatic sensor alignment.</p>
-                <p><span className="text-slate-500 font-bold">Operations to Avoid:</span> Avoid applying granular fertilizers during high wind speeds forecast for tomorrow afternoon.</p>
+                <p>
+                  <span className="text-slate-500 font-bold">Confidence Score:</span> 96% based on
+                  micro-climatic sensor alignment.
+                </p>
+                <p>
+                  <span className="text-slate-500 font-bold">Operations to Avoid:</span> Avoid
+                  applying granular fertilizers during high wind speeds forecast for tomorrow
+                  afternoon.
+                </p>
               </div>
             </div>
           </div>
@@ -877,14 +1213,12 @@ const Dashboard = () => {
             </Link>
           </div>
         </div>
-
       </div>
 
       {/* ======================================================== */}
       {/* 8. ALERTS, RECENT ACTIVITY & MARKET OVERVIEW */}
       {/* ======================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
         {/* Alerts & Risk Panel */}
         <div className="lg:col-span-4 bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -904,20 +1238,28 @@ const Dashboard = () => {
                 <span className="flex items-center gap-1.5 text-emerald-800">
                   <ShieldCheck size={14} className="text-emerald-600" /> Weather Risk
                 </span>
-                <span className="text-[10px] bg-emerald-200 px-2 py-0.5 rounded-md text-emerald-950 font-extrabold">NORMAL</span>
+                <span className="text-[10px] bg-emerald-200 px-2 py-0.5 rounded-md text-emerald-950 font-extrabold">
+                  NORMAL
+                </span>
               </div>
-              <p className="text-slate-600 text-[11px]">No heavy rain or frost warnings detected for your location today.</p>
+              <p className="text-slate-600 text-[11px]">
+                No heavy rain or frost warnings detected for your location today.
+              </p>
             </div>
 
-             {/* Mandi Price Alert */}
+            {/* Mandi Price Alert */}
             <div className="p-3.5 bg-blue-50 rounded-2xl border border-blue-200 text-xs text-blue-900 space-y-1">
               <div className="flex items-center justify-between font-bold">
                 <span className="flex items-center gap-1.5 text-blue-800">
                   <TrendingUp size={14} className="text-blue-600" /> Market Price Spike
                 </span>
-                <span className="text-[10px] bg-blue-200 px-2 py-0.5 rounded-md text-blue-900 font-extrabold">INFO</span>
+                <span className="text-[10px] bg-blue-200 px-2 py-0.5 rounded-md text-blue-900 font-extrabold">
+                  INFO
+                </span>
               </div>
-              <p className="text-slate-600 text-[11px]">Wheat market price in Indore mandi rose by +4.2% over last 7 days.</p>
+              <p className="text-slate-600 text-[11px]">
+                Wheat market price in Indore mandi rose by +4.2% over last 7 days.
+              </p>
             </div>
 
             {/* Farming Alert */}
@@ -926,9 +1268,13 @@ const Dashboard = () => {
                 <span className="flex items-center gap-1.5 text-purple-800">
                   <Info size={14} className="text-purple-600" /> Growth Stage Alert
                 </span>
-                <span className="text-[10px] bg-purple-200 px-2 py-0.5 rounded-md text-purple-900 font-extrabold">ACTION</span>
+                <span className="text-[10px] bg-purple-200 px-2 py-0.5 rounded-md text-purple-900 font-extrabold">
+                  ACTION
+                </span>
               </div>
-              <p className="text-slate-600 text-[11px]">Crop in Vegetative stage. Review fertilizer top-dressing schedule.</p>
+              <p className="text-slate-600 text-[11px]">
+                Crop in Vegetative stage. Review fertilizer top-dressing schedule.
+              </p>
             </div>
           </div>
         </div>
@@ -948,7 +1294,9 @@ const Dashboard = () => {
               <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
               <div>
                 <p className="font-extrabold text-slate-900">Micro-climate Telemetry Synced</p>
-                <p className="text-[11px] text-slate-500">Open-Meteo weather forecast refreshed • 10m ago</p>
+                <p className="text-[11px] text-slate-500">
+                  Open-Meteo weather forecast refreshed • 10m ago
+                </p>
               </div>
             </div>
 
@@ -956,7 +1304,9 @@ const Dashboard = () => {
               <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0" />
               <div>
                 <p className="font-extrabold text-slate-900">Mandi Price Feed Updated</p>
-                <p className="text-[11px] text-slate-500">Benchmark prices synced for Wheat & Soybean • 1h ago</p>
+                <p className="text-[11px] text-slate-500">
+                  Benchmark prices synced for Wheat & Soybean • 1h ago
+                </p>
               </div>
             </div>
 
@@ -964,7 +1314,9 @@ const Dashboard = () => {
               <div className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 shrink-0" />
               <div>
                 <p className="font-extrabold text-slate-900">Irrigation Decision Evaluated</p>
-                <p className="text-[11px] text-slate-500">Irrigation Engine: DON'T IRRIGATE • Today</p>
+                <p className="text-[11px] text-slate-500">
+                  Irrigation Engine: DON'T IRRIGATE • Today
+                </p>
               </div>
             </div>
 
@@ -972,7 +1324,9 @@ const Dashboard = () => {
               <div className="w-2 h-2 rounded-full bg-purple-500 mt-1.5 shrink-0" />
               <div>
                 <p className="font-extrabold text-slate-900">Farm Coordinates Verified</p>
-                <p className="text-[11px] text-slate-500">Location: {farm?.location?.display || 'Indore, MP'}</p>
+                <p className="text-[11px] text-slate-500">
+                  Location: {farm?.location?.display || 'Indore, MP'}
+                </p>
               </div>
             </div>
           </div>
@@ -995,7 +1349,9 @@ const Dashboard = () => {
 
             <div className="p-3 bg-slate-50 rounded-2xl flex items-center justify-between">
               <span className="text-slate-500 font-bold">Your Crop Benchmark</span>
-              <span className="font-black text-slate-900">{farm?.currentCrop || 'Wheat'} (₹{market?.currentPrice || 2450}/q)</span>
+              <span className="font-black text-slate-900">
+                {farm?.currentCrop || 'Wheat'} (₹{market?.currentPrice || 2450}/q)
+              </span>
             </div>
 
             <div className="p-3 bg-slate-50 rounded-2xl flex items-center justify-between">
@@ -1017,9 +1373,7 @@ const Dashboard = () => {
             </Button>
           </Link>
         </div>
-
       </div>
-
     </div>
   );
 };

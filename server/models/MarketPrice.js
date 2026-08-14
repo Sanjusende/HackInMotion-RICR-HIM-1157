@@ -5,42 +5,50 @@ const marketPriceSchema = new mongoose.Schema(
     crop: {
       type: String,
       required: true,
-      index: true
+      index: true,
     },
     market: {
       type: String,
       required: true,
-      index: true
+      index: true,
+    },
+    state: {
+      type: String,
+      index: true,
+    },
+    district: {
+      type: String,
+      index: true,
     },
     price: {
       type: Number,
-      required: true
+      required: true,
     },
     unit: {
       type: String,
-      default: 'Quintal'
+      default: 'Quintal',
     },
     date: {
       type: Date,
       required: true,
-      index: true
+      index: true,
     },
     trend: {
       type: String,
       enum: ['Rising', 'Falling', 'Stable'],
-      default: 'Stable'
+      default: 'Stable',
     },
     changePercent: {
       type: Number,
-      default: 0
+      default: 0,
     },
     source: {
       type: String,
-      default: 'agmarknet'
-    }
+      default: 'agmarknet',
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 

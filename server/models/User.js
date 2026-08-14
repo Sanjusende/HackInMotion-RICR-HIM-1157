@@ -1,64 +1,64 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "Name is required"],
-      trim: true
+      required: [true, 'Name is required'],
+      trim: true,
     },
     email: {
       type: String,
-      required: [true, "Email is required"],
+      required: [true, 'Email is required'],
       unique: true,
       trim: true,
       lowercase: true,
-      match: [/\S+@\S+\.\S+/, "Please use a valid email address"],
-      index: true
+      match: [/\S+@\S+\.\S+/, 'Please use a valid email address'],
+      index: true,
     },
     phone: {
       type: String,
-      trim: true
+      trim: true,
     },
     password: {
       type: String,
-      required: [true, "Password is required"]
+      required: [true, 'Password is required'],
     },
     role: {
       type: String,
       enum: {
-        values: ["FARMER", "AGRONOMIST", "ADMIN"],
-        message: "{VALUE} is not a valid role"
+        values: ['FARMER', 'AGRONOMIST', 'ADMIN'],
+        message: '{VALUE} is not a valid role',
       },
-      default: "FARMER"
+      default: 'FARMER',
     },
     language: {
       type: String,
       enum: {
-        values: ["EN", "HI", "MR", "TE", "TA", "KN", "BN", "PA"],
-        message: "{VALUE} is not a valid language code"
+        values: ['EN', 'HI', 'MR', 'TE', 'TA', 'KN', 'BN', 'PA'],
+        message: '{VALUE} is not a valid language code',
       },
-      default: "EN"
+      default: 'EN',
     },
     avatar: {
       type: String,
-      default: ""
+      default: '',
     },
     refreshToken: {
       type: String,
-      default: ""
+      default: '',
     },
     isVerified: {
       type: Boolean,
-      default: false
+      default: false,
     },
     lastLogin: {
-      type: Date
-    }
+      type: Date,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 
-export default mongoose.model("User", UserSchema);
+export default mongoose.model('User', UserSchema);

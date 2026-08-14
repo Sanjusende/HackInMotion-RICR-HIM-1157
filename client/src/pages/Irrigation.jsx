@@ -28,7 +28,7 @@ const Irrigation = () => {
   const [fields, setFields] = useState([
     { id: 'f1', name: 'Field 01', crop: 'Wheat', area: 12, soilMoisture: 38, icon: '🌾' },
     { id: 'f2', name: 'Field 02', crop: 'Soybean', area: 8, soilMoisture: 61, icon: '🌱' },
-    { id: 'f3', name: 'Field 03', crop: 'Rice', area: 10, soilMoisture: 72, icon: '🌾' }
+    { id: 'f3', name: 'Field 03', crop: 'Rice', area: 10, soilMoisture: 72, icon: '🌾' },
   ]);
   const [selectedFieldId, setSelectedFieldId] = useState('f1');
 
@@ -42,17 +42,21 @@ const Irrigation = () => {
     if (farm) {
       if (farm.currentCrop) {
         setCrop(farm.currentCrop);
-        setFields(prev => prev.map(f => f.id === 'f1' ? { ...f, crop: farm.currentCrop } : f));
+        setFields((prev) =>
+          prev.map((f) => (f.id === 'f1' ? { ...f, crop: farm.currentCrop } : f))
+        );
       }
       if (farm.landSize?.value) {
         setLandArea(farm.landSize.value);
-        setFields(prev => prev.map(f => f.id === 'f1' ? { ...f, area: farm.landSize.value } : f));
+        setFields((prev) =>
+          prev.map((f) => (f.id === 'f1' ? { ...f, area: farm.landSize.value } : f))
+        );
       }
       if (farm.soilType) setSoilType(farm.soilType);
     }
   }, [farm]);
 
-  const selectedField = fields.find(f => f.id === selectedFieldId) || fields[0];
+  const selectedField = fields.find((f) => f.id === selectedFieldId) || fields[0];
 
   const fetchIrrigationData = async () => {
     try {
@@ -86,12 +90,18 @@ const Irrigation = () => {
     if (e) e.preventDefault();
     setAnalyzing(true);
     // Update active field values
-    setFields(prev => prev.map(f => f.id === selectedFieldId ? {
-      ...f,
-      crop,
-      area: landArea,
-      soilMoisture
-    } : f));
+    setFields((prev) =>
+      prev.map((f) =>
+        f.id === selectedFieldId
+          ? {
+              ...f,
+              crop,
+              area: landArea,
+              soilMoisture,
+            }
+          : f
+      )
+    );
 
     await fetchIrrigationData();
   };
@@ -104,7 +114,9 @@ const Irrigation = () => {
   };
 
   // Water volume heuristic based on selected field area & moisture deficit
-  const calculatedLiters = Math.round((selectedField.area || 10) * 100 * (selectedField.soilMoisture < 45 ? 1.0 : 0.4));
+  const calculatedLiters = Math.round(
+    (selectedField.area || 10) * 100 * (selectedField.soilMoisture < 45 ? 1.0 : 0.4)
+  );
   const isIrrigateNeeded = selectedField.soilMoisture < 45;
 
   // Skeleton Loader State
@@ -146,12 +158,8 @@ const Irrigation = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 text-slate-900 selection:bg-emerald-600 selection:text-white">
-      
       {/* 1. PAGE HEADER */}
-      <IrrigationHeader
-        analyzing={analyzing}
-        onRefresh={handleAnalyze}
-      />
+      <IrrigationHeader analyzing={analyzing} onRefresh={handleAnalyze} />
 
       {/* 10. IRRIGATION STATUS BANNER */}
       <IrrigationStatus
@@ -208,10 +216,7 @@ const Irrigation = () => {
       </div>
 
       {/* 15. IRRIGATION HISTORY */}
-      <IrrigationHistory
-        history={history}
-        cropName={selectedField.crop}
-      />
+      <IrrigationHistory history={history} cropName={selectedField.crop} />
 
       {/* IRRIGATION PLAN MODAL */}
       {showPlanModal && (
@@ -230,7 +235,9 @@ const Irrigation = () => {
               </div>
               <div>
                 <h3 className="text-base font-black text-slate-900">Irrigation Action Plan</h3>
-                <p className="text-xs text-slate-500 font-medium">{selectedField.name} • {selectedField.crop}</p>
+                <p className="text-xs text-slate-500 font-medium">
+                  {selectedField.name} • {selectedField.crop}
+                </p>
               </div>
             </div>
 
@@ -240,7 +247,9 @@ const Irrigation = () => {
                   <CheckCircle2 size={14} className="text-emerald-600" />
                   Recommended Time
                 </span>
-                <p className="text-slate-700">Tomorrow early morning: <strong>6:00 AM – 8:00 AM</strong></p>
+                <p className="text-slate-700">
+                  Tomorrow early morning: <strong>6:00 AM – 8:00 AM</strong>
+                </p>
               </div>
 
               <div className="p-3 bg-blue-50/80 rounded-xl border border-blue-200 space-y-1">
@@ -248,7 +257,10 @@ const Irrigation = () => {
                   <Droplets size={14} className="text-blue-600" />
                   Total Water Target
                 </span>
-                <p className="text-slate-700">Apply approximately <strong>{calculatedLiters.toLocaleString()} Liters</strong> across your {selectedField.area} Acres.</p>
+                <p className="text-slate-700">
+                  Apply approximately <strong>{calculatedLiters.toLocaleString()} Liters</strong>{' '}
+                  across your {selectedField.area} Acres.
+                </p>
               </div>
 
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
@@ -256,7 +268,10 @@ const Irrigation = () => {
                   <Clock size={14} className="text-slate-500" />
                   Pumping Schedule
                 </span>
-                <p className="text-slate-600">Operate 5 HP pump for <strong>40 minutes</strong> to ensure deep root penetration without surface run-off.</p>
+                <p className="text-slate-600">
+                  Operate 5 HP pump for <strong>40 minutes</strong> to ensure deep root penetration
+                  without surface run-off.
+                </p>
               </div>
             </div>
 
@@ -269,7 +284,6 @@ const Irrigation = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };

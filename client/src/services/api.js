@@ -2,18 +2,24 @@ import axios from 'axios';
 
 const getBaseURL = () => {
   // If running in browser on localhost, force local backend URL so local fixes are used
-  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+  if (
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ) {
     return 'http://localhost:5000/api/v1';
   }
 
   const envUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
   if (envUrl && !envUrl.includes('localhost')) return envUrl;
-  
+
   // If running in browser and on Vercel or any live host, force Render backend URL
-  if (typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname !== 'localhost')) {
+  if (
+    typeof window !== 'undefined' &&
+    (window.location.hostname.includes('vercel.app') || window.location.hostname !== 'localhost')
+  ) {
     return 'https://hackinmotion-ricr-him-1157-1.onrender.com/api/v1';
   }
-  
+
   return envUrl || 'https://hackinmotion-ricr-him-1157-1.onrender.com/api/v1';
 };
 
@@ -24,9 +30,9 @@ const api = axios.create({
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    Accept: 'application/json',
   },
-  timeout: 15000
+  timeout: 15000,
 });
 
 // Request Interceptor: Attach authorization token automatically
@@ -52,7 +58,10 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     const status = error.response?.status;
-    const message = error.response?.data?.message || error.response?.data?.error || 'An unexpected error occurred';
+    const message =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      'An unexpected error occurred';
 
     // Automatic token refresh retry for 401 Unauthorized
     if (status === 401 && originalRequest && !originalRequest._retry) {
@@ -61,7 +70,7 @@ api.interceptors.response.use(
         const sessionData = JSON.parse(localStorage.getItem('krishimitra-session'));
         if (sessionData?.refreshToken) {
           const refreshRes = await axios.post(`${baseURL}/auth/refresh-token`, {
-            refreshToken: sessionData.refreshToken
+            refreshToken: sessionData.refreshToken,
           });
 
           if (refreshRes.data?.success && refreshRes.data?.data?.accessToken) {
@@ -71,7 +80,7 @@ api.interceptors.response.use(
             const updatedSession = {
               ...sessionData,
               accessToken: newAccessToken,
-              refreshToken: newRefreshToken
+              refreshToken: newRefreshToken,
             };
             localStorage.setItem('krishimitra-session', JSON.stringify(updatedSession));
             localStorage.setItem('token', newAccessToken);

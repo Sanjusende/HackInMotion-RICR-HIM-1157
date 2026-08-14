@@ -17,7 +17,7 @@ const WeatherAlerts = ({ weather, cropName }) => {
       icon: <CloudRain className="w-5 h-5 text-rose-600 shrink-0" />,
       color: 'bg-rose-50 border-rose-200 text-rose-950',
       badgeColor: 'bg-rose-100 text-rose-800',
-      desc: `Heavy rainfall (~${rainfallMm}mm) is expected today/tomorrow. Clear farm field drainage channels to prevent root waterlogging.`
+      desc: `Heavy rainfall (~${rainfallMm}mm) is expected today/tomorrow. Clear farm field drainage channels to prevent root waterlogging.`,
     });
   }
 
@@ -29,7 +29,7 @@ const WeatherAlerts = ({ weather, cropName }) => {
       icon: <Flame className="w-5 h-5 text-amber-600 shrink-0" />,
       color: 'bg-amber-50 border-amber-200 text-amber-950',
       badgeColor: 'bg-amber-100 text-amber-900',
-      desc: `High ambient temperature (${temp}°C) detected. Irrigate early morning to cushion your ${cropName || 'crop'} root zone against heat stress.`
+      desc: `High ambient temperature (${temp}°C) detected. Irrigate early morning to cushion your ${cropName || 'crop'} root zone against heat stress.`,
     });
   }
 
@@ -41,7 +41,7 @@ const WeatherAlerts = ({ weather, cropName }) => {
       icon: <Wind className="w-5 h-5 text-sky-600 shrink-0" />,
       color: 'bg-sky-50 border-sky-200 text-sky-950',
       badgeColor: 'bg-sky-100 text-sky-900',
-      desc: `Gusty wind speeds of ${windSpeed} km/h recorded. Postpone foliar sprays and secure temporary greenhouse structures.`
+      desc: `Gusty wind speeds of ${windSpeed} km/h recorded. Postpone foliar sprays and secure temporary greenhouse structures.`,
     });
   }
 
@@ -53,7 +53,7 @@ const WeatherAlerts = ({ weather, cropName }) => {
       icon: <Snowflake className="w-5 h-5 text-indigo-600 shrink-0" />,
       color: 'bg-indigo-50 border-indigo-200 text-indigo-950',
       badgeColor: 'bg-indigo-100 text-indigo-900',
-      desc: `Frost threat detected tonight (${temp}°C). Provide light smoke or protective covers for sensitive standing crops.`
+      desc: `Frost threat detected tonight (${temp}°C). Provide light smoke or protective covers for sensitive standing crops.`,
     });
   }
 
@@ -67,7 +67,9 @@ const WeatherAlerts = ({ weather, cropName }) => {
           <AlertTriangle className="w-4 h-4 text-amber-500" />
           Weather Alerts
         </h2>
-        <span className="text-[11px] font-bold text-slate-400">{alerts.length} Active Notice(s)</span>
+        <span className="text-[11px] font-bold text-slate-400">
+          {alerts.length} Active Notice(s)
+        </span>
       </div>
 
       <div className="space-y-2.5">
@@ -80,7 +82,9 @@ const WeatherAlerts = ({ weather, cropName }) => {
             <div className="space-y-1 flex-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-black">{alert.type}</span>
-                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded ${alert.badgeColor}`}>
+                <span
+                  className={`text-[10px] font-extrabold px-2 py-0.5 rounded ${alert.badgeColor}`}
+                >
                   {alert.level}
                 </span>
               </div>

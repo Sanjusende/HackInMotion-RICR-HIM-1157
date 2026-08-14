@@ -37,7 +37,9 @@ const WeatherIrrigationBridge = ({ weather, cropName }) => {
               <span>Weather-Based Irrigation Advice</span>
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             </h2>
-            <p className="text-[11px] text-slate-300 font-medium">Smart link between live weather & field moisture</p>
+            <p className="text-[11px] text-slate-300 font-medium">
+              Smart link between live weather & field moisture
+            </p>
           </div>
         </div>
 
@@ -55,7 +57,9 @@ const WeatherIrrigationBridge = ({ weather, cropName }) => {
         <div className="p-2.5 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 flex flex-col items-center justify-center space-y-1">
           <Droplets className="w-4 h-4 text-emerald-400" />
           <span className="text-[10px] font-bold text-slate-400">Soil Moisture</span>
-          <span className="font-extrabold text-white">{isIrrigateNeeded ? '38% (Low)' : '65% (Optimal)'}</span>
+          <span className="font-extrabold text-white">
+            {isIrrigateNeeded ? '38% (Low)' : '65% (Optimal)'}
+          </span>
         </div>
 
         <div className="p-2.5 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 flex flex-col items-center justify-center space-y-1">
@@ -67,7 +71,9 @@ const WeatherIrrigationBridge = ({ weather, cropName }) => {
         <div className="p-2.5 bg-emerald-500/20 backdrop-blur-md rounded-xl border border-emerald-500/30 flex flex-col items-center justify-center space-y-1">
           <ShieldCheck className="w-4 h-4 text-emerald-300" />
           <span className="text-[10px] font-bold text-emerald-200">Decision</span>
-          <span className="font-extrabold text-emerald-100">{isIrrigateNeeded ? 'Irrigate' : 'Wait'}</span>
+          <span className="font-extrabold text-emerald-100">
+            {isIrrigateNeeded ? 'Irrigate' : 'Wait'}
+          </span>
         </div>
       </div>
 

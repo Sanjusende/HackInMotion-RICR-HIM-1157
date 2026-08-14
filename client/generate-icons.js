@@ -25,20 +25,20 @@ const SVG_CONTENT = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 51
 function generateIco(pngBuffers) {
   const headerSize = 6;
   const directorySize = 16 * pngBuffers.length;
-  
+
   const header = Buffer.alloc(headerSize);
   header.writeUInt16LE(0, 0); // Reserved
   header.writeUInt16LE(1, 2); // Type: Icon
   header.writeUInt16LE(pngBuffers.length, 4); // Count of images
-  
+
   const directories = [];
   const dataBuffers = [];
   let currentOffset = headerSize + directorySize;
-  
+
   for (let i = 0; i < pngBuffers.length; i++) {
     const { buffer, width, height } = pngBuffers[i];
     const dataSize = buffer.length;
-    
+
     const dir = Buffer.alloc(16);
     dir.writeUInt8(width === 256 ? 0 : width, 0); // Width
     dir.writeUInt8(height === 256 ? 0 : height, 1); // Height
@@ -48,18 +48,18 @@ function generateIco(pngBuffers) {
     dir.writeUInt16LE(32, 6); // Bits per pixel
     dir.writeUInt32LE(dataSize, 8); // Size of image data
     dir.writeUInt32LE(currentOffset, 12); // Offset from beginning of file
-    
+
     directories.push(dir);
     dataBuffers.push(buffer);
     currentOffset += dataSize;
   }
-  
+
   return Buffer.concat([header, ...directories, ...dataBuffers]);
 }
 
 async function main() {
   console.log('Generating favicon assets...');
-  
+
   // Ensure public folder exists
   if (!fs.existsSync(PUBLIC_DIR)) {
     fs.mkdirSync(PUBLIC_DIR, { recursive: true });
@@ -78,17 +78,14 @@ async function main() {
     'favicon-32x32.png': 32,
     'apple-touch-icon.png': 180,
     'android-chrome-192x192.png': 192,
-    'android-chrome-512x512.png': 512
+    'android-chrome-512x512.png': 512,
   };
 
   const pngBuffers = {};
 
   for (const [filename, size] of Object.entries(sizes)) {
-    const buffer = await sharp(svgBuffer)
-      .resize(size, size)
-      .png()
-      .toBuffer();
-    
+    const buffer = await sharp(svgBuffer).resize(size, size).png().toBuffer();
+
     fs.writeFileSync(path.join(PUBLIC_DIR, filename), buffer);
     pngBuffers[size] = buffer;
     console.log(`✔ Generated public/${filename} (${size}x${size})`);
@@ -97,16 +94,16 @@ async function main() {
   // Package favicon.ico containing 16x16 and 32x32 versions
   const icoBuffer = generateIco([
     { buffer: pngBuffers[16], width: 16, height: 16 },
-    { buffer: pngBuffers[32], width: 32, height: 32 }
+    { buffer: pngBuffers[32], width: 32, height: 32 },
   ]);
 
   fs.writeFileSync(path.join(PUBLIC_DIR, 'favicon.ico'), icoBuffer);
   console.log('✔ Generated public/favicon.ico');
-  
+
   console.log('Favicon generation completed successfully!');
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Error generating favicons:', err);
   process.exit(1);
 });

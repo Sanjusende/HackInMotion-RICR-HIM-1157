@@ -1,4 +1,4 @@
-const REQUIRED_VARS = ["MONGO_URI", "JWT_SECRET"];
+const REQUIRED_VARS = ['MONGO_URI', 'JWT_SECRET', 'JWT_REFRESH_SECRET', 'CLIENT_URL'];
 
 export const validateEnv = () => {
   const missing = [];

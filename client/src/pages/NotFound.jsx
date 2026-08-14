@@ -1,15 +1,15 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  Sprout, 
-  Home, 
-  ArrowLeft, 
-  Compass, 
-  LayoutDashboard, 
-  CloudRain, 
-  Droplets, 
-  Activity, 
-  TrendingUp 
+import {
+  Sprout,
+  Home,
+  ArrowLeft,
+  Compass,
+  LayoutDashboard,
+  CloudRain,
+  Droplets,
+  Activity,
+  TrendingUp,
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 
@@ -50,7 +50,6 @@ const NotFound = () => {
 
       {/* Glassmorphic Container */}
       <div className="relative max-w-2xl w-full bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-[32px] p-6 sm:p-10 md:p-12 text-center space-y-8 z-10 transition-all duration-300">
-        
         {/* Brand Header */}
         <div className="flex items-center justify-center space-x-2 pb-2">
           <div className="p-1.5 bg-emerald-600 text-white rounded-xl shadow-sm">
@@ -64,7 +63,7 @@ const NotFound = () => {
         {/* 404 Illustration / Art */}
         <div className="relative flex justify-center items-center py-4">
           <div className="absolute w-48 h-48 bg-emerald-100 rounded-full blur-xl opacity-40 animate-pulse-slow" />
-          
+
           <div className="relative animate-float flex flex-col items-center">
             {/* Compass / Search Graphic */}
             <div className="relative p-5 bg-white rounded-3xl border border-emerald-100 shadow-md">
@@ -89,8 +88,8 @@ const NotFound = () => {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-center items-stretch sm:items-center gap-3 max-w-md mx-auto">
           <Link to="/" className="flex-1">
-            <Button 
-              variant="primary" 
+            <Button
+              variant="primary"
               className="w-full flex items-center justify-center gap-2 py-3 font-bold rounded-xl shadow-lg shadow-emerald-600/10 cursor-pointer text-sm"
               aria-label="Back to Home"
             >
@@ -98,8 +97,8 @@ const NotFound = () => {
               Back to Home
             </Button>
           </Link>
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             onClick={() => navigate(-1)}
             className="flex-1 flex items-center justify-center gap-2 py-3 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition cursor-pointer text-sm"
             aria-label="Go Back"
@@ -114,7 +113,7 @@ const NotFound = () => {
           <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block">
             Common Destinations
           </span>
-          
+
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {quickLinks.map((link) => {
               const Icon = link.icon;
@@ -131,7 +130,6 @@ const NotFound = () => {
             })}
           </div>
         </div>
-
       </div>
     </div>
   );

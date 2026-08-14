@@ -1,4 +1,5 @@
 import Farm from '../models/Farm.js';
+import ApiResponse from '../utils/apiResponse.js';
 import { reverseGeocode, forwardGeocode } from '../services/geocodingService.js';
 
 // Get current user's farm profile
@@ -8,18 +9,18 @@ export const getMyFarm = async (req, res) => {
     if (!farm) {
       return res.status(404).json({
         success: false,
-        message: 'Farm profile not found. Please setup your farm profile.'
+        message: 'Farm profile not found. Please setup your farm profile.',
       });
     }
 
     return res.status(200).json({
       success: true,
-      data: farm
+      data: farm,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      error: 'Failed to retrieve farm profile'
+      error: 'Failed to retrieve farm profile',
     });
   }
 };
@@ -38,13 +39,13 @@ export const createOrUpdateFarm = async (req, res) => {
       currentCrop,
       plannedCrop,
       growthStage,
-      season
+      season,
     } = req.body;
 
     if (!currentCrop) {
       return res.status(400).json({
         success: false,
-        error: 'Current crop is required'
+        error: 'Current crop is required',
       });
     }
 
@@ -54,7 +55,7 @@ export const createOrUpdateFarm = async (req, res) => {
       lng: 75.8577,
       state: 'Madhya Pradesh',
       district: 'Indore',
-      village: ''
+      village: '',
     };
 
     if (lat && lng) {
@@ -67,7 +68,7 @@ export const createOrUpdateFarm = async (req, res) => {
         lat: geoResult.lat,
         lng: geoResult.lng,
         district: manualLocation,
-        state: ''
+        state: '',
       };
     }
 
@@ -77,18 +78,21 @@ export const createOrUpdateFarm = async (req, res) => {
       location: locationData,
       landSize: {
         value: Number(landSize) || 5,
-        unit: landUnit || 'acres'
+        unit: landUnit || 'acres',
       },
       soilType: soilType || 'Unknown/Not sure',
       currentCrop: currentCrop || 'Wheat',
       plannedCrop: plannedCrop || '',
       growthStage: growthStage || 'Vegetative',
-      season: season || 'Kharif'
+      season: season || 'Kharif',
     };
 
     let farm = await Farm.findOne({ userId: req.user._id });
     if (farm) {
-      farm = await Farm.findByIdAndUpdate(farm._id, farmPayload, { new: true, runValidators: true });
+      farm = await Farm.findByIdAndUpdate(farm._id, farmPayload, {
+        new: true,
+        runValidators: true,
+      });
     } else {
       farm = await Farm.create(farmPayload);
     }
@@ -96,13 +100,13 @@ export const createOrUpdateFarm = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: 'Farm profile saved successfully',
-      data: farm
+      data: farm,
     });
   } catch (error) {
     console.error('Error saving farm profile:', error);
     return res.status(500).json({
       success: false,
-      error: 'Failed to save farm profile'
+      error: 'Failed to save farm profile',
     });
   }
 };
@@ -112,10 +116,21 @@ export const getFarmById = async (req, res) => {
   try {
     const farm = await Farm.findById(req.params.id);
     if (!farm) {
-      return res.status(404).json({ success: false, error: 'Farm not found' });
+      return ApiResponse.error(res, 'Farm not found', 404, 'NOT_FOUND');
     }
-    return res.status(200).json({ success: true, data: farm });
+
+    // Verify ownership (IDOR protection)
+    if (farm.userId.toString() !== req.user._id.toString()) {
+      return ApiResponse.error(
+        res,
+        'Forbidden: You do not own this farm resource',
+        403,
+        'FORBIDDEN'
+      );
+    }
+
+    return ApiResponse.success(res, farm, 'Farm profile retrieved successfully');
   } catch (error) {
-    return res.status(500).json({ success: false, error: 'Failed to fetch farm' });
+    return ApiResponse.error(res, 'Failed to fetch farm', 500, 'SERVER_ERROR');
   }
 };

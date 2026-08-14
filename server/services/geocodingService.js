@@ -19,19 +19,12 @@ export const reverseGeocode = async (lat, lng) => {
       const addr = response.data.address;
 
       const district =
-        addr.state_district ||
-        addr.county ||
-        addr.city ||
-        addr.town ||
-        addr.village ||
-        'Indore';
+        addr.state_district || addr.county || addr.city || addr.town || addr.village || 'Indore';
 
       const state = addr.state || 'Madhya Pradesh';
       const village = addr.village || addr.suburb || addr.town || '';
 
-      const display = village
-        ? `${village}, ${district}, ${state}`
-        : `${district}, ${state}`;
+      const display = village ? `${village}, ${district}, ${state}` : `${district}, ${state}`;
 
       return {
         display,
@@ -69,11 +62,7 @@ export const forwardGeocode = async (locationStr) => {
       { timeout: 5000 }
     );
 
-    if (
-      response.data &&
-      response.data.results &&
-      response.data.results.length > 0
-    ) {
+    if (response.data && response.data.results && response.data.results.length > 0) {
       const result = response.data.results[0];
 
       return {

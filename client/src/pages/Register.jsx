@@ -58,7 +58,9 @@ const Register = () => {
       toast.success('Registration successful!');
       navigate('/dashboard');
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message || 'Unable to create your account.');
+      toast.error(
+        error.response?.data?.message || error.message || 'Unable to create your account.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -132,7 +134,12 @@ const Register = () => {
 
         <div>
           <label className="flex items-start gap-2 text-sm text-secondary-text cursor-pointer">
-            <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="mt-1 accent-primary" />
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-1 accent-primary"
+            />
             <span>I agree to the terms and privacy policy.</span>
           </label>
           {errors.terms && <p className="text-danger text-xs mt-1">{errors.terms}</p>}

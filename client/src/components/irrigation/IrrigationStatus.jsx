@@ -19,15 +19,21 @@ const IrrigationStatus = ({ selectedField, isIrrigateNeeded, calculatedLiters })
           <div>
             <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
               <span>Irrigation Status</span>
-              <span className="text-slate-400 text-xs font-normal">({fieldName} • {crop})</span>
+              <span className="text-slate-400 text-xs font-normal">
+                ({fieldName} • {crop})
+              </span>
             </h2>
             <p className="text-[11px] text-slate-500 font-medium">Real-time water demand summary</p>
           </div>
         </div>
 
-        <span className={`px-3 py-1 text-xs font-black rounded-full border ${
-          isIrrigateNeeded ? 'bg-amber-50 text-amber-900 border-amber-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'
-        }`}>
+        <span
+          className={`px-3 py-1 text-xs font-black rounded-full border ${
+            isIrrigateNeeded
+              ? 'bg-amber-50 text-amber-900 border-amber-200'
+              : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+          }`}
+        >
           {statusLabel}
         </span>
       </div>
@@ -35,17 +41,23 @@ const IrrigationStatus = ({ selectedField, isIrrigateNeeded, calculatedLiters })
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* FIELD & CROP */}
         <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-100 space-y-1">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Field & Crop</span>
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+            Field & Crop
+          </span>
           <p className="text-base font-black text-slate-900 flex items-center gap-1">
             <Sprout size={16} className="text-emerald-600 shrink-0" />
             {crop} Field
           </p>
-          <p className="text-[10px] font-semibold text-slate-500">{selectedField?.area || 12} Acres registered</p>
+          <p className="text-[10px] font-semibold text-slate-500">
+            {selectedField?.area || 12} Acres registered
+          </p>
         </div>
 
         {/* SOIL MOISTURE */}
         <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-100 space-y-1">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Soil Moisture</span>
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+            Soil Moisture
+          </span>
           <p className="text-base font-black text-slate-900 flex items-center gap-1">
             <Gauge size={16} className="text-sky-600 shrink-0" />
             {moisture}%
@@ -57,7 +69,9 @@ const IrrigationStatus = ({ selectedField, isIrrigateNeeded, calculatedLiters })
 
         {/* NEXT IRRIGATION */}
         <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-100 space-y-1">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Next Irrigation</span>
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+            Next Irrigation
+          </span>
           <p className="text-xs font-black text-slate-900 flex items-center gap-1">
             <Clock size={15} className="text-teal-600 shrink-0" />
             {nextIrrigation}
@@ -67,7 +81,9 @@ const IrrigationStatus = ({ selectedField, isIrrigateNeeded, calculatedLiters })
 
         {/* WATER REQUIRED */}
         <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-100 space-y-1">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Water Required</span>
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+            Water Required
+          </span>
           <p className="text-base font-black text-slate-900 flex items-center gap-1">
             <Droplets size={16} className="text-blue-600 shrink-0" />
             {waterVol.toLocaleString()} L

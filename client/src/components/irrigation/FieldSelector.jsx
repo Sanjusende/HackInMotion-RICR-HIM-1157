@@ -37,15 +37,21 @@ const FieldSelector = ({ fields, selectedFieldId, onSelectField }) => {
                 <span className="text-xl">{field.icon || '🌾'}</span>
                 <div>
                   <span className="text-xs font-black text-slate-900 block">{field.name}</span>
-                  <span className="text-[11px] font-semibold text-slate-500">{field.crop} • {field.area} Acres</span>
+                  <span className="text-[11px] font-semibold text-slate-500">
+                    {field.crop} • {field.area} Acres
+                  </span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200/60">
-                <span className="text-[11px] font-semibold text-slate-500">Soil Moisture: <strong className="text-slate-900">{field.soilMoisture}%</strong></span>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
-                  isNeedsWater ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900'
-                }`}>
+                <span className="text-[11px] font-semibold text-slate-500">
+                  Soil Moisture: <strong className="text-slate-900">{field.soilMoisture}%</strong>
+                </span>
+                <span
+                  className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
+                    isNeedsWater ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900'
+                  }`}
+                >
                   {isNeedsWater ? '🟡 Needs Water' : '🟢 Optimal'}
                 </span>
               </div>
