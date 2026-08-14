@@ -18,6 +18,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   isProfileComplete: boolean;
+  setProfileComplete: (complete: boolean) => void;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, phone: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -186,6 +187,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!token,
         isLoading,
         isProfileComplete,
+        setProfileComplete: setIsProfileComplete,
         login,
         signup,
         logout,

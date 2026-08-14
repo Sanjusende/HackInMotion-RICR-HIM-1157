@@ -117,7 +117,7 @@ export default function CropHealthScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Diagnostic Form */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Describe Symptoms</Text>
@@ -174,7 +174,7 @@ export default function CropHealthScreen() {
         {result && (() => {
           const details = DISEASE_CLINICAL_DETAILS[result.possibleIssue] || {
             severity: 'Early Warning Stage',
-            remedy: 'Spray general broad-spectrum organic fungicide or neem extract (5%). Limit sprinkler irrigation.',
+            remedy: 'Apply general broad-spectrum organic fungicide or neem extract (5%). Limit sprinkler irrigation.',
             recovery: '7 - 10 Days',
             prevention: 'Maintain proper plant spacing and crop scouting schedule.'
           };

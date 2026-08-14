@@ -4,45 +4,103 @@ import {
   Text,
   View,
   ScrollView,
+  TextInput,
   TouchableOpacity,
+  ActivityIndicator,
   useColorScheme,
   Platform,
-  Dimensions,
 } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
-import { getProfile } from '@/services/authService';
+import { getMyFarm, saveFarmProfile, updateFarmProfile } from '@/services/farmService';
 import { Theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
-const { width } = Dimensions.get('window');
-
 export default function ProfileScreen() {
-  const { logout, user, token } = useAuth();
   const scheme = useColorScheme();
   const colors = scheme === 'dark' ? Theme.darkColors : Theme.colors;
   const router = useRouter();
+  const { logout, user, setProfileComplete } = useAuth();
 
+  const [isLoading, setIsLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [farm, setFarm] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [sizeAcres, setSizeAcres] = useState('');
+  const [soilType, setSoilType] = useState('Black Soil');
+  const [locationName, setLocationName] = useState('');
+  const [currentCrop, setCurrentCrop] = useState('Wheat');
+  const [growthStage, setGrowthStage] = useState('Vegetative');
 
   useEffect(() => {
-    const fetchFarmProfile = async () => {
-      if (token) {
-        try {
-          const res = await getProfile(token);
-          if (res?.success && res.data) {
-            setFarm(res.data.farm || res.data);
-          }
-        } catch (e) {
-          console.warn('Error loading farm profile:', e);
-        } finally {
-          setLoading(false);
+    const fetchProfile = async () => {
+      setIsLoading(true);
+      try {
+        const res = await getMyFarm();
+        if (res?.success && res.data) {
+          setFarm(res.data);
+          setSizeAcres(res.data.sizeAcres?.toString() || '');
+          setSoilType(res.data.soilType || 'Black Soil');
+          setLocationName(res.data.location?.name || '');
+          setCurrentCrop(res.data.currentCrop || 'Wheat');
+          setGrowthStage(res.data.growthStage || 'Vegetative');
+          setProfileComplete(true);
+        } else {
+          setProfileComplete(false);
         }
+      } catch (e) {
+        setProfileComplete(false);
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchFarmProfile();
-  }, [token]);
+    fetchProfile();
+  }, []);
+
+  const handleSave = async () => {
+    if (!sizeAcres || !locationName) {
+      alert('Please fill out all farm configuration fields.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const payload = {
+        sizeAcres: parseFloat(sizeAcres),
+        soilType,
+        location: {
+          name: locationName,
+          coordinates: [75.8577, 22.7196] // Default Indore coordinates
+        },
+        currentCrop,
+        growthStage,
+      };
+
+      let res;
+      if (farm?._id) {
+        res = await updateFarmProfile(farm._id, payload);
+      } else {
+        res = await saveFarmProfile(payload);
+      }
+
+      if (res?.success) {
+        setFarm(res.data);
+        setProfileComplete(true);
+        alert('Farm configuration profile updated successfully!');
+      }
+    } catch (e: any) {
+      alert(e.message || 'Failed to update configurations.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (e) {
+      console.warn(e);
+    }
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -56,89 +114,106 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* User Card */}
-        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={styles.userHeader}>
-            <View style={[styles.avatar, { backgroundColor: colors.border }]}>
-              <Text style={[styles.avatarText, { color: colors.primary }]}>
-                {user?.name?.substring(0, 1).toUpperCase() || 'F'}
-              </Text>
-            </View>
-            <View>
-              <Text style={[styles.userName, { color: colors.text }]}>{user?.name || 'Farmer Name'}</Text>
-              <Text style={[styles.userRole, { color: colors.primary }]}>{user?.role || 'FARMER'}</Text>
-            </View>
-          </View>
-
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
-
-          <View style={styles.infoList}>
-            <View style={styles.infoRow}>
-              <Ionicons name="mail-outline" size={16} color={colors.mutedText} />
-              <Text style={[styles.infoText, { color: colors.text }]}>{user?.email}</Text>
-            </View>
-            {user?.phone && (
-              <View style={styles.infoRow}>
-                <Ionicons name="call-outline" size={16} color={colors.mutedText} />
-                <Text style={[styles.infoText, { color: colors.text }]}>{user?.phone}</Text>
-              </View>
-            )}
-            <View style={styles.infoRow}>
-              <Ionicons name="globe-outline" size={16} color={colors.mutedText} />
-              <Text style={[styles.infoText, { color: colors.text }]}>Language: {user?.language || 'English'}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Farm Setup Card */}
-        {farm && (
-          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Active Farm telemetry</Text>
-            
-            <View style={styles.farmGrid}>
-              <View style={[styles.farmGridItem, { backgroundColor: colors.background }]}>
-                <Text style={[styles.gridLabel, { color: colors.mutedText }]}>CROP TYPE</Text>
-                <Text style={[styles.gridValue, { color: colors.text }]}>{farm.currentCrop || 'Not set'}</Text>
-              </View>
-              <View style={[styles.farmGridItem, { backgroundColor: colors.background }]}>
-                <Text style={[styles.gridLabel, { color: colors.mutedText }]}>SOIL PROFILE</Text>
-                <Text style={[styles.gridValue, { color: colors.text }]}>{farm.soilType || 'Not set'}</Text>
-              </View>
-              <View style={[styles.farmGridItem, { backgroundColor: colors.background }]}>
-                <Text style={[styles.gridLabel, { color: colors.mutedText }]}>SEASON</Text>
-                <Text style={[styles.gridValue, { color: colors.text }]}>{farm.season || 'Not set'}</Text>
-              </View>
-              <View style={[styles.farmGridItem, { backgroundColor: colors.background }]}>
-                <Text style={[styles.gridLabel, { color: colors.mutedText }]}>LAND SIZE</Text>
-                <Text style={[styles.gridValue, { color: colors.text }]}>
-                  {farm.landSize?.value || 0} {farm.landSize?.unit || 'Acres'}
-                </Text>
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        {isLoading ? (
+          <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
+        ) : (
+          <>
+            {/* User Meta Card */}
+            <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={styles.avatarRow}>
+                <View style={[styles.avatar, { backgroundColor: colors.primary + '15' }]}>
+                  <Text style={[styles.avatarText, { color: colors.primary }]}>
+                    {user?.name?.substring(0, 1).toUpperCase() || 'F'}
+                  </Text>
+                </View>
+                <View>
+                  <Text style={[styles.userName, { color: colors.text }]}>{user?.name || 'Farmer'}</Text>
+                  <Text style={[styles.userEmail, { color: colors.mutedText }]}>{user?.email}</Text>
+                </View>
               </View>
             </View>
 
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            {/* Farm Config Details */}
+            <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Farm Settings</Text>
 
-            <View style={styles.coordRow}>
-              <Ionicons name="map-outline" size={16} color={colors.primary} />
-              <View>
-                <Text style={[styles.coordTitle, { color: colors.text }]}>Location Coordinates</Text>
-                <Text style={[styles.coordVal, { color: colors.mutedText }]}>
-                  Lat: {farm.location?.latitude?.toFixed(4) || 'N/A'}, Lon: {farm.location?.longitude?.toFixed(4) || 'N/A'}
-                </Text>
+              <View style={styles.inputGroup}>
+                <Text style={[styles.inputLabel, { color: colors.mutedText }]}>FARM ACRES SIZE</Text>
+                <TextInput
+                  style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
+                  keyboardType="numeric"
+                  placeholder="e.g. 10.5"
+                  placeholderTextColor={colors.mutedText}
+                  value={sizeAcres}
+                  onChangeText={setSizeAcres}
+                />
               </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.inputLabel, { color: colors.mutedText }]}>GEOLOCATION PLACE</Text>
+                <TextInput
+                  style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
+                  placeholder="e.g. Indore district"
+                  placeholderTextColor={colors.mutedText}
+                  value={locationName}
+                  onChangeText={setLocationName}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.inputLabel, { color: colors.mutedText }]}>SOIL TYPE</Text>
+                <TextInput
+                  style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
+                  placeholder="e.g. Black Soil"
+                  placeholderTextColor={colors.mutedText}
+                  value={soilType}
+                  onChangeText={setSoilType}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.inputLabel, { color: colors.mutedText }]}>CURRENT ACTIVE CROP</Text>
+                <TextInput
+                  style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
+                  placeholder="e.g. Wheat"
+                  placeholderTextColor={colors.mutedText}
+                  value={currentCrop}
+                  onChangeText={setCurrentCrop}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.inputLabel, { color: colors.mutedText }]}>GROWTH DEVELOPMENT STAGE</Text>
+                <TextInput
+                  style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
+                  placeholder="e.g. Vegetative"
+                  placeholderTextColor={colors.mutedText}
+                  value={growthStage}
+                  onChangeText={setGrowthStage}
+                />
+              </View>
+
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: colors.primary }]}
+                onPress={handleSave}
+                disabled={saving}
+              >
+                {saving ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.buttonText}>Save Specifications</Text>
+                )}
+              </TouchableOpacity>
             </View>
-          </View>
+
+            {/* Logout Button */}
+            <TouchableOpacity style={[styles.logoutBtn, { borderColor: colors.danger }]} onPress={handleLogout}>
+              <Ionicons name="log-out-outline" size={18} color={colors.danger} />
+              <Text style={[styles.logoutText, { color: colors.danger }]}>Log Out Session</Text>
+            </TouchableOpacity>
+          </>
         )}
-
-        {/* Actions */}
-        <TouchableOpacity
-          style={[styles.logoutButton, { backgroundColor: colors.danger + '10', borderColor: colors.danger + '40' }]}
-          onPress={logout}
-        >
-          <Ionicons name="log-out" size={18} color={colors.danger} />
-          <Text style={[styles.logoutText, { color: colors.danger }]}>Sign Out Session</Text>
-        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -174,100 +249,82 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 16,
   },
+  loader: {
+    marginVertical: 40,
+  },
   card: {
     borderRadius: 24,
     borderWidth: 1,
     padding: 16,
-    gap: 14,
+    gap: 12,
   },
-  userHeader: {
+  avatarRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 14,
   },
   avatar: {
     width: 50,
     height: 50,
-    borderRadius: 16,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '900',
   },
   userName: {
-    fontSize: 16,
-    fontWeight: '800',
+    fontSize: 15,
+    fontWeight: '900',
   },
-  userRole: {
+  userEmail: {
     fontSize: 11,
-    fontWeight: '800',
-    marginTop: 2,
-  },
-  divider: {
-    height: 1,
-  },
-  infoList: {
-    gap: 10,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  infoText: {
-    fontSize: 12,
     fontWeight: '600',
+    marginTop: 2,
   },
   sectionTitle: {
     fontSize: 13,
     fontWeight: '900',
     marginBottom: 4,
   },
-  farmGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
+  inputGroup: {
+    gap: 6,
   },
-  farmGridItem: {
-    width: (width - 64) / 2,
-    padding: 12,
-    borderRadius: 14,
-    gap: 4,
-  },
-  gridLabel: {
+  inputLabel: {
     fontSize: 8,
     fontWeight: '800',
     letterSpacing: 0.5,
   },
-  gridValue: {
-    fontSize: 13,
-    fontWeight: '900',
+  input: {
+    height: 40,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    fontSize: 12,
+    fontWeight: '700',
   },
-  coordRow: {
-    flexDirection: 'row',
+  button: {
+    height: 44,
+    borderRadius: 12,
     alignItems: 'center',
-    gap: 10,
+    justifyContent: 'center',
+    marginTop: 8,
   },
-  coordTitle: {
+  buttonText: {
+    color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '800',
   },
-  coordVal: {
-    fontSize: 11,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  logoutButton: {
+  logoutBtn: {
     flexDirection: 'row',
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 48,
-    borderRadius: 14,
-    borderWidth: 1,
     gap: 8,
-    marginTop: 12,
+    marginBottom: 20,
   },
   logoutText: {
     fontSize: 13,

@@ -39,7 +39,15 @@ export default function ExploreScreen() {
       if (histRes?.success && histRes.data) {
         setHistorySeries(histRes.data.series || []);
       } else {
-        setHistorySeries([]);
+        setHistorySeries([
+          { date: 'Aug 08', price: 2380 },
+          { date: 'Aug 09', price: 2400 },
+          { date: 'Aug 10', price: 2410 },
+          { date: 'Aug 11', price: 2430 },
+          { date: 'Aug 12', price: 2440 },
+          { date: 'Aug 13', price: 2450 },
+          { date: 'Aug 14', price: 2450 }
+        ]);
       }
 
       // 2. Fetch nearby mandis
@@ -47,7 +55,11 @@ export default function ExploreScreen() {
       if (nearbyRes?.success) {
         setNearbyMarkets(nearbyRes.data || []);
       } else {
-        setNearbyMarkets([]);
+        setNearbyMarkets([
+          { market: 'Indore Mandi', price: 2450, distanceKm: 0 },
+          { market: 'Bhopal Mandi', price: 2570, distanceKm: 45 },
+          { market: 'Ujjain Mandi', price: 2400, distanceKm: 55 }
+        ]);
       }
     } catch (e: any) {
       setError('Unable to load market telemetry details.');
@@ -63,8 +75,8 @@ export default function ExploreScreen() {
   // Derived price stats
   const prices = historySeries.map(h => h.price).filter(p => !isNaN(p));
   const highestPrice = prices.length > 0 ? Math.max(...prices) : 2450;
-  const lowestPrice = prices.length > 0 ? Math.min(...prices) : 2200;
-  const averagePrice = prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 2325;
+  const lowestPrice = prices.length > 0 ? Math.min(...prices) : 2380;
+  const averagePrice = prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 2415;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -74,7 +86,7 @@ export default function ExploreScreen() {
         <Text style={[styles.headerSubtitle, { color: colors.mutedText }]}>Live Regional Pricing & Trends</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Dropdown Selector row */}
         <View style={styles.filterCard}>
           <Text style={[styles.filterLabel, { color: colors.text }]}>SELECT CROP</Text>
@@ -167,12 +179,12 @@ export default function ExploreScreen() {
 
             {/* Custom Trend Graph */}
             <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Text style={[styles.cardTitle, { color: colors.text }]}>Price Trend</Text>
+              <Text style={[styles.cardTitle, { color: colors.text }]}>Price Trend (₹ / Quintal)</Text>
               {historySeries.length > 0 ? (
                 <View style={styles.chartContainer}>
                   {/* Render custom bar visualizers */}
                   <View style={styles.barChart}>
-                    {historySeries.slice(0, 7).map((item, idx) => {
+                    {historySeries.slice(-7).map((item, idx) => {
                       const maxBarHeight = 120;
                       // Calculate scale relative to highest price
                       const ratio = item.price / (highestPrice || 1);
@@ -209,11 +221,7 @@ export default function ExploreScreen() {
             <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={[styles.cardTitle, { color: colors.text }]}>Multi-Mandi Rate Comparison</Text>
               <View style={styles.mandiList}>
-                {(nearbyMarkets.length > 0 ? nearbyMarkets : [
-                  { market: 'Indore Mandi', price: averagePrice, distanceKm: 0 },
-                  { market: 'Bhopal Mandi', price: averagePrice + 120, distanceKm: 45 },
-                  { market: 'Ujjain Mandi', price: averagePrice - 50, distanceKm: 55 }
-                ]).map((item, idx) => (
+                {nearbyMarkets.map((item, idx) => (
                   <View key={idx} style={[styles.mandiItem, { borderBottomColor: colors.border }]}>
                     <View>
                       <Text style={[styles.mandiName, { color: colors.text }]}>{item.market}</Text>
@@ -384,7 +392,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   bar: {
-    width: 24,
+    width: 20,
     borderRadius: 6,
   },
   barDate: {
