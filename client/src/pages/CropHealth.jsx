@@ -193,7 +193,7 @@ const CropHealth = () => {
               <div>
                 <span className="text-xs text-slate-400 uppercase font-bold">POSSIBLE ISSUE IDENTIFIED</span>
                 <p className="text-lg font-black text-slate-900 mt-0.5">{currentResult.possibleIssue}</p>
-                <span className="inline-block mt-1 px-2.5 py-0.5 bg-emerald-550 text-white text-xs font-extrabold rounded-full">
+                <span className="inline-block mt-1 px-2.5 py-0.5 bg-emerald-600 text-white text-xs font-extrabold rounded-full">
                   Confidence: {currentResult.confidence}
                 </span>
               </div>

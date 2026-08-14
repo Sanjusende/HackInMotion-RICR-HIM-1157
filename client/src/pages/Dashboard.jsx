@@ -229,17 +229,17 @@ const Dashboard = () => {
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2.5 text-xs font-bold">
-              <span className="flex items-center gap-1.5 bg-slate-105/90 text-slate-700 px-3.5 py-1.5 rounded-full border border-slate-200/80">
+              <span className="flex items-center gap-1.5 bg-slate-100/90 text-slate-700 px-3.5 py-1.5 rounded-full border border-slate-200/80">
                 <MapPin size={13} className="text-emerald-600" />
                 {farm?.location?.display || 'Indore, Madhya Pradesh'}
               </span>
-              <span className="flex items-center gap-1.5 bg-slate-105/90 text-slate-700 px-3.5 py-1.5 rounded-full border border-slate-200/80">
+              <span className="flex items-center gap-1.5 bg-slate-100/90 text-slate-700 px-3.5 py-1.5 rounded-full border border-slate-200/80">
                 <Calendar size={13} className="text-emerald-600" />
                 {currentDateStr}
               </span>
               <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-800 px-3.5 py-1.5 rounded-full border border-emerald-200/80 font-extrabold">
-                <Sun size={14} className="text-amber-500 animate-pulse" />
-                28°C • Clear Sky
+                <Sprout size={14} className="text-emerald-600" />
+                Vegetative
               </span>
             </div>
 
@@ -274,7 +274,7 @@ const Dashboard = () => {
             <div className="relative">
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="p-2.5 bg-slate-105 hover:bg-slate-200/80 rounded-2xl transition-all text-slate-700 relative border border-slate-200/80 cursor-pointer"
+                className="p-2.5 bg-slate-100 hover:bg-slate-200/80 rounded-2xl transition-all text-slate-700 relative border border-slate-200/80 cursor-pointer"
               >
                 <Bell className="w-4 h-4 text-slate-700" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 animate-ping" />
@@ -285,7 +285,7 @@ const Dashboard = () => {
                 <div className="absolute right-0 mt-3 w-80 bg-white text-slate-900 rounded-3xl p-4 shadow-2xl border border-emerald-100 z-50 space-y-3">
                   <div className="flex justify-between items-center border-b border-slate-100 pb-2">
                     <span className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
-                      <Bell size={14} className="text-emerald-650" /> Active Farm Alerts
+                      <Bell size={14} className="text-emerald-600" /> Active Farm Alerts
                     </span>
                     <button onClick={() => setNotificationsOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
                       <X size={14} />
@@ -349,7 +349,7 @@ const Dashboard = () => {
           </Link>
           <Link
             to="/irrigation"
-            className="px-3.5 py-1.5 bg-emerald-750 hover:bg-emerald-700 border border-white/20 text-white font-extrabold rounded-xl transition text-xs shrink-0"
+            className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-600 border border-white/20 text-white font-extrabold rounded-xl transition text-xs shrink-0"
           >
             Water Schedule
           </Link>
@@ -363,7 +363,7 @@ const Dashboard = () => {
             <AlertTriangle className="text-rose-600" size={16} />
             <span>{error}</span>
           </div>
-          <button onClick={fetchDashboard} className="px-3 py-1 bg-rose-650 text-white rounded-xl text-xs font-bold hover:bg-rose-750">
+          <button onClick={fetchDashboard} className="px-3 py-1 bg-rose-600 text-white rounded-xl text-xs font-bold hover:bg-rose-700">
             Retry
           </button>
         </div>
@@ -453,7 +453,7 @@ const Dashboard = () => {
         </div>
 
         {/* KPI 5: Crop Stage */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-105 shadow-sm hover:shadow-md transition-all space-y-2 group">
+        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all space-y-2 group">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Crop Stage</span>
             <div className="p-2 bg-emerald-100 text-emerald-600 rounded-xl group-hover:scale-105 transition-transform">
@@ -504,7 +504,7 @@ const Dashboard = () => {
             </div>
 
             {/* Metric Toggle */}
-            <div className="flex items-center gap-1 bg-slate-105 p-1 rounded-xl text-xs font-bold">
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold">
               <button
                 onClick={() => setWeatherMetric('temp')}
                 className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
@@ -848,7 +848,7 @@ const Dashboard = () => {
               </div>
               <p className="text-xs text-slate-700 font-medium leading-relaxed">
                 {todaysAction?.reasoning?.actionableAdvice || 'No irrigation required today. Save pumping costs.'}
-                <span className="block mt-1 font-bold text-cyan-850">💧 Estimated Water Saved: 14,250 Liters.</span>
+                <span className="block mt-1 font-bold text-cyan-800">💧 Estimated Water Saved: 14,250 Liters.</span>
               </p>
             </div>
           </div>
@@ -870,7 +870,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="pt-2 flex items-center justify-between text-xs text-slate-500 font-semibold border-t border-slate-105">
+          <div className="pt-2 flex items-center justify-between text-xs text-slate-500 font-semibold border-t border-slate-100">
             <span>Powered by KrishiMitra Telemetry Engine</span>
             <Link to="/voice-assistant" className="text-emerald-700 font-bold hover:underline">
               Ask Voice AI &rarr;
@@ -892,43 +892,43 @@ const Dashboard = () => {
               <AlertTriangle className="w-5 h-5 text-amber-500" />
               Active Alerts & Warnings
             </h3>
-            <span className="text-[10px] font-extrabold text-slate-505 bg-slate-100 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-extrabold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
               Live Feed
             </span>
           </div>
 
           <div className="space-y-3">
             {/* Weather Alert */}
-            <div className="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs text-emerald-909 space-y-1">
+            <div className="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs text-emerald-900 space-y-1">
               <div className="flex items-center justify-between font-bold">
                 <span className="flex items-center gap-1.5 text-emerald-800">
                   <ShieldCheck size={14} className="text-emerald-600" /> Weather Risk
                 </span>
                 <span className="text-[10px] bg-emerald-200 px-2 py-0.5 rounded-md text-emerald-950 font-extrabold">NORMAL</span>
               </div>
-              <p className="text-slate-605 text-[11px]">No heavy rain or frost warnings detected for your location today.</p>
+              <p className="text-slate-600 text-[11px]">No heavy rain or frost warnings detected for your location today.</p>
             </div>
 
-            {/* Mandi Price Alert */}
+             {/* Mandi Price Alert */}
             <div className="p-3.5 bg-blue-50 rounded-2xl border border-blue-200 text-xs text-blue-900 space-y-1">
               <div className="flex items-center justify-between font-bold">
                 <span className="flex items-center gap-1.5 text-blue-800">
                   <TrendingUp size={14} className="text-blue-600" /> Market Price Spike
                 </span>
-                <span className="text-[10px] bg-blue-200 px-2 py-0.5 rounded-md text-blue-955 font-extrabold">INFO</span>
+                <span className="text-[10px] bg-blue-200 px-2 py-0.5 rounded-md text-blue-900 font-extrabold">INFO</span>
               </div>
-              <p className="text-slate-606 text-[11px]">Wheat market price in Indore mandi rose by +4.2% over last 7 days.</p>
+              <p className="text-slate-600 text-[11px]">Wheat market price in Indore mandi rose by +4.2% over last 7 days.</p>
             </div>
 
             {/* Farming Alert */}
             <div className="p-3.5 bg-purple-50 rounded-2xl border border-purple-200 text-xs text-purple-900 space-y-1">
               <div className="flex items-center justify-between font-bold">
                 <span className="flex items-center gap-1.5 text-purple-800">
-                  <Info size={14} className="text-purple-650" /> Growth Stage Alert
+                  <Info size={14} className="text-purple-600" /> Growth Stage Alert
                 </span>
-                <span className="text-[10px] bg-purple-200 px-2 py-0.5 rounded-md text-purple-955 font-extrabold">ACTION</span>
+                <span className="text-[10px] bg-purple-200 px-2 py-0.5 rounded-md text-purple-900 font-extrabold">ACTION</span>
               </div>
-              <p className="text-slate-607 text-[11px]">Crop in Vegetative stage. Review fertilizer top-dressing schedule.</p>
+              <p className="text-slate-600 text-[11px]">Crop in Vegetative stage. Review fertilizer top-dressing schedule.</p>
             </div>
           </div>
         </div>

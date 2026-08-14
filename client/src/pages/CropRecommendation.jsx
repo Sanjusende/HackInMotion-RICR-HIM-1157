@@ -159,27 +159,27 @@ const CropRecommendation = () => {
             {/* AI TELEMETRY METRICS GRID */}
             {CROP_SUITABILITY_DETAILS[crop.name] && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 pt-3 border-t border-slate-100 text-left">
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-150">
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200">
                   <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">NPK Suitability</span>
                   <span className="text-xs font-black text-slate-900">{CROP_SUITABILITY_DETAILS[crop.name].npk}</span>
                 </div>
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-150">
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200">
                   <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Estimated Yield / Acre</span>
                   <span className="text-xs font-black text-emerald-800">{CROP_SUITABILITY_DETAILS[crop.name].yield}</span>
                 </div>
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-150">
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200">
                   <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Net Profit Est. / Acre</span>
                   <span className="text-xs font-black text-emerald-800">{CROP_SUITABILITY_DETAILS[crop.name].profit}</span>
                 </div>
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-150">
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200">
                   <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Water Demand Index</span>
                   <span className="text-xs font-black text-slate-900">{CROP_SUITABILITY_DETAILS[crop.name].water}</span>
                 </div>
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-150">
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200">
                   <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Operational Risk</span>
                   <span className="text-xs font-black text-slate-900">{CROP_SUITABILITY_DETAILS[crop.name].risk}</span>
                 </div>
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-150">
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200">
                   <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Mandi Market Demand</span>
                   <span className="text-xs font-black text-slate-900">{CROP_SUITABILITY_DETAILS[crop.name].demand}</span>
                 </div>
