@@ -4,16 +4,22 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
   "http://127.0.0.1:5173",
+  "https://krishimitra2026.vercel.app",
   process.env.CLIENT_URL
 ].filter(Boolean);
 
 export const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, postman) or matching origins
-    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== "production") {
+    if (!origin) return callback(null, true);
+
+    const isVercel = origin === "https://krishimitra2026.vercel.app" || origin.endsWith(".vercel.app");
+    const isRender = origin.endsWith(".onrender.com");
+    const isLocal = origin.includes("localhost") || origin.includes("127.0.0.1");
+
+    if (allowedOrigins.includes(origin) || isVercel || isRender || isLocal || process.env.NODE_ENV !== "production") {
       callback(null, true);
     } else {
-      callback(new Error("CORS policy violation: Origin not allowed"));
+      callback(null, false);
     }
   },
   credentials: true,

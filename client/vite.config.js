@@ -4,5 +4,5 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  server: { proxy: { '/api': 'http://localhost:5000' } },
+  server: { proxy: { '/api': { target: 'https://hackinmotion-ricr-him-1157-1.onrender.com', changeOrigin: true } } },
 })
