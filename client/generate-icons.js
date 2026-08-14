@@ -11,12 +11,12 @@ const PUBLIC_DIR = path.join(__dirname, 'public');
 
 // 1. The custom sprout logo SVG matching the KrishiMitra agricultural green colors
 const SVG_CONTENT = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
-  <!-- Rounded background container with solid green matching the logo -->
-  <rect width="512" height="512" rx="144" fill="#16A34A" />
-  <!-- Centered Sprout Path -->
-  <g transform="translate(-8, -41) scale(22)" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
-    <path d="M9 20h10" />
-    <path d="M12 20c5.5-2.5 8-9 8-13-8 0-10.5 2.5-13 8" />
+  <!-- Rounded background container with solid emerald green matching Navbar logo -->
+  <rect width="512" height="512" rx="128" fill="#16A34A" />
+  <!-- Centered Sprout Path matching Lucide Sprout in Navbar -->
+  <g transform="translate(106, 106) scale(12.5)" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M7 20h10" />
+    <path d="M10 20c5.5-2.5 8-9 8-13-8 0-10.5 2.5-13 8" />
     <path d="M12 20c-5.5-2.5-8-9-8-13 8 0 10.5 2.5 13 8" />
   </g>
 </svg>`;
