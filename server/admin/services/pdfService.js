@@ -1,4 +1,4 @@
-import PDFDocument from 'pdfkit';
+
 
 class PDFService {
   /**
@@ -59,7 +59,7 @@ class PDFService {
 
         // Draw Table Rows
         doc.fillColor('#333333').font('Helvetica').fontSize(9);
-        
+
         rows.forEach((row, rowIndex) => {
           currentY = doc.y;
 
