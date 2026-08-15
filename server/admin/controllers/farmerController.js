@@ -42,6 +42,11 @@ class FarmerController {
         query.isSuspended = { $ne: true };
       }
 
+      // Temporary debug logs for data lineage audit
+      console.log("Collection:", User.collection.name);
+      console.log("Query:", query);
+      console.log("Count:", await User.countDocuments({}));
+
       // Use lean to return raw objects so we can read dynamically injected isSuspended field
       const farmers = await User.find(query)
         .select('-password -refreshToken')
