@@ -156,6 +156,14 @@ app.use('/api/v1/crop-recommendation', generalLimiter, cropRecommendationRoutes)
 // Admin Subsystem Routes
 app.use('/api/admin', adminRoutes);
 
+// 404 Route Handler Middleware
+app.use((req, res, next) => {
+  const error = new Error(`Route not found - ${req.originalUrl}`);
+  error.statusCode = 404;
+  error.errorCode = 'ROUTE_NOT_FOUND';
+  next(error);
+});
+
 // Global Error Handler Middleware (MUST be mounted last)
 app.use(errorHandler);
 
