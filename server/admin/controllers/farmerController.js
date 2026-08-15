@@ -18,16 +18,17 @@ class FarmerController {
       const limit = parseInt(req.query.limit || '10', 10);
       const skip = (page - 1) * limit;
       
-      const search = req.query.search || '';
-      const statusFilter = req.query.status; // 'active' | 'suspended'
+      const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+      const statusFilter = typeof req.query.status === 'string' ? req.query.status.trim() : '';
 
       // Search Query
       const query = { role: { $in: ['FARMER', 'farmer'] } };
       if (search) {
+        const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         query.$or = [
-          { name: { $regex: search, $options: 'i' } },
-          { email: { $regex: search, $options: 'i' } },
-          { phone: { $regex: search, $options: 'i' } },
+          { name: { $regex: escapedSearch, $options: 'i' } },
+          { email: { $regex: escapedSearch, $options: 'i' } },
+          { phone: { $regex: escapedSearch, $options: 'i' } },
         ];
       }
 

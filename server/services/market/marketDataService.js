@@ -208,11 +208,13 @@ export const fetchCropMarketData = async (
     await syncAgmarknetPrices(crop, state, district);
   }
 
+  const escapeRegExp = (str) => String(str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
   // 2. Fetch stored history from database
   let databaseRecords = await MarketPrice.find({
     crop,
-    state: new RegExp(`^${state}$`, 'i'),
-    district: new RegExp(`^${district}$`, 'i'),
+    state: new RegExp(`^${escapeRegExp(state)}$`, 'i'),
+    district: new RegExp(`^${escapeRegExp(district)}$`, 'i'),
   })
     .sort({ date: 1 })
     .limit(HISTORY_DAYS)
