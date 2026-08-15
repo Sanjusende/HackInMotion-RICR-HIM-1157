@@ -1,6 +1,16 @@
 # 🌾 KrishiMitra
 
 > Smart Farm Decision Support System
+-----Deployment url -----
+https://krishimitra2026.vercel.app/
+
+------admin ------
+"email": "shubhamuprade0@gmail.com",
+"password": "Sonu@321"
+
+-----farmer -----
+"email": "",
+"password": ""
 
 KrishiMitra is a full-stack agriculture platform that helps farmers make better decisions using weather intelligence, irrigation guidance, crop health monitoring, market price insights, and personalized farm management.
 
@@ -43,8 +53,8 @@ KrishiMitra provides:
 
 Example dashboard output:
 
-```text
-⚠ Rain Expected Tomorrow
+text
+⚠️ Rain Expected Tomorrow
 
 💧 Do Not Irrigate Today
 
@@ -53,7 +63,7 @@ Example dashboard output:
 🦠 No Disease Risk Detected
 
 📈 Farm Health Score: 89/100
-```
+
 
 This allows farmers to instantly understand what action is needed today.
 
@@ -96,7 +106,7 @@ This allows farmers to instantly understand what action is needed today.
 
 ---
 
-## 🌦 Weather Intelligence
+## 🌦️ Weather Intelligence
 
 - Real-Time Weather Data
 - Rain Forecast
@@ -107,10 +117,10 @@ This allows farmers to instantly understand what action is needed today.
 
 Examples:
 
-```text
+text
 Rain expected in next 48 hours.
 No irrigation needed today.
-```
+
 
 ---
 
@@ -147,12 +157,12 @@ Powered by:
 
 Examples:
 
-```text
+text
 Soybean prices increased by 8% this week.
 
 Recommended:
 Wait 3-5 days before selling.
-```
+
 
 ---
 
@@ -182,9 +192,9 @@ Features:
 
 ---
 
-# 🏗 System Architecture
+# 🏗️ System Architecture
 
-```text
+text
 Farmer
    │
    ▼
@@ -199,11 +209,11 @@ MongoDB Atlas
    ├── Weather API
    ├── Gemini Vision API
    └── Market Price API
-```
+
 
 ---
 
-# 🛠 Tech Stack
+# 🛠️ Tech Stack
 
 ## Frontend
 
@@ -243,7 +253,7 @@ MongoDB Atlas
 
 # 🔗 Third Party APIs
 
-## 🌦 Open-Meteo API
+## 🌦️ Open-Meteo API
 
 Used For:
 
@@ -276,7 +286,7 @@ Used For:
 
 # 📂 Project Structure
 
-```text
+text
 KrishiMitra/
 │
 ├── client/
@@ -294,45 +304,45 @@ KrishiMitra/
 ├── presentation.pptx
 ├── README.md
 └── .gitignore
-```
+
 
 ---
 
-# ⚙ Installation
+# ⚙️ Installation
 
 ## Clone Repository
 
-```bash
+bash
 git clone <repository-url>
-```
+
 
 ## Frontend Setup
 
-```bash
+bash
 cd client
 
 npm install
 
 npm run dev
-```
+
 
 ## Backend Setup
 
-```bash
+bash
 cd server
 
 npm install
 
 npm run dev
-```
+
 
 ---
 
 # 🔑 Environment Variables
 
-Create a `.env` file inside the `server` directory.
+Create a .env file inside the server directory.
 
-```env
+env
 PORT=
 
 MONGODB_URI=
@@ -345,7 +355,7 @@ GEMINI_API_KEY=
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
-```
+
 
 Do not commit actual secret keys to GitHub.
 
@@ -353,7 +363,7 @@ Do not commit actual secret keys to GitHub.
 
 # 📖 Documentation
 
-Additional documentation can be found inside the `docs` folder:
+Additional documentation can be found inside the docs folder:
 
 - FEATURES.md
 - API_DOCUMENTATION.md
