@@ -19,6 +19,7 @@ import marketRoutes from './routes/marketRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import voiceRoutes from './routes/voiceRoutes.js';
 import cropRecommendationRoutes from './routes/cropRecommendationRoutes.js';
+import adminRoutes from './admin/routes/adminRoutes.js';
 
 import {
   authLimiter,
@@ -152,6 +153,8 @@ app.use('/api/v1/voice', voiceLimiter, voiceRoutes);
 app.use('/api/crop-recommendation', generalLimiter, cropRecommendationRoutes);
 app.use('/api/v1/crop-recommendation', generalLimiter, cropRecommendationRoutes);
 
+// Admin Subsystem Routes
+app.use('/api/admin', adminRoutes);
 
 // Global Error Handler Middleware (MUST be mounted last)
 app.use(errorHandler);
