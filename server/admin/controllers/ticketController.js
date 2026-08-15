@@ -1,6 +1,7 @@
 import SupportTicket from '../models/SupportTicket.js';
 import User from '../../models/User.js';
 import Admin from '../models/Admin.js';
+import mongoose from 'mongoose';
 import auditService from '../services/auditService.js';
 import ApiResponse from '../../utils/apiResponse.js';
 import { escapeRegex, pickAllowed, safeInt } from '../../utils/queryHelpers.js';
@@ -152,6 +153,10 @@ class TicketController {
 
       let admin = null;
       if (assignedToId) {
+        if (typeof assignedToId !== 'string' || !mongoose.Types.ObjectId.isValid(assignedToId)) {
+          return ApiResponse.error(res, 'Invalid assignedToId', 400);
+        }
+
         admin = await Admin.findById(assignedToId);
         if (!admin) {
           return ApiResponse.error(res, 'Admin assignee not found', 404);
