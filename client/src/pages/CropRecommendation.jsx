@@ -229,6 +229,7 @@ const CropRecommendation = () => {
           </div>
         </div>
       </div>
+
       {/* Output Crop List with Reasoning */}
       <div className="space-y-4">
         <h2 className="text-xl font-extrabold text-slate-900">
