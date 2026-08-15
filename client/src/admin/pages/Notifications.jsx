@@ -74,26 +74,26 @@ const Notifications = () => {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100">Notification Center</h1>
-        <p className="text-sm text-slate-500 mt-1">Broadcast weather warnings, crop disease hazards, mandi changes, and scheme announcements.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-800">Notification Center</h1>
+        <p className="text-xs text-slate-500 mt-1">Broadcast weather warnings, crop disease hazards, mandi changes, and scheme announcements.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Card: Send Broadcast Alert Form */}
-        <div className="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm self-start">
-          <h2 className="text-sm font-bold text-slate-850 dark:text-slate-100 flex items-center gap-2 mb-6 shrink-0">
-            <Bell size={18} className="text-emerald-600 animate-swing" />
+        <div className="lg:col-span-1 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm self-start">
+          <h2 className="text-sm font-bold text-slate-800 flex items-center gap-2 mb-6 shrink-0">
+            <Bell size={18} className="text-emerald-650" />
             Send Broadcast Alert
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             {/* Category */}
             <div className="space-y-1">
-              <label className="font-semibold text-slate-400 uppercase tracking-wider block">Alert Category</label>
+              <label className="font-bold text-slate-450 uppercase tracking-wider block">Alert Category</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none"
               >
                 <option value="weather">Weather Warnings</option>
                 <option value="disease">Disease & Pest Hazards</option>
@@ -104,11 +104,11 @@ const Notifications = () => {
 
             {/* Target Type */}
             <div className="space-y-1">
-              <label className="font-semibold text-slate-400 uppercase tracking-wider block">Targeting Criteria</label>
+              <label className="font-bold text-slate-455 uppercase tracking-wider block">Targeting Criteria</label>
               <select
                 value={formData.targetType}
                 onChange={(e) => setFormData({ ...formData, targetType: e.target.value, targetValue: '' })}
-                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none"
               >
                 <option value="all">All Farmers</option>
                 <option value="state">State-Wise</option>
@@ -120,7 +120,7 @@ const Notifications = () => {
             {/* Target Value (Conditional) */}
             {formData.targetType !== 'all' && (
               <div className="space-y-1">
-                <label className="font-semibold text-slate-400 uppercase tracking-wider block">
+                <label className="font-bold text-slate-455 uppercase tracking-wider block">
                   Target Value (e.g. {formData.targetType === 'crop' ? 'Wheat' : formData.targetType === 'state' ? 'Madhya Pradesh' : 'Bhopal'})
                 </label>
                 <input
@@ -129,34 +129,34 @@ const Notifications = () => {
                   value={formData.targetValue}
                   onChange={(e) => setFormData({ ...formData, targetValue: e.target.value })}
                   placeholder={`Enter targeted ${formData.targetType}`}
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none"
                 />
               </div>
             )}
 
             {/* Title */}
             <div className="space-y-1">
-              <label className="font-semibold text-slate-400 uppercase tracking-wider block">Alert Title</label>
+              <label className="font-bold text-slate-455 uppercase tracking-wider block">Alert Title</label>
               <input
                 type="text"
                 required
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Alert header message..."
-                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none"
               />
             </div>
 
             {/* Message */}
             <div className="space-y-1">
-              <label className="font-semibold text-slate-400 uppercase tracking-wider block">Alert Message Body</label>
+              <label className="font-bold text-slate-455 uppercase tracking-wider block">Alert Message Body</label>
               <textarea
                 required
                 rows="4"
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 placeholder="Details crop safety advice or weather description..."
-                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none resize-none"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none resize-none"
               />
             </div>
 
@@ -164,7 +164,7 @@ const Notifications = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 cursor-pointer shadow-md"
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-emerald-950/10"
             >
               <Send size={14} />
               <span>{submitting ? 'Broadcasting...' : 'Broadcast Alert Message'}</span>
@@ -174,8 +174,8 @@ const Notifications = () => {
 
         {/* Right Panel: Past Broadcast Log History */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl shadow-sm overflow-hidden p-6 space-y-4">
-            <h3 className="font-bold text-slate-850 dark:text-slate-200 text-sm">Previous Dispatch History</h3>
+          <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden p-6 space-y-4">
+            <h3 className="font-bold text-slate-800 text-sm">Previous Dispatch History</h3>
 
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
@@ -183,27 +183,27 @@ const Notifications = () => {
                 <p className="text-xs text-slate-500">Querying broadcast registers...</p>
               </div>
             ) : broadcasts.length === 0 ? (
-              <p className="text-slate-400 text-xs py-10 text-center">No alert logs recorded in history.</p>
+              <p className="text-slate-400 text-xs py-10 text-center font-bold">No Data Available Yet</p>
             ) : (
               <div className="space-y-4">
                 {broadcasts.map((log) => (
-                  <div key={log._id} className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800/60 rounded-xl space-y-3 text-xs">
-                    <div className="flex justify-between items-start">
+                  <div key={log._id} className="p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-3 text-xs shadow-xs">
+                    <div className="flex justify-between items-start gap-1">
                       <div className="space-y-0.5">
-                        <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
-                          log.category === 'weather' ? 'bg-amber-100 text-amber-800' : log.category === 'disease' ? 'bg-red-100 text-red-800' : log.category === 'market' ? 'bg-indigo-100 text-indigo-800' : 'bg-blue-100 text-blue-800'
+                        <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded border ${
+                          log.category === 'weather' ? 'bg-amber-50 text-amber-800 border-amber-100' : log.category === 'disease' ? 'bg-red-50 text-red-800 border-red-100' : log.category === 'market' ? 'bg-indigo-50 text-indigo-800 border-indigo-100' : 'bg-blue-50 text-blue-800 border-blue-100'
                         }`}>
                           {log.category} Alert
                         </span>
-                        <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">{log.title}</h4>
+                        <h4 className="font-bold text-slate-800 text-sm mt-1">{log.title}</h4>
                       </div>
-                      <span className="text-slate-400 text-[10px]">{new Date(log.createdAt).toLocaleString()}</span>
+                      <span className="text-slate-400 text-[10px] font-mono shrink-0">{new Date(log.createdAt).toLocaleString()}</span>
                     </div>
 
-                    <p className="text-slate-600 dark:text-slate-400 leading-relaxed pl-1 text-[11px]">{log.message}</p>
+                    <p className="text-slate-655 leading-relaxed pl-1 text-[11px] font-medium">{log.message}</p>
 
-                    <div className="border-t border-slate-100 dark:border-slate-800 pt-3 flex justify-between items-center text-[10px] text-slate-400">
-                      <span>Target: <strong className="text-slate-650 dark:text-slate-350">{getTargetLabel(log.targetType, log.targetValue)}</strong></span>
+                    <div className="border-t border-slate-100 pt-3 flex justify-between items-center text-[10px] text-slate-400">
+                      <span>Target: <strong className="text-slate-600">{getTargetLabel(log.targetType, log.targetValue)}</strong></span>
                       <span>Dispatched by: <strong>{log.senderId?.name || 'Super Admin'}</strong></span>
                     </div>
                   </div>
@@ -213,21 +213,21 @@ const Notifications = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500">
+              <div className="flex items-center justify-between pt-4 border-t border-slate-105 text-xs text-slate-500 shadow-inner">
                 <button
                   disabled={page === 1}
                   onClick={() => setPage(page - 1)}
-                  className="px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-50 disabled:opacity-50"
+                  className="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50"
                 >
                   Prev
                 </button>
                 <span>
-                  Page <strong className="text-slate-800 dark:text-slate-200">{page}</strong> of {totalPages}
+                  Page <strong className="text-slate-800">{page}</strong> of {totalPages}
                 </span>
                 <button
                   disabled={page === totalPages}
                   onClick={() => setPage(page + 1)}
-                  className="px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-50 disabled:opacity-50"
+                  className="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50"
                 >
                   Next
                 </button>

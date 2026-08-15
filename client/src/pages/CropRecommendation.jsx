@@ -227,7 +227,9 @@ const CropRecommendation = () => {
               className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-600"
             />
           </div>
-           {/* Output Crop List with Reasoning */}
+        </div>
+      </div>
+      {/* Output Crop List with Reasoning */}
       <div className="space-y-4">
         <h2 className="text-xl font-extrabold text-slate-900">
           Recommended Crops for {soilType} ({season} Season)

@@ -132,12 +132,12 @@ const GovernmentSchemes = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100">Government Schemes</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage directory of state and central subsidy options, eligibility, and portals.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-800">Government Schemes</h1>
+          <p className="text-xs text-slate-500 mt-1">Manage directory of state and central subsidy options, eligibility, and portals.</p>
         </div>
         <button
           onClick={openCreateModal}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-md cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-md cursor-pointer animate-in fade-in"
         >
           <Plus size={16} />
           Add Government Scheme
@@ -145,7 +145,7 @@ const GovernmentSchemes = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 p-4 rounded-2xl flex flex-col md:flex-row gap-4 justify-between items-center shadow-sm">
+      <div className="bg-white border border-slate-200/80 p-4 rounded-2xl flex flex-col md:flex-row gap-4 justify-between items-center shadow-sm">
         {/* Search */}
         <form onSubmit={handleSearchSubmit} className="w-full md:w-96 relative flex">
           <input
@@ -153,7 +153,7 @@ const GovernmentSchemes = () => {
             placeholder="Search schemes by name or description..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl bg-slate-50 text-sm focus:outline-none focus:border-emerald-500 transition-colors"
           />
           <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
             <Search size={16} />
@@ -163,21 +163,22 @@ const GovernmentSchemes = () => {
       </div>
 
       {/* Data Table */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
             <p className="text-xs text-slate-500">Querying schemes directory...</p>
           </div>
         ) : schemes.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-slate-400 text-sm">No schemes registered in system database.</p>
+          <div className="text-center py-20 px-4">
+            <p className="text-slate-400 text-sm font-bold">No Data Available Yet</p>
+            <p className="text-slate-400 text-xs mt-1">Government schemes added by team will appear here.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-950 text-slate-500 font-semibold border-b border-slate-100 dark:border-slate-800/80">
+                <tr className="bg-slate-50/75 text-slate-500 font-semibold border-b border-slate-200">
                   <th className="p-4">Scheme Name</th>
                   <th className="p-4">Eligibility Criteria</th>
                   <th className="p-4">Benefits Summary</th>
@@ -185,16 +186,16 @@ const GovernmentSchemes = () => {
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+              <tbody className="divide-y divide-slate-100 text-xs">
                 {schemes.map((s) => (
-                  <tr key={s._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-950/20 transition-colors">
-                    <td className="p-4 font-semibold text-slate-850 dark:text-slate-200">
+                  <tr key={s._id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="p-4 font-semibold text-slate-800">
                       {s.schemeName}
                     </td>
-                    <td className="p-4 text-slate-600 dark:text-slate-350 text-xs">
+                    <td className="p-4 text-slate-600 text-xs font-semibold">
                       {s.eligibility}
                     </td>
-                    <td className="p-4 text-slate-600 dark:text-slate-350 text-xs">
+                    <td className="p-4 text-slate-600 text-xs font-semibold">
                       {s.benefits}
                     </td>
                     <td className="p-4">
@@ -203,27 +204,27 @@ const GovernmentSchemes = () => {
                           href={s.applyLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 hover:underline font-semibold"
+                          className="inline-flex items-center gap-1.5 text-emerald-600 hover:underline font-bold"
                         >
                           <span>Apply Portal</span>
                           <ExternalLink size={12} />
                         </a>
                       ) : (
-                        <span className="text-slate-400 text-xs italic">Offline Application</span>
+                        <span className="text-slate-400 text-xs italic font-medium">Offline Application</span>
                       )}
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => openEditModal(s)}
-                          className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 cursor-pointer"
+                          className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-800 cursor-pointer"
                           title="Modify Scheme Details"
                         >
                           <Edit2 size={15} />
                         </button>
                         <button
                           onClick={() => openDeleteConfirm(s)}
-                          className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
+                          className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 cursor-pointer"
                           title="Delete Scheme"
                         >
                           <Trash2 size={15} />
@@ -239,21 +240,21 @@ const GovernmentSchemes = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between p-4 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-500">
+          <div className="flex items-center justify-between p-4 border-t border-slate-100 text-xs text-slate-500 shadow-inner">
             <button
               disabled={page === 1}
               onClick={() => setPage(page - 1)}
-              className="px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-50 disabled:opacity-50"
+              className="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50"
             >
               Prev Page
             </button>
             <span>
-              Page <strong className="text-slate-800 dark:text-slate-200">{page}</strong> of {totalPages}
+              Page <strong className="text-slate-800">{page}</strong> of {totalPages}
             </span>
             <button
               disabled={page === totalPages}
               onClick={() => setPage(page + 1)}
-              className="px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-50 disabled:opacity-50"
+              className="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50"
             >
               Next Page
             </button>
@@ -263,86 +264,86 @@ const GovernmentSchemes = () => {
 
       {/* CRUD Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 max-w-lg w-full rounded-2xl shadow-2xl relative flex flex-col max-h-[90vh]">
-            <div className="px-6 py-4 border-b border-slate-150 dark:border-slate-800 flex justify-between items-center shrink-0">
-              <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white border border-slate-200 max-w-lg w-full rounded-2xl shadow-2xl relative flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center shrink-0">
+              <h3 className="text-base font-bold text-slate-800">
                 {isEditing ? 'Modify Government Scheme' : 'Add Government Scheme'}
               </h3>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-650 font-bold text-lg">&times;</button>
+              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-655 font-bold text-lg cursor-pointer">&times;</button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 text-xs">
               {/* Scheme Name */}
               <div className="space-y-1">
-                <label className="font-semibold text-slate-400 uppercase tracking-wider block">Scheme Name</label>
+                <label className="font-bold text-slate-455 uppercase tracking-wider block">Scheme Name</label>
                 <input
                   type="text"
                   required
                   value={formData.schemeName}
                   onChange={(e) => setFormData({ ...formData, schemeName: e.target.value })}
                   placeholder="e.g. PM Kisan Samman Nidhi"
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none"
                 />
               </div>
 
               {/* Description */}
               <div className="space-y-1">
-                <label className="font-semibold text-slate-400 uppercase tracking-wider block">Description</label>
+                <label className="font-bold text-slate-455 uppercase tracking-wider block">Description</label>
                 <textarea
                   required
                   rows="3"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Detailed synopsis of scheme coverage and goals..."
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none resize-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-805 focus:outline-none resize-none"
                 />
               </div>
 
               {/* Eligibility */}
               <div className="space-y-1">
-                <label className="font-semibold text-slate-400 uppercase tracking-wider block">Eligibility Criteria</label>
+                <label className="font-bold text-slate-455 uppercase tracking-wider block">Eligibility Criteria</label>
                 <input
                   type="text"
                   required
                   value={formData.eligibility}
                   onChange={(e) => setFormData({ ...formData, eligibility: e.target.value })}
                   placeholder="e.g. Small & marginal farmers, holding less than 2 hectares..."
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-805 focus:outline-none"
                 />
               </div>
 
               {/* Benefits */}
               <div className="space-y-1">
-                <label className="font-semibold text-slate-400 uppercase tracking-wider block">Benefits Summary</label>
+                <label className="font-bold text-slate-455 uppercase tracking-wider block">Benefits Summary</label>
                 <input
                   type="text"
                   required
                   value={formData.benefits}
                   onChange={(e) => setFormData({ ...formData, benefits: e.target.value })}
                   placeholder="e.g. Direct cash subsidy of ₹6,000 annually..."
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-850 focus:outline-none"
                 />
               </div>
 
               {/* Apply Link */}
               <div className="space-y-1">
-                <label className="font-semibold text-slate-400 uppercase tracking-wider block">Apply Portal URL</label>
+                <label className="font-bold text-slate-455 uppercase tracking-wider block">Apply Portal URL</label>
                 <input
                   type="url"
                   value={formData.applyLink}
                   onChange={(e) => setFormData({ ...formData, applyLink: e.target.value })}
                   placeholder="https://pmkisan.gov.in"
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-805 focus:outline-none"
                 />
               </div>
 
               {/* Submit Buttons */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-150 dark:border-slate-800">
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-605 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold cursor-pointer"
+                  className="px-4 py-2 border border-slate-200 rounded-xl text-slate-650 hover:bg-slate-50 font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -361,22 +362,22 @@ const GovernmentSchemes = () => {
 
       {/* Confirm Delete Modal */}
       {showConfirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 max-w-sm w-full rounded-2xl p-6 shadow-2xl space-y-4 text-xs">
-            <h3 className="text-sm font-bold text-red-600">Delete Government Scheme?</h3>
-            <p className="text-slate-550 leading-relaxed font-semibold">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-xs">
+          <div className="bg-white border border-slate-200 max-w-sm w-full rounded-2xl p-6 shadow-2xl space-y-4 text-xs">
+            <h3 className="text-sm font-bold text-red-650">Delete Government Scheme?</h3>
+            <p className="text-slate-500 leading-relaxed font-semibold">
               Are you sure you want to permanently delete scheme <strong>{selectedScheme?.schemeName}</strong> from active directories?
             </p>
             <div className="flex justify-end gap-3 pt-2">
               <button
                 onClick={() => setShowConfirmDelete(false)}
-                className="px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-605 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold"
+                className="px-4 py-2 border border-slate-200 rounded-xl text-slate-655 hover:bg-slate-50 font-semibold cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-red-650 hover:bg-red-500 text-white rounded-xl font-semibold"
+                className="px-4 py-2 bg-red-650 hover:bg-red-500 text-white rounded-xl font-semibold cursor-pointer"
               >
                 Confirm Delete
               </button>

@@ -24,10 +24,10 @@ const CommunityReports = lazy(() => import('../pages/CommunityReports'));
 
 // Loading Screen Skeleton
 const AdminLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-slate-900">
+  <div className="min-h-screen flex items-center justify-center bg-slate-50">
     <div className="flex flex-col items-center gap-4">
       <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-      <p className="text-sm font-medium text-slate-400">Loading KrishiMitra Console...</p>
+      <p className="text-sm font-medium text-slate-500">Loading KrishiMitra Console...</p>
     </div>
   </div>
 );

@@ -134,59 +134,59 @@ const SettingsPage = () => {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100">Settings</h1>
-        <p className="text-sm text-slate-500 mt-1">Manage security credentials and team administrative roles.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-800">Settings</h1>
+        <p className="text-xs text-slate-500 mt-1">Manage security credentials and team administrative roles.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Card: Change Password */}
-        <div className="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 p-6 rounded-2xl shadow-sm self-start space-y-6">
-          <h2 className="text-sm font-bold text-slate-850 dark:text-slate-100 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/60 pb-4 shrink-0">
-            <Lock size={18} className="text-emerald-600" />
+        <div className="lg:col-span-1 bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm self-start space-y-6">
+          <h2 className="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-4 shrink-0">
+            <Lock size={18} className="text-emerald-650" />
             Security & Password
           </h2>
 
           <form onSubmit={handleChangePassword} className="space-y-4 text-xs">
             <div className="space-y-1">
-              <label className="font-semibold text-slate-400 uppercase tracking-wider block">Current Password</label>
+              <label className="font-bold text-slate-455 uppercase tracking-wider block">Current Password</label>
               <input
                 type="password"
                 required
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
                 placeholder="Enter current password"
-                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="font-semibold text-slate-400 uppercase tracking-wider block">New Password</label>
+              <label className="font-bold text-slate-455 uppercase tracking-wider block">New Password</label>
               <input
                 type="password"
                 required
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Min 6 characters"
-                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="font-semibold text-slate-400 uppercase tracking-wider block">Confirm New Password</label>
+              <label className="font-bold text-slate-455 uppercase tracking-wider block">Confirm New Password</label>
               <input
                 type="password"
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Retype new password"
-                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none"
               />
             </div>
 
             <button
               type="submit"
               disabled={passwordLoading}
-              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-98 transition-transform disabled:opacity-50"
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-emerald-950/10 active:scale-98 transition-transform disabled:opacity-50"
             >
               <Key size={14} />
               <span>Update Password</span>
@@ -196,15 +196,15 @@ const SettingsPage = () => {
 
         {/* Right Side: Administrative Users Management (Super Admin only) */}
         {admin?.role === 'SUPER_ADMIN' && (
-          <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 p-6 rounded-2xl shadow-sm space-y-4">
-            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4 shrink-0">
-              <h2 className="text-sm font-bold text-slate-850 dark:text-slate-100 flex items-center gap-2">
-                <Users size={18} className="text-emerald-600" />
-                Administrative accounts management
+          <div className="lg:col-span-2 bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm space-y-4">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-4 shrink-0">
+              <h2 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <Users size={18} className="text-emerald-650" />
+                Administrative Accounts Management
               </h2>
               <button
                 onClick={() => setShowAddUserModal(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold cursor-pointer shadow"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold cursor-pointer shadow shadow-emerald-950/10"
               >
                 <Plus size={14} />
                 Create Admin Account
@@ -220,20 +220,20 @@ const SettingsPage = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="bg-slate-50 dark:bg-slate-950 text-slate-500 font-semibold border-b border-slate-100 dark:border-slate-800/80">
+                    <tr className="bg-slate-50/75 text-slate-500 font-semibold border-b border-slate-200">
                       <th className="p-3">User Details</th>
                       <th className="p-3">Role Permissions</th>
                       <th className="p-3 text-center">Status</th>
                       <th className="p-3 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  <tbody className="divide-y divide-slate-100 text-xs">
                     {adminUsers.map((user) => (
-                      <tr key={user._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-950/20 transition-colors">
+                      <tr key={user._id} className="hover:bg-slate-50/50 transition-colors">
                         <td className="p-3">
                           <div className="space-y-0.5">
-                            <p className="font-semibold text-slate-850 dark:text-slate-200">{user.name}</p>
-                            <p className="text-slate-400 text-[10px]">{user.email}</p>
+                            <p className="font-semibold text-slate-800">{user.name}</p>
+                            <p className="text-slate-450 text-[10px] font-medium">{user.email}</p>
                           </div>
                         </td>
                         <td className="p-3">
@@ -241,7 +241,7 @@ const SettingsPage = () => {
                             disabled={user._id === admin?.id}
                             value={user.role}
                             onChange={(e) => handleRoleChange(user, e.target.value)}
-                            className="px-2 py-1 border border-slate-200 dark:border-slate-850 rounded bg-slate-50 dark:bg-slate-950 text-[11px] font-semibold focus:outline-none disabled:opacity-50"
+                            className="px-2 py-1 border border-slate-200 rounded bg-slate-50 text-[11px] font-bold focus:outline-none focus:border-emerald-500 disabled:opacity-50"
                           >
                             <option value="SUPER_ADMIN">Super Admin</option>
                             <option value="ADMIN">Admin</option>
@@ -256,9 +256,9 @@ const SettingsPage = () => {
                             className="focus:outline-none disabled:opacity-40 cursor-pointer"
                           >
                             {user.active ? (
-                              <span className="inline-flex items-center gap-0.5 text-[9px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-bold">Active</span>
+                              <span className="inline-flex items-center gap-0.5 text-[9px] bg-emerald-50 text-emerald-600 px-2.5 py-0.5 rounded-full font-bold border border-emerald-100 shadow-xs">Active</span>
                             ) : (
-                              <span className="inline-flex items-center gap-0.5 text-[9px] bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-bold">Deactivated</span>
+                              <span className="inline-flex items-center gap-0.5 text-[9px] bg-red-50 text-red-600 px-2.5 py-0.5 rounded-full font-bold border border-red-100 shadow-xs">Deactivated</span>
                             )}
                           </button>
                         </td>
@@ -266,7 +266,7 @@ const SettingsPage = () => {
                           <button
                             disabled={user._id === admin?.id}
                             onClick={() => handleDeleteUser(user)}
-                            className="p-1 rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-40 focus:outline-none cursor-pointer"
+                            className="p-1 rounded text-red-500 hover:bg-red-50 disabled:opacity-40 focus:outline-none cursor-pointer"
                             title="Delete Admin Account"
                           >
                             <Trash2 size={14} />
@@ -284,56 +284,56 @@ const SettingsPage = () => {
 
       {/* Add User Modal */}
       {showAddUserModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 max-w-sm w-full rounded-2xl shadow-2xl relative flex flex-col max-h-[85vh]">
-            <div className="px-6 py-4 border-b border-slate-150 dark:border-slate-850 flex justify-between items-center shrink-0">
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Register Admin Account</h3>
-              <button onClick={() => setShowAddUserModal(false)} className="text-slate-400 hover:text-slate-650 font-bold text-lg">&times;</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-xs">
+          <div className="bg-white border border-slate-200 max-w-sm w-full rounded-2xl shadow-2xl relative flex flex-col max-h-[85vh]">
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center shrink-0">
+              <h3 className="text-base font-bold text-slate-800">Register Admin Account</h3>
+              <button onClick={() => setShowAddUserModal(false)} className="text-slate-400 hover:text-slate-655 font-bold text-lg cursor-pointer">&times;</button>
             </div>
 
             <form onSubmit={handleAddUser} className="p-6 overflow-y-auto space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="font-semibold text-slate-400 uppercase tracking-wider block">Full Name</label>
+                <label className="font-bold text-slate-455 uppercase tracking-wider block">Full Name</label>
                 <input
                   type="text"
                   required
                   value={newUserData.name}
                   onChange={(e) => setNewUserData({ ...newUserData, name: e.target.value })}
                   placeholder="e.g. Ramesh Patil"
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="font-semibold text-slate-400 uppercase tracking-wider block">Email Address</label>
+                <label className="font-bold text-slate-455 uppercase tracking-wider block">Email Address</label>
                 <input
                   type="email"
                   required
                   value={newUserData.email}
                   onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
                   placeholder="ramesh@krishimitra.com"
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-805 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="font-semibold text-slate-400 uppercase tracking-wider block">Initial Password</label>
+                <label className="font-bold text-slate-455 uppercase tracking-wider block">Initial Password</label>
                 <input
                   type="password"
                   required
                   value={newUserData.password}
                   onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
                   placeholder="Min 6 characters"
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-805 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="font-semibold text-slate-400 uppercase tracking-wider block">Role Assignment</label>
+                <label className="font-bold text-slate-455 uppercase tracking-wider block">Role Assignment</label>
                 <select
                   value={newUserData.role}
                   onChange={(e) => setNewUserData({ ...newUserData, role: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-805 dark:text-slate-200 focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-805 focus:outline-none"
                 >
                   <option value="SUPER_ADMIN">Super Admin</option>
                   <option value="ADMIN">Admin</option>
@@ -343,18 +343,18 @@ const SettingsPage = () => {
               </div>
 
               {/* Submit Buttons */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-150 dark:border-slate-800 shrink-0">
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowAddUserModal(false)}
-                  className="px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-650 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold cursor-pointer"
+                  className="px-4 py-2 border border-slate-200 rounded-xl text-slate-650 hover:bg-slate-50 font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={addUserLoading}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold flex items-center gap-1.5 shadow cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold flex items-center gap-1.5 shadow shadow-emerald-950/10 cursor-pointer disabled:opacity-50"
                 >
                   <Check size={14} />
                   <span>Create Account</span>

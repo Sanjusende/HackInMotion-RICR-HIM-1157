@@ -58,26 +58,26 @@ const Reports = () => {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100">Reports compiler</h1>
-        <p className="text-sm text-slate-500 mt-1">Compile and download analytical reports for crop health, weather forecasts, or market pricing logs.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-800">Reports Compiler</h1>
+        <p className="text-xs text-slate-500 mt-1">Compile and download analytical reports for crop health, weather forecasts, or market pricing logs.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Side: Export Form */}
-        <div className="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 p-6 rounded-2xl shadow-sm self-start">
-          <h2 className="text-sm font-bold text-slate-850 dark:text-slate-100 flex items-center gap-2 mb-6 shrink-0">
-            <FileDown size={18} className="text-emerald-600" />
+        <div className="lg:col-span-1 bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm self-start">
+          <h2 className="text-sm font-bold text-slate-800 flex items-center gap-2 mb-6 shrink-0">
+            <FileDown size={18} className="text-emerald-650" />
             Export Settings
           </h2>
 
           <form onSubmit={handleDownload} className="space-y-6 text-xs">
             {/* Pick Module */}
             <div className="space-y-1">
-              <label className="font-semibold text-slate-400 uppercase tracking-wider block">Target Registers</label>
+              <label className="font-bold text-slate-455 uppercase tracking-wider block">Target Registers</label>
               <select
                 value={module}
                 onChange={(e) => setModule(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-850 dark:text-slate-200 focus:outline-none"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none focus:border-emerald-500 transition-colors"
               >
                 {modules.map((m) => (
                   <option key={m.id} value={m.id}>{m.label}</option>
@@ -87,11 +87,11 @@ const Reports = () => {
 
             {/* Pick Format */}
             <div className="space-y-1">
-              <label className="font-semibold text-slate-400 uppercase tracking-wider block">File Format</label>
+              <label className="font-bold text-slate-455 uppercase tracking-wider block">File Format</label>
               <select
                 value={format}
                 onChange={(e) => setFormat(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-850 dark:text-slate-200 focus:outline-none"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none focus:border-emerald-500 transition-colors"
               >
                 <option value="pdf">Adobe PDF (.pdf)</option>
                 <option value="csv">Comma Separated Values (.csv)</option>
@@ -103,7 +103,7 @@ const Reports = () => {
             <button
               type="submit"
               disabled={downloading}
-              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-98 transition-transform disabled:opacity-50"
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-emerald-950/10 active:scale-98 transition-transform disabled:opacity-50"
             >
               <FileDown size={14} />
               <span>{downloading ? 'Compiling File...' : 'Compile & Download File'}</span>
@@ -112,16 +112,16 @@ const Reports = () => {
         </div>
 
         {/* Right Side: Modules Info Cards */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 p-6 rounded-2xl shadow-sm space-y-4">
-          <h3 className="font-bold text-slate-850 dark:text-slate-200 text-sm">Modules Available</h3>
+        <div className="lg:col-span-2 bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm space-y-4">
+          <h3 className="font-bold text-slate-800 text-sm">Modules Available</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {modules.map((m) => (
-              <div key={m.id} className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800/60 rounded-xl space-y-2 text-xs">
-                <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                  <FileText size={14} className="text-emerald-600" />
+              <div key={m.id} className="p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-2 text-xs shadow-xs">
+                <h4 className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <FileText size={14} className="text-emerald-650" />
                   {m.label}
                 </h4>
-                <p className="text-slate-450 dark:text-slate-400 leading-relaxed">{m.desc}</p>
+                <p className="text-slate-450 leading-relaxed font-medium">{m.desc}</p>
               </div>
             ))}
           </div>
