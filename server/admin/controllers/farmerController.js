@@ -6,6 +6,9 @@ import VoiceQuery from '../../models/VoiceQuery.js';
 import auditService from '../services/auditService.js';
 import ApiResponse from '../../utils/apiResponse.js';
 import mongoose from 'mongoose';
+import { escapeRegex, pickAllowed, safeInt } from '../../utils/queryHelpers.js';
+
+const ALLOWED_FARMER_STATUS = ['active', 'suspended'];
 
 class FarmerController {
   /**
@@ -14,25 +17,25 @@ class FarmerController {
    */
   async getFarmers(req, res, next) {
     try {
-      const page = parseInt(req.query.page || '1', 10);
-      const limit = parseInt(req.query.limit || '10', 10);
-      const skip = (page - 1) * limit;
-      
-      const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
-      const statusFilter = typeof req.query.status === 'string' ? req.query.status.trim() : '';
+      const page  = safeInt(req.query.page, 1, 1);
+      const limit = safeInt(req.query.limit, 10, 1, 100);
+      const skip  = (page - 1) * limit;
 
-      // Search Query
+      const search       = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+      const statusFilter = pickAllowed(req.query.status, ALLOWED_FARMER_STATUS);
+
+      // Build safe query — never use raw req.query directly
       const query = { role: { $in: ['FARMER', 'farmer'] } };
       if (search) {
-        const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const safe = escapeRegex(search);
         query.$or = [
-          { name: { $regex: escapedSearch, $options: 'i' } },
-          { email: { $regex: escapedSearch, $options: 'i' } },
-          { phone: { $regex: escapedSearch, $options: 'i' } },
+          { name:  { $regex: safe, $options: 'i' } },
+          { email: { $regex: safe, $options: 'i' } },
+          { phone: { $regex: safe, $options: 'i' } },
         ];
       }
 
-      // Filter by suspension status
+      // Filter by suspension status (whitelisted)
       if (statusFilter === 'suspended') {
         query.isSuspended = true;
       } else if (statusFilter === 'active') {

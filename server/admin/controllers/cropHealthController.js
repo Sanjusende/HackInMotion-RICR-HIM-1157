@@ -1,5 +1,8 @@
 import CropHealth from '../../models/CropHealth.js';
 import ApiResponse from '../../utils/apiResponse.js';
+import { escapeRegex, pickAllowed, safeInt } from '../../utils/queryHelpers.js';
+
+const ALLOWED_HEALTH_STATUS = ['Healthy', 'Diseased'];
 
 class CropHealthController {
   /**
@@ -8,22 +11,16 @@ class CropHealthController {
    */
   async getCropHealthScans(req, res, next) {
     try {
-      const page = parseInt(req.query.page || '1', 10);
-      const limit = parseInt(req.query.limit || '10', 10);
-      const skip = (page - 1) * limit;
+      const page  = safeInt(req.query.page, 1, 1);
+      const limit = safeInt(req.query.limit, 10, 1, 100);
+      const skip  = (page - 1) * limit;
 
-      const healthFilter = typeof req.query.health === 'string' ? req.query.health.trim() : '';
-      const cropFilter = typeof req.query.crop === 'string' ? req.query.crop.trim() : '';
+      const healthFilter = pickAllowed(req.query.health, ALLOWED_HEALTH_STATUS);
+      const cropFilter   = typeof req.query.crop === 'string' ? req.query.crop.trim() : '';
 
-      const ALLOWED_HEALTH = ['Healthy', 'Diseased'];
       const query = {};
-      if (healthFilter && ALLOWED_HEALTH.includes(healthFilter)) {
-        query.health = healthFilter;
-      }
-      if (cropFilter) {
-        const escapedCrop = cropFilter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        query.crop = { $regex: escapedCrop, $options: 'i' };
-      }
+      if (healthFilter) query.health = healthFilter;   // safe: whitelist-validated
+      if (cropFilter)   query.crop   = { $regex: escapeRegex(cropFilter), $options: 'i' };
 
       const scans = await CropHealth.find(query)
         .populate({

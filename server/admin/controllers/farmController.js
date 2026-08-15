@@ -2,6 +2,12 @@ import Farm from '../../models/Farm.js';
 import User from '../../models/User.js';
 import auditService from '../services/auditService.js';
 import ApiResponse from '../../utils/apiResponse.js';
+import { escapeRegex, pickAllowed, safeInt } from '../../utils/queryHelpers.js';
+
+const ALLOWED_SOIL_TYPES = [
+  'Black Cotton Soil', 'Red Soil', 'Alluvial Soil',
+  'Clay Soil', 'Sandy Soil', 'Loamy Soil', 'Unknown/Not sure',
+];
 
 class FarmController {
   /**
@@ -10,28 +16,18 @@ class FarmController {
    */
   async getFarms(req, res, next) {
     try {
-      const page = parseInt(req.query.page || '1', 10);
-      const limit = parseInt(req.query.limit || '10', 10);
-      const skip = (page - 1) * limit;
-      
-      const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
-      const soilType = typeof req.query.soilType === 'string' ? req.query.soilType.trim() : '';
-      const crop = typeof req.query.crop === 'string' ? req.query.crop.trim() : '';
+      const page  = safeInt(req.query.page, 1, 1);
+      const limit = safeInt(req.query.limit, 10, 1, 100);
+      const skip  = (page - 1) * limit;
 
-      const ALLOWED_SOIL_TYPES = ['Black Cotton Soil', 'Red Soil', 'Alluvial Soil', 'Clay Soil', 'Sandy Soil', 'Loamy Soil', 'Unknown/Not sure'];
+      const search   = typeof req.query.search   === 'string' ? req.query.search.trim()   : '';
+      const soilType = pickAllowed(req.query.soilType, ALLOWED_SOIL_TYPES);
+      const crop     = typeof req.query.crop     === 'string' ? req.query.crop.trim()     : '';
+
       const query = {};
-
-      if (search) {
-        const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        query.name = { $regex: escapedSearch, $options: 'i' };
-      }
-      if (soilType && ALLOWED_SOIL_TYPES.includes(soilType)) {
-        query.soilType = soilType;
-      }
-      if (crop) {
-        const escapedCrop = crop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        query.currentCrop = { $regex: escapedCrop, $options: 'i' };
-      }
+      if (search)   query.name        = { $regex: escapeRegex(search), $options: 'i' };
+      if (soilType) query.soilType     = soilType;  // safe: whitelist-validated
+      if (crop)     query.currentCrop  = { $regex: escapeRegex(crop),   $options: 'i' };
 
       const farms = await Farm.find(query)
         .populate('userId', 'name email phone')

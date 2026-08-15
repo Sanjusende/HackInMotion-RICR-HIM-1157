@@ -27,6 +27,8 @@ import {
   weatherLimiter,
   analyticsLimiter,
   generalLimiter,
+  adminLimiter,
+  adminAuthLimiter,
 } from './middleware/rateLimiter.js';
 
 // Optional compression middleware loader
@@ -153,8 +155,10 @@ app.use('/api/v1/voice', voiceLimiter, voiceRoutes);
 app.use('/api/crop-recommendation', generalLimiter, cropRecommendationRoutes);
 app.use('/api/v1/crop-recommendation', generalLimiter, cropRecommendationRoutes);
 
-// Admin Subsystem Routes
-app.use('/api/admin', adminRoutes);
+// Admin Subsystem Routes (rate-limited)
+// Auth endpoints get a strict limiter; all other admin API calls get a general admin limiter
+app.use('/api/admin/auth', adminAuthLimiter);
+app.use('/api/admin', adminLimiter, adminRoutes);
 
 // Global Error Handler Middleware (MUST be mounted last)
 app.use(errorHandler);

@@ -37,10 +37,17 @@ class ReportController {
    */
   async exportReport(req, res, next) {
     try {
-      const { module, format } = req.query; // module: farmers|crops|diseases|irrigation|weather|market , format: pdf|csv|excel
+      const ALLOWED_MODULES = ['farmers', 'crops', 'diseases', 'irrigation', 'weather', 'market'];
+      const ALLOWED_FORMATS = ['pdf', 'csv', 'excel'];
 
-      if (!module || !format) {
-        return ApiResponse.error(res, 'Parameters "module" and "format" are required', 400);
+      const module = typeof req.query.module === 'string' ? req.query.module.trim().toLowerCase() : '';
+      const format = typeof req.query.format === 'string' ? req.query.format.trim().toLowerCase() : '';
+
+      if (!module || !ALLOWED_MODULES.includes(module)) {
+        return ApiResponse.error(res, `Invalid or missing "module". Allowed: ${ALLOWED_MODULES.join('|')}`, 400);
+      }
+      if (!format || !ALLOWED_FORMATS.includes(format)) {
+        return ApiResponse.error(res, `Invalid or missing "format". Allowed: ${ALLOWED_FORMATS.join('|')}`, 400);
       }
 
       let headers = [];

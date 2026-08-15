@@ -1,5 +1,6 @@
 import CommunityReport from '../../models/CommunityReport.js';
 import ApiResponse from '../../utils/apiResponse.js';
+import { escapeRegex, safeInt } from '../../utils/queryHelpers.js';
 
 class CommunityReportController {
   /**
@@ -8,17 +9,17 @@ class CommunityReportController {
    */
   async getReports(req, res, next) {
     try {
-      const page = parseInt(req.query.page || '1', 10);
-      const limit = parseInt(req.query.limit || '10', 10);
-      const skip = (page - 1) * limit;
+      const page  = safeInt(req.query.page, 1, 1);
+      const limit = safeInt(req.query.limit, 10, 1, 100);
+      const skip  = (page - 1) * limit;
       const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
 
       const query = {};
       if (search) {
-        const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const safe = escapeRegex(search);
         query.$or = [
-          { crop: { $regex: escapedSearch, $options: 'i' } },
-          { possibleIssue: { $regex: escapedSearch, $options: 'i' } },
+          { crop:          { $regex: safe, $options: 'i' } },
+          { possibleIssue: { $regex: safe, $options: 'i' } },
         ];
       }
 

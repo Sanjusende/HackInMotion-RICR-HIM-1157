@@ -1,6 +1,7 @@
 import GovernmentScheme from '../models/GovernmentScheme.js';
 import auditService from '../services/auditService.js';
 import ApiResponse from '../../utils/apiResponse.js';
+import { escapeRegex, safeInt } from '../../utils/queryHelpers.js';
 
 class SchemeController {
   /**
@@ -9,18 +10,18 @@ class SchemeController {
    */
   async getSchemes(req, res, next) {
     try {
-      const page = parseInt(req.query.page || '1', 10);
-      const limit = parseInt(req.query.limit || '10', 10);
-      const skip = (page - 1) * limit;
+      const page  = safeInt(req.query.page, 1, 1);
+      const limit = safeInt(req.query.limit, 10, 1, 100);
+      const skip  = (page - 1) * limit;
 
       const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
 
       const query = {};
       if (search) {
-        const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const safe = escapeRegex(search);
         query.$or = [
-          { schemeName: { $regex: escapedSearch, $options: 'i' } },
-          { description: { $regex: escapedSearch, $options: 'i' } },
+          { schemeName:  { $regex: safe, $options: 'i' } },
+          { description: { $regex: safe, $options: 'i' } },
         ];
       }
 

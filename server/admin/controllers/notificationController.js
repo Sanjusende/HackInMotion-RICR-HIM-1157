@@ -4,6 +4,9 @@ import User from '../../models/User.js';
 import Farm from '../../models/Farm.js';
 import auditService from '../services/auditService.js';
 import ApiResponse from '../../utils/apiResponse.js';
+import { escapeRegex, safeInt } from '../../utils/queryHelpers.js';
+
+const ALLOWED_TARGET_TYPES = ['all', 'state', 'district', 'crop'];
 
 class NotificationController {
   /**
@@ -12,9 +15,9 @@ class NotificationController {
    */
   async getNotifications(req, res, next) {
     try {
-      const page = parseInt(req.query.page || '1', 10);
-      const limit = parseInt(req.query.limit || '10', 10);
-      const skip = (page - 1) * limit;
+      const page  = safeInt(req.query.page, 1, 1);
+      const limit = safeInt(req.query.limit, 10, 1, 100);
+      const skip  = (page - 1) * limit;
 
       const history = await AdminNotification.find({})
         .populate('senderId', 'name email role')
@@ -55,11 +58,16 @@ class NotificationController {
         return ApiResponse.error(res, 'Required fields: category, title, message, targetType', 400);
       }
 
+      // Validate targetType strictly against a whitelist before using it to route query logic
+      if (!ALLOWED_TARGET_TYPES.includes(targetType)) {
+        return ApiResponse.error(res, 'Invalid target type. Allowed: all, state, district, crop', 400);
+      }
+
       // 1. Identify Target Users
       let targetUserIds = [];
 
-      // Escape targetValue to prevent RegExp injection
-      const escapedTarget = String(targetValue || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // Escape targetValue to prevent RegExp injection (ReDoS / NoSQL injection)
+      const escapedTarget = escapeRegex(String(targetValue || ''));
 
       if (targetType === 'all') {
         const farmers = await User.find({ role: { $in: ['FARMER', 'farmer'] } }).select('_id').lean();
@@ -80,8 +88,6 @@ class NotificationController {
           .select('userId')
           .lean();
         targetUserIds = [...new Set(farms.map((f) => f.userId.toString()))];
-      } else {
-        return ApiResponse.error(res, 'Invalid target type. Allowed: all, state, district, crop', 400);
       }
 
       // Convert back to ObjectIds

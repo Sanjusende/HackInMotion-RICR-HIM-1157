@@ -3,6 +3,11 @@ import User from '../../models/User.js';
 import Admin from '../models/Admin.js';
 import auditService from '../services/auditService.js';
 import ApiResponse from '../../utils/apiResponse.js';
+import { escapeRegex, pickAllowed, safeInt } from '../../utils/queryHelpers.js';
+
+const ALLOWED_TICKET_STATUS   = ['open', 'in_progress', 'resolved', 'closed'];
+const ALLOWED_TICKET_PRIORITY = ['low', 'medium', 'high', 'urgent'];
+const ALLOWED_TICKET_CATEGORY = ['weather', 'irrigation', 'crop_health', 'market', 'technical', 'other'];
 
 class TicketController {
   /**
@@ -11,29 +16,25 @@ class TicketController {
    */
   async getTickets(req, res, next) {
     try {
-      const page = parseInt(req.query.page || '1', 10);
-      const limit = parseInt(req.query.limit || '10', 10);
-      const skip = (page - 1) * limit;
+      const page  = safeInt(req.query.page, 1, 1);
+      const limit = safeInt(req.query.limit, 10, 1, 100);
+      const skip  = (page - 1) * limit;
 
-      const status = typeof req.query.status === 'string' ? req.query.status.trim() : '';
-      const priority = typeof req.query.priority === 'string' ? req.query.priority.trim() : '';
-      const category = typeof req.query.category === 'string' ? req.query.category.trim() : '';
-      const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
-
-      const ALLOWED_STATUS = ['open', 'in_progress', 'resolved', 'closed'];
-      const ALLOWED_PRIORITY = ['low', 'medium', 'high', 'urgent'];
-      const ALLOWED_CATEGORY = ['weather', 'irrigation', 'crop_health', 'market', 'technical', 'other'];
+      const status   = pickAllowed(req.query.status,   ALLOWED_TICKET_STATUS);
+      const priority = pickAllowed(req.query.priority, ALLOWED_TICKET_PRIORITY);
+      const category = pickAllowed(req.query.category, ALLOWED_TICKET_CATEGORY);
+      const search   = typeof req.query.search === 'string' ? req.query.search.trim() : '';
 
       const query = {};
-      if (status && ALLOWED_STATUS.includes(status)) query.status = status;
-      if (priority && ALLOWED_PRIORITY.includes(priority)) query.priority = priority;
-      if (category && ALLOWED_CATEGORY.includes(category)) query.category = category;
+      if (status)   query.status   = status;    // safe: whitelist-validated
+      if (priority) query.priority = priority;  // safe: whitelist-validated
+      if (category) query.category = category;  // safe: whitelist-validated
       if (search) {
-        const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const safe = escapeRegex(search);
         query.$or = [
-          { ticketId: { $regex: escapedSearch, $options: 'i' } },
-          { subject: { $regex: escapedSearch, $options: 'i' } },
-          { description: { $regex: escapedSearch, $options: 'i' } },
+          { ticketId:    { $regex: safe, $options: 'i' } },
+          { subject:     { $regex: safe, $options: 'i' } },
+          { description: { $regex: safe, $options: 'i' } },
         ];
       }
 

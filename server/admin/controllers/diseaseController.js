@@ -1,6 +1,7 @@
 import Disease from '../models/Disease.js';
 import auditService from '../services/auditService.js';
 import ApiResponse from '../../utils/apiResponse.js';
+import { escapeRegex, safeInt } from '../../utils/queryHelpers.js';
 
 class DiseaseController {
   /**
@@ -9,22 +10,16 @@ class DiseaseController {
    */
   async getDiseases(req, res, next) {
     try {
-      const page = parseInt(req.query.page || '1', 10);
-      const limit = parseInt(req.query.limit || '10', 10);
-      const skip = (page - 1) * limit;
+      const page  = safeInt(req.query.page, 1, 1);
+      const limit = safeInt(req.query.limit, 10, 1, 100);
+      const skip  = (page - 1) * limit;
 
       const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
-      const crop = typeof req.query.crop === 'string' ? req.query.crop.trim() : '';
+      const crop   = typeof req.query.crop   === 'string' ? req.query.crop.trim()   : '';
 
       const query = {};
-      if (search) {
-        const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        query.diseaseName = { $regex: escapedSearch, $options: 'i' };
-      }
-      if (crop) {
-        const escapedCrop = crop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        query.crop = { $regex: escapedCrop, $options: 'i' };
-      }
+      if (search) query.diseaseName = { $regex: escapeRegex(search), $options: 'i' };
+      if (crop)   query.crop        = { $regex: escapeRegex(crop),   $options: 'i' };
 
       const diseases = await Disease.find(query)
         .sort({ diseaseName: 1 })
