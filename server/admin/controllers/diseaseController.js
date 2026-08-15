@@ -13,15 +13,17 @@ class DiseaseController {
       const limit = parseInt(req.query.limit || '10', 10);
       const skip = (page - 1) * limit;
 
-      const search = req.query.search || '';
-      const crop = req.query.crop || '';
+      const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+      const crop = typeof req.query.crop === 'string' ? req.query.crop.trim() : '';
 
       const query = {};
       if (search) {
-        query.diseaseName = { $regex: search, $options: 'i' };
+        const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        query.diseaseName = { $regex: escapedSearch, $options: 'i' };
       }
       if (crop) {
-        query.crop = { $regex: crop, $options: 'i' };
+        const escapedCrop = crop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        query.crop = { $regex: escapedCrop, $options: 'i' };
       }
 
       const diseases = await Disease.find(query)

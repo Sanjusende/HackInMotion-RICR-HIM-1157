@@ -12,14 +12,16 @@ class AuditLogController {
       const limit = parseInt(req.query.limit || '20', 10);
       const skip = (page - 1) * limit;
 
-      const actionFilter = req.query.action || '';
-      const moduleFilter = req.query.module || '';
+      const actionFilter = typeof req.query.action === 'string' ? req.query.action.trim() : '';
+      const moduleFilter = typeof req.query.module === 'string' ? req.query.module.trim() : '';
 
+      const ALLOWED_MODULES = ['AUTH', 'FARMER', 'FARM', 'DISEASE', 'NOTIFICATION', 'SCHEME', 'TICKET', 'REPORT', 'SETTINGS'];
       const query = {};
-      if (actionFilter) {
+      // Allow only uppercase letters, digits and underscores (e.g. LOGIN, CREATE_ADMIN)
+      if (actionFilter && /^[A-Z0-9_]+$/.test(actionFilter)) {
         query.action = actionFilter;
       }
-      if (moduleFilter) {
+      if (moduleFilter && ALLOWED_MODULES.includes(moduleFilter)) {
         query.module = moduleFilter;
       }
 

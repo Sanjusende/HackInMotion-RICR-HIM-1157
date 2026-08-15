@@ -12,15 +12,17 @@ class CropHealthController {
       const limit = parseInt(req.query.limit || '10', 10);
       const skip = (page - 1) * limit;
 
-      const healthFilter = req.query.health || ''; // 'Healthy' | 'Diseased'
-      const cropFilter = req.query.crop || '';
+      const healthFilter = typeof req.query.health === 'string' ? req.query.health.trim() : '';
+      const cropFilter = typeof req.query.crop === 'string' ? req.query.crop.trim() : '';
 
+      const ALLOWED_HEALTH = ['Healthy', 'Diseased'];
       const query = {};
-      if (healthFilter) {
+      if (healthFilter && ALLOWED_HEALTH.includes(healthFilter)) {
         query.health = healthFilter;
       }
       if (cropFilter) {
-        query.crop = { $regex: cropFilter, $options: 'i' };
+        const escapedCrop = cropFilter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        query.crop = { $regex: escapedCrop, $options: 'i' };
       }
 
       const scans = await CropHealth.find(query)

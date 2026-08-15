@@ -14,20 +14,23 @@ class FarmController {
       const limit = parseInt(req.query.limit || '10', 10);
       const skip = (page - 1) * limit;
       
-      const search = req.query.search || '';
-      const soilType = req.query.soilType || '';
-      const crop = req.query.crop || '';
+      const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+      const soilType = typeof req.query.soilType === 'string' ? req.query.soilType.trim() : '';
+      const crop = typeof req.query.crop === 'string' ? req.query.crop.trim() : '';
 
+      const ALLOWED_SOIL_TYPES = ['Black Cotton Soil', 'Red Soil', 'Alluvial Soil', 'Clay Soil', 'Sandy Soil', 'Loamy Soil', 'Unknown/Not sure'];
       const query = {};
 
       if (search) {
-        query.name = { $regex: search, $options: 'i' };
+        const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        query.name = { $regex: escapedSearch, $options: 'i' };
       }
-      if (soilType) {
+      if (soilType && ALLOWED_SOIL_TYPES.includes(soilType)) {
         query.soilType = soilType;
       }
       if (crop) {
-        query.currentCrop = { $regex: crop, $options: 'i' };
+        const escapedCrop = crop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        query.currentCrop = { $regex: escapedCrop, $options: 'i' };
       }
 
       const farms = await Farm.find(query)

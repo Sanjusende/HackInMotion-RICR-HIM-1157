@@ -58,22 +58,25 @@ class NotificationController {
       // 1. Identify Target Users
       let targetUserIds = [];
 
+      // Escape targetValue to prevent RegExp injection
+      const escapedTarget = String(targetValue || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
       if (targetType === 'all') {
         const farmers = await User.find({ role: { $in: ['FARMER', 'farmer'] } }).select('_id').lean();
         targetUserIds = farmers.map((f) => f._id);
       } else if (targetType === 'state') {
-        const farms = await Farm.find({ 'location.state': { $regex: new RegExp(`^${targetValue}$`, 'i') } })
+        const farms = await Farm.find({ 'location.state': { $regex: new RegExp(`^${escapedTarget}$`, 'i') } })
           .select('userId')
           .lean();
         // Remove duplicates
         targetUserIds = [...new Set(farms.map((f) => f.userId.toString()))];
       } else if (targetType === 'district') {
-        const farms = await Farm.find({ 'location.district': { $regex: new RegExp(`^${targetValue}$`, 'i') } })
+        const farms = await Farm.find({ 'location.district': { $regex: new RegExp(`^${escapedTarget}$`, 'i') } })
           .select('userId')
           .lean();
         targetUserIds = [...new Set(farms.map((f) => f.userId.toString()))];
       } else if (targetType === 'crop') {
-        const farms = await Farm.find({ currentCrop: { $regex: new RegExp(`^${targetValue}$`, 'i') } })
+        const farms = await Farm.find({ currentCrop: { $regex: new RegExp(`^${escapedTarget}$`, 'i') } })
           .select('userId')
           .lean();
         targetUserIds = [...new Set(farms.map((f) => f.userId.toString()))];

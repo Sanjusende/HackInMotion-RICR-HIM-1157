@@ -13,13 +13,14 @@ class SchemeController {
       const limit = parseInt(req.query.limit || '10', 10);
       const skip = (page - 1) * limit;
 
-      const search = req.query.search || '';
+      const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
 
       const query = {};
       if (search) {
+        const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         query.$or = [
-          { schemeName: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
+          { schemeName: { $regex: escapedSearch, $options: 'i' } },
+          { description: { $regex: escapedSearch, $options: 'i' } },
         ];
       }
 

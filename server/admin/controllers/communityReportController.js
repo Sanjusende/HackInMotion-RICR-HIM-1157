@@ -11,13 +11,14 @@ class CommunityReportController {
       const page = parseInt(req.query.page || '1', 10);
       const limit = parseInt(req.query.limit || '10', 10);
       const skip = (page - 1) * limit;
-      const search = req.query.search || '';
+      const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
 
       const query = {};
       if (search) {
+        const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         query.$or = [
-          { crop: { $regex: search, $options: 'i' } },
-          { possibleIssue: { $regex: search, $options: 'i' } },
+          { crop: { $regex: escapedSearch, $options: 'i' } },
+          { possibleIssue: { $regex: escapedSearch, $options: 'i' } },
         ];
       }
 

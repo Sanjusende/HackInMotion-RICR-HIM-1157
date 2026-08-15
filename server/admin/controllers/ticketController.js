@@ -15,20 +15,25 @@ class TicketController {
       const limit = parseInt(req.query.limit || '10', 10);
       const skip = (page - 1) * limit;
 
-      const status = req.query.status || '';
-      const priority = req.query.priority || '';
-      const category = req.query.category || '';
-      const search = req.query.search || '';
+      const status = typeof req.query.status === 'string' ? req.query.status.trim() : '';
+      const priority = typeof req.query.priority === 'string' ? req.query.priority.trim() : '';
+      const category = typeof req.query.category === 'string' ? req.query.category.trim() : '';
+      const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+
+      const ALLOWED_STATUS = ['open', 'in_progress', 'resolved', 'closed'];
+      const ALLOWED_PRIORITY = ['low', 'medium', 'high', 'urgent'];
+      const ALLOWED_CATEGORY = ['weather', 'irrigation', 'crop_health', 'market', 'technical', 'other'];
 
       const query = {};
-      if (status) query.status = status;
-      if (priority) query.priority = priority;
-      if (category) query.category = category;
+      if (status && ALLOWED_STATUS.includes(status)) query.status = status;
+      if (priority && ALLOWED_PRIORITY.includes(priority)) query.priority = priority;
+      if (category && ALLOWED_CATEGORY.includes(category)) query.category = category;
       if (search) {
+        const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         query.$or = [
-          { ticketId: { $regex: search, $options: 'i' } },
-          { subject: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
+          { ticketId: { $regex: escapedSearch, $options: 'i' } },
+          { subject: { $regex: escapedSearch, $options: 'i' } },
+          { description: { $regex: escapedSearch, $options: 'i' } },
         ];
       }
 
