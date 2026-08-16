@@ -4,13 +4,9 @@
 -----Deployment url -----
 https://krishimitra2026.vercel.app/
 
-------admin ------
+-----farmer -----
 "email": "shubhamuprade0@gmail.com",
 "password": "Sonu@321"
-
------farmer -----
-"email": "",
-"password": ""
 
 KrishiMitra is a full-stack agriculture platform that helps farmers make better decisions using weather intelligence, irrigation guidance, crop health monitoring, market price insights, and personalized farm management.
 
