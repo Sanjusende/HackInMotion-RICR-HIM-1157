@@ -213,6 +213,7 @@ export const fetchCropMarketData = async (
   // 2. Fetch stored history from database
   let databaseRecords = await MarketPrice.find({
     crop,
+    market: new RegExp(`^${escapeRegExp(market)}$`, 'i'),
     state: new RegExp(`^${escapeRegExp(state)}$`, 'i'),
     district: new RegExp(`^${escapeRegExp(district)}$`, 'i'),
   })
@@ -220,13 +221,25 @@ export const fetchCropMarketData = async (
     .limit(HISTORY_DAYS)
     .lean();
 
+  // If no records found for the specific market, fallback to state/district level records
+  if (databaseRecords.length === 0) {
+    databaseRecords = await MarketPrice.find({
+      crop,
+      state: new RegExp(`^${escapeRegExp(state)}$`, 'i'),
+      district: new RegExp(`^${escapeRegExp(district)}$`, 'i'),
+    })
+      .sort({ date: 1 })
+      .limit(HISTORY_DAYS)
+      .lean();
+  }
+
   let history90d = databaseRecords;
   let isLiveData = databaseRecords.length > 0;
   let dataSource = isLiveData ? 'agmarknet' : 'benchmark';
 
   // 3. Fallback to generating and seeding deterministic data if DB is empty
   if (history90d.length === 0) {
-    const fallbackList = generateFallbackHistory({
+    const primaryFallback = generateFallbackHistory({
       crop,
       market,
       state,
@@ -234,9 +247,40 @@ export const fetchCropMarketData = async (
       basePrice: getBenchmarkPrice(crop),
     });
 
+    const dewasFallback = generateFallbackHistory({
+      crop,
+      market: 'Dewas Mandi',
+      state,
+      district: 'Dewas',
+      basePrice: Math.round(getBenchmarkPrice(crop) * 1.015),
+    });
+
+    const ujjainFallback = generateFallbackHistory({
+      crop,
+      market: 'Ujjain Mandi',
+      state,
+      district: 'Ujjain',
+      basePrice: Math.round(getBenchmarkPrice(crop) * 0.99),
+    });
+
+    const bhopalFallback = generateFallbackHistory({
+      crop,
+      market: 'Bhopal Mandi',
+      state,
+      district: 'Bhopal',
+      basePrice: Math.round(getBenchmarkPrice(crop) * 1.05),
+    });
+
+    const fallbackList = [
+      ...primaryFallback,
+      ...dewasFallback,
+      ...ujjainFallback,
+      ...bhopalFallback,
+    ];
+
     // Seed fallback data to MongoDB so dynamic queries are always served from DB
     await MarketPrice.insertMany(fallbackList);
-    history90d = fallbackList;
+    history90d = primaryFallback;
   }
 
   // 4. Time range histories
@@ -256,27 +300,63 @@ export const fetchCropMarketData = async (
   // Calculate Trend
   const trendResult = calculatePriceTrend(currentPrice, price7DaysAgo);
 
-  // Nearby Market Comparison
-  const nearbyMarkets = [
-    {
-      market: `${market} (Main)`,
+  // 6. Query database for nearby markets comparison
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - 7); // last 7 days of records
+
+  const stateRecords = await MarketPrice.find({
+    crop,
+    state: new RegExp(`^${escapeRegExp(state)}$`, 'i'),
+    date: { $gte: cutoffDate },
+  }).sort({ date: -1 }).lean();
+
+  const marketMap = new Map();
+  for (const record of stateRecords) {
+    if (!marketMap.has(record.market)) {
+      marketMap.set(record.market, record);
+    }
+  }
+
+  const nearbyMarkets = [];
+  const distances = {
+    'Dewas': 34,
+    'Ujjain': 55,
+    'Bhopal': 180,
+    'Indore': 0,
+    'Dhar': 64,
+    'Khandwa': 130,
+    'Khargone': 145,
+  };
+
+  marketMap.forEach((record, mName) => {
+    let dist = 50;
+    for (const key in distances) {
+      if (mName.toLowerCase().includes(key.toLowerCase())) {
+        dist = distances[key];
+        break;
+      }
+    }
+    nearbyMarkets.push({
+      market: mName,
+      price: record.price,
+      distanceKm: dist,
+      changePercent: record.changePercent || 0,
+    });
+  });
+
+  // Ensure primary market is first in the list
+  const primaryIndex = nearbyMarkets.findIndex(m => m.market.toLowerCase() === market.toLowerCase());
+  if (primaryIndex > -1) {
+    const [primaryItem] = nearbyMarkets.splice(primaryIndex, 1);
+    nearbyMarkets.unshift(primaryItem);
+  } else {
+    nearbyMarkets.unshift({
+      market,
       price: currentPrice,
       distanceKm: 0,
-      changePercent: trendResult.changePercent,
-    },
-    {
-      market: 'Dewas Mandi',
-      price: Math.round(currentPrice * 1.015),
-      distanceKm: 34,
-      changePercent: Number((trendResult.changePercent + 0.5).toFixed(2)),
-    },
-    {
-      market: 'Ujjain Mandi',
-      price: Math.round(currentPrice * 0.99),
-      distanceKm: 55,
-      changePercent: Number((trendResult.changePercent - 0.8).toFixed(2)),
-    },
-  ];
+      changePercent: trendResult.changePercent
+    });
+  }
 
   return {
     crop,
