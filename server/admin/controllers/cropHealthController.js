@@ -1,5 +1,6 @@
 import CropHealth from '../../models/CropHealth.js';
 import ApiResponse from '../../utils/apiResponse.js';
+import mongoose from 'mongoose';
 import { escapeRegex, pickAllowed, safeInt } from '../../utils/queryHelpers.js';
 
 const ALLOWED_HEALTH_STATUS = ['Healthy', 'Diseased'];
@@ -63,6 +64,10 @@ class CropHealthController {
   async getCropHealthScanById(req, res, next) {
     try {
       const { id } = req.params;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid crop health scan ID format', 400);
+      }
 
       const scan = await CropHealth.findById(id)
         .populate({

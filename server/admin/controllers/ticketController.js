@@ -3,6 +3,7 @@ import User from '../../models/User.js';
 import Admin from '../models/Admin.js';
 import auditService from '../services/auditService.js';
 import ApiResponse from '../../utils/apiResponse.js';
+import mongoose from 'mongoose';
 import { escapeRegex, pickAllowed, safeInt } from '../../utils/queryHelpers.js';
 
 const ALLOWED_TICKET_STATUS   = ['open', 'in_progress', 'resolved', 'closed'];
@@ -73,6 +74,10 @@ class TicketController {
   async getTicketById(req, res, next) {
     try {
       const { id } = req.params;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid ticket ID format', 400);
+      }
       const ticket = await SupportTicket.findById(String(id))
         .populate('farmerId', 'name email phone')
         .populate('assignedTo', 'name email role')
@@ -98,6 +103,10 @@ class TicketController {
 
       if (!farmerId || !subject || !description) {
         return ApiResponse.error(res, 'Required fields: farmerId, subject, description', 400);
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(farmerId)) {
+        return ApiResponse.error(res, 'Invalid farmer ID format', 400);
       }
 
       // Check farmer
@@ -144,6 +153,14 @@ class TicketController {
     try {
       const { id } = req.params;
       const { assignedToId } = req.body;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid ticket ID format', 400);
+      }
+      if (assignedToId && !mongoose.Types.ObjectId.isValid(assignedToId)) {
+        return ApiResponse.error(res, 'Invalid assignee ID format', 400);
+      }
+
       const ticket = await SupportTicket.findById(String(id));
       if (!ticket) {
         return ApiResponse.error(res, 'Support ticket not found', 404);
@@ -190,6 +207,10 @@ class TicketController {
         return ApiResponse.error(res, 'Valid status is required (open, in_progress, resolved)', 400);
       }
 
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid ticket ID format', 400);
+      }
+
       const ticket = await SupportTicket.findById(String(id));
       if (!ticket) {
         return ApiResponse.error(res, 'Support ticket not found', 404);
@@ -225,6 +246,10 @@ class TicketController {
 
       if (!message || !message.trim()) {
         return ApiResponse.error(res, 'Comment message is required', 400);
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid ticket ID format', 400);
       }
 
       const ticket = await SupportTicket.findById(String(id));

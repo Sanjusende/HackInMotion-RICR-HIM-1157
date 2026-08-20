@@ -97,7 +97,7 @@ class AnalyticsController {
         { $match: { health: 'Diseased' } },
         {
           $lookup: {
-            from: 'FarmProfile',
+            from: 'farms',
             localField: 'farmId',
             foreignField: '_id',
             as: 'farm',

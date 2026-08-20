@@ -1,6 +1,7 @@
 import Admin from '../models/Admin.js';
 import auditService from '../services/auditService.js';
 import ApiResponse from '../../utils/apiResponse.js';
+import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 class SettingsController {
@@ -122,6 +123,10 @@ class SettingsController {
     try {
       const { id } = req.params;
       
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid admin ID format', 400);
+      }
+
       if (req.admin.id.toString() === id) {
         return ApiResponse.error(res, 'You cannot deactivate your own active session', 400);
       }
@@ -170,6 +175,10 @@ class SettingsController {
         return ApiResponse.error(res, 'A valid admin role is required', 400);
       }
 
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid admin ID format', 400);
+      }
+
       if (req.admin.id.toString() === id) {
         return ApiResponse.error(res, 'You cannot change your own admin role', 400);
       }
@@ -206,6 +215,10 @@ class SettingsController {
   async deleteAdminUser(req, res, next) {
     try {
       const { id } = req.params;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid admin ID format', 400);
+      }
 
       if (req.admin.id.toString() === id) {
         return ApiResponse.error(res, 'You cannot delete your own admin account', 400);

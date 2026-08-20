@@ -1,6 +1,7 @@
 import Disease from '../models/Disease.js';
 import auditService from '../services/auditService.js';
 import ApiResponse from '../../utils/apiResponse.js';
+import mongoose from 'mongoose';
 import { escapeRegex, safeInt } from '../../utils/queryHelpers.js';
 
 class DiseaseController {
@@ -54,6 +55,10 @@ class DiseaseController {
   async getDiseaseById(req, res, next) {
     try {
       const { id } = req.params;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid disease ID format', 400);
+      }
       const disease = await Disease.findById(id).lean();
       if (!disease) {
         return ApiResponse.error(res, 'Disease not found in knowledge base', 404);
@@ -112,6 +117,10 @@ class DiseaseController {
       const { id } = req.params;
       const { diseaseName, crop, symptoms, causes, prevention, treatment, recommendedPesticide, severity } = req.body;
 
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid disease ID format', 400);
+      }
+
       const disease = await Disease.findById(id);
       if (!disease) {
         return ApiResponse.error(res, 'Disease entry not found', 404);
@@ -151,6 +160,10 @@ class DiseaseController {
   async deleteDisease(req, res, next) {
     try {
       const { id } = req.params;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid disease ID format', 400);
+      }
 
       const disease = await Disease.findById(id);
       if (!disease) {

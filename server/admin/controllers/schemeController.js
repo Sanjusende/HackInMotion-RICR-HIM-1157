@@ -1,6 +1,7 @@
 import GovernmentScheme from '../models/GovernmentScheme.js';
 import auditService from '../services/auditService.js';
 import ApiResponse from '../../utils/apiResponse.js';
+import mongoose from 'mongoose';
 import { escapeRegex, safeInt } from '../../utils/queryHelpers.js';
 
 class SchemeController {
@@ -58,6 +59,10 @@ class SchemeController {
   async getSchemeById(req, res, next) {
     try {
       const { id } = req.params;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid government scheme ID format', 400);
+      }
       const scheme = await GovernmentScheme.findById(id).lean();
       if (!scheme) {
         return ApiResponse.error(res, 'Government scheme not found', 404);
@@ -113,6 +118,10 @@ class SchemeController {
       const { id } = req.params;
       const { schemeName, description, eligibility, benefits, applyLink } = req.body;
 
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid government scheme ID format', 400);
+      }
+
       const scheme = await GovernmentScheme.findById(id);
       if (!scheme) {
         return ApiResponse.error(res, 'Government scheme not found', 404);
@@ -149,6 +158,10 @@ class SchemeController {
   async deleteScheme(req, res, next) {
     try {
       const { id } = req.params;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid government scheme ID format', 400);
+      }
 
       const scheme = await GovernmentScheme.findById(id);
       if (!scheme) {

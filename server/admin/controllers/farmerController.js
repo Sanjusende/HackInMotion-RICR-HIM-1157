@@ -102,6 +102,10 @@ class FarmerController {
     try {
       const { id } = req.params;
       
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid farmer ID format', 400);
+      }
+
       const farmer = await User.findById(id).select('-password -refreshToken').lean();
       if (!farmer || farmer.role?.toUpperCase() !== 'FARMER') {
         return ApiResponse.error(res, 'Farmer not found', 404);
@@ -141,6 +145,10 @@ class FarmerController {
     try {
       const { id } = req.params;
 
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid farmer ID format', 400);
+      }
+
       const farmer = await User.findById(id);
       if (!farmer || farmer.role?.toUpperCase() !== 'FARMER') {
         return ApiResponse.error(res, 'Farmer not found', 404);
@@ -176,6 +184,10 @@ class FarmerController {
     try {
       const { id } = req.params;
 
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid farmer ID format', 400);
+      }
+
       const farmer = await User.findById(id);
       if (!farmer || farmer.role?.toUpperCase() !== 'FARMER') {
         return ApiResponse.error(res, 'Farmer not found', 404);
@@ -210,6 +222,10 @@ class FarmerController {
   async deleteFarmer(req, res, next) {
     try {
       const { id } = req.params;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid farmer ID format', 400);
+      }
 
       const farmer = await User.findById(id);
       if (!farmer || farmer.role?.toUpperCase() !== 'FARMER') {

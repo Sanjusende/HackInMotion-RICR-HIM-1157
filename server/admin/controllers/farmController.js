@@ -2,6 +2,7 @@ import Farm from '../../models/Farm.js';
 import User from '../../models/User.js';
 import auditService from '../services/auditService.js';
 import ApiResponse from '../../utils/apiResponse.js';
+import mongoose from 'mongoose';
 import { escapeRegex, pickAllowed, safeInt } from '../../utils/queryHelpers.js';
 
 const ALLOWED_SOIL_TYPES = [
@@ -63,6 +64,10 @@ class FarmController {
   async getFarmById(req, res, next) {
     try {
       const { id } = req.params;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid farm ID format', 400);
+      }
       const farm = await Farm.findById(String(id)).populate('userId', 'name email phone').lean();
       if (!farm) {
         return ApiResponse.error(res, 'Farm profile not found', 404);
@@ -98,6 +103,10 @@ class FarmController {
 
       if (!userId || !locationDisplay || !lat || !lng || !landSizeValue || !currentCrop) {
         return ApiResponse.error(res, 'Required fields: userId, locationDisplay, lat, lng, landSizeValue, currentCrop', 400);
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return ApiResponse.error(res, 'Invalid user ID format', 400);
       }
 
       // Check if user exists
@@ -166,6 +175,10 @@ class FarmController {
         season,
       } = req.body;
 
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid farm ID format', 400);
+      }
+
       const farm = await Farm.findById(String(id));
       if (!farm) {
         return ApiResponse.error(res, 'Farm profile not found', 404);
@@ -218,6 +231,10 @@ class FarmController {
   async deleteFarm(req, res, next) {
     try {
       const { id } = req.params;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return ApiResponse.error(res, 'Invalid farm ID format', 400);
+      }
 
       const farm = await Farm.findById(String(id));
       if (!farm) {

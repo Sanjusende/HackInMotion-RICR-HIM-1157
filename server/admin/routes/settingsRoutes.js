@@ -8,7 +8,7 @@ const router = express.Router();
 router.use(adminAuth);
 
 // General settings (all admin roles)
-router.post('/change-password', settingsController.changePassword);
+router.post('/change-password', checkRole(['SUPER_ADMIN', 'ADMIN', 'AGRI_EXPERT', 'SUPPORT_EXEC']), settingsController.changePassword);
 
 // Administrative users management settings (Super Admin only)
 router.get('/users', checkRole(['SUPER_ADMIN']), settingsController.getAdminUsers);
