@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import mongoSanitize from 'express-mongo-sanitize';
+import { doubleCsrf } from 'csrf-csrf';
 import hpp from 'hpp';
 import env from './config/env.js';
 import corsOptions from './config/cors.js';
@@ -67,6 +68,56 @@ app.use(express.json({ limit: '5mb' }));
 // Parse URL-encoded payloads up to 5MB (protect against oversized payload attacks)
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
+// Express 5 compatibility layer: redefine req.query as writable to allow express-mongo-sanitize mutation
+app.use((req, res, next) => {
+  Object.defineProperty(req, 'query', {
+    value: { ...req.query },
+    writable: true,
+    configurable: true
+  });
+  next();
+});
+
+// Prevent NoSQL query injection globally (CodeQL requirement)
+app.use(mongoSanitize());
+
+// Configure stateless double-submit CSRF protection
+const { doubleCsrfProtection, generateCsrfToken: generateToken } = doubleCsrf({
+  getSecret: () => env.JWT_SECRET || 'fallback_csrf_secret_key_2026',
+  getSessionIdentifier: (req) => {
+    return req.cookies?.accessToken || req.cookies?.token || 'anonymous';
+  },
+  cookieName: 'x-csrf-token',
+  cookieOptions: {
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: true,
+  },
+  getTokenFromRequest: (req) => {
+    return req.headers['x-csrf-token'] || (req.body && req.body._csrf);
+  },
+});
+
+// Wrapper middleware to support Bearer token authentication bypass for CSRF
+const csrfMiddleware = (req, res, next) => {
+  // 1. Bypass CSRF for Bearer token authenticated requests (JWT in headers is safe from CSRF)
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    return next();
+  }
+
+  // 2. Bypass CSRF if there are no session cookies to forge
+  const hasAuthCookies = !!(req.cookies?.accessToken || req.cookies?.token || req.cookies?.refreshToken);
+  if (!hasAuthCookies) {
+    return next();
+  }
+
+  // 3. Otherwise, enforce double-submit CSRF protection
+  return doubleCsrfProtection(req, res, next);
+};
+
+// Protect cookie-based state-mutating requests against CSRF
+app.use(csrfMiddleware);
+
 // Prevent NoSQL query injection by stripping operator keys in-place (Express 5 safe)
 app.use((req, res, next) => {
   if (req.body) mongoSanitize.sanitize(req.body);
@@ -121,6 +172,12 @@ app.get('/', (req, res) => {
 });
 app.get('/api/health', generalLimiter, healthCheck);
 app.get('/api/v1/health', generalLimiter, healthCheck);
+
+// CSRF Token Retrieval Route
+app.get('/api/csrf-token', (req, res) => {
+  const token = generateToken(req, res);
+  return res.json({ success: true, csrfToken: token });
+});
 
 // Swagger Documentation Route mount point
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

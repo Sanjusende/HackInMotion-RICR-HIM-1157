@@ -73,7 +73,7 @@ class TicketController {
   async getTicketById(req, res, next) {
     try {
       const { id } = req.params;
-      const ticket = await SupportTicket.findById(id)
+      const ticket = await SupportTicket.findById(String(id))
         .populate('farmerId', 'name email phone')
         .populate('assignedTo', 'name email role')
         .lean();
@@ -101,7 +101,7 @@ class TicketController {
       }
 
       // Check farmer
-      const farmer = await User.findById(farmerId);
+      const farmer = await User.findById(String(farmerId));
       if (!farmer || farmer.role?.toUpperCase() !== 'FARMER') {
         return ApiResponse.error(res, 'Farmer account not found', 404);
       }
@@ -144,15 +144,14 @@ class TicketController {
     try {
       const { id } = req.params;
       const { assignedToId } = req.body;
-
-      const ticket = await SupportTicket.findById(id);
+      const ticket = await SupportTicket.findById(String(id));
       if (!ticket) {
         return ApiResponse.error(res, 'Support ticket not found', 404);
       }
 
       let admin = null;
       if (assignedToId) {
-        admin = await Admin.findById(assignedToId);
+        admin = await Admin.findById(String(assignedToId));
         if (!admin) {
           return ApiResponse.error(res, 'Admin assignee not found', 404);
         }
@@ -191,7 +190,7 @@ class TicketController {
         return ApiResponse.error(res, 'Valid status is required (open, in_progress, resolved)', 400);
       }
 
-      const ticket = await SupportTicket.findById(id);
+      const ticket = await SupportTicket.findById(String(id));
       if (!ticket) {
         return ApiResponse.error(res, 'Support ticket not found', 404);
       }
@@ -228,7 +227,7 @@ class TicketController {
         return ApiResponse.error(res, 'Comment message is required', 400);
       }
 
-      const ticket = await SupportTicket.findById(id);
+      const ticket = await SupportTicket.findById(String(id));
       if (!ticket) {
         return ApiResponse.error(res, 'Support ticket not found', 404);
       }

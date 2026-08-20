@@ -10,8 +10,8 @@ import env from '../../config/env.js';
 const setTokenCookies = (res, accessToken, refreshToken) => {
   const cookieOptions = {
     httpOnly: true,
-    secure: env.NODE_ENV === 'production',
-    sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: true,
+    sameSite: 'strict',
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   };
 
@@ -32,8 +32,8 @@ const setTokenCookies = (res, accessToken, refreshToken) => {
 const clearTokenCookies = (res) => {
   const cookieOptions = {
     httpOnly: true,
-    secure: env.NODE_ENV === 'production',
-    sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: true,
+    sameSite: 'strict',
   };
   res.clearCookie('accessToken', cookieOptions);
   res.clearCookie('token', cookieOptions);
@@ -250,7 +250,7 @@ class AuthController {
       const adminEmail = req.admin?.email;
 
       if (refreshToken) {
-        const admin = await Admin.findOne({ refreshToken });
+        const admin = await Admin.findOne({ refreshToken: String(refreshToken) });
         if (admin) {
           admin.refreshToken = '';
           await admin.save();

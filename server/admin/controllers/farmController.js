@@ -63,7 +63,7 @@ class FarmController {
   async getFarmById(req, res, next) {
     try {
       const { id } = req.params;
-      const farm = await Farm.findById(id).populate('userId', 'name email phone').lean();
+      const farm = await Farm.findById(String(id)).populate('userId', 'name email phone').lean();
       if (!farm) {
         return ApiResponse.error(res, 'Farm profile not found', 404);
       }
@@ -101,7 +101,7 @@ class FarmController {
       }
 
       // Check if user exists
-      const user = await User.findById(userId);
+      const user = await User.findById(String(userId));
       if (!user) {
         return ApiResponse.error(res, 'User/Farmer not found', 404);
       }
@@ -166,7 +166,7 @@ class FarmController {
         season,
       } = req.body;
 
-      const farm = await Farm.findById(id);
+      const farm = await Farm.findById(String(id));
       if (!farm) {
         return ApiResponse.error(res, 'Farm profile not found', 404);
       }
@@ -219,12 +219,12 @@ class FarmController {
     try {
       const { id } = req.params;
 
-      const farm = await Farm.findById(id);
+      const farm = await Farm.findById(String(id));
       if (!farm) {
         return ApiResponse.error(res, 'Farm profile not found', 404);
       }
 
-      await Farm.findByIdAndDelete(id);
+      await Farm.findByIdAndDelete(String(id));
 
       // Audit Log
       await auditService.logAction({
