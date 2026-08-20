@@ -1,16 +1,25 @@
 # 🌾 KrishiMitra
 
 > Smart Farm Decision Support System
------Deployment url -----
+
+---
+
+### 🌐 Deployment URL
 https://krishimitra2026.vercel.app/
 
-------admin ------
-"email": "shubhamuprade0@gmail.com",
-"password": "Sonu@321"
+---
 
------farmer -----
-"email": "",
-"password": ""
+### 🔑 Demo Credentials
+
+**Admin:**
+- Email: `adminnik@gmail.com`
+- Password: `Admin@123`
+
+**Farmer:**
+- Email: `shubhamuprade0@gmail.com`
+- Password: `Sonu@321`
+
+---
 
 KrishiMitra is a full-stack agriculture platform that helps farmers make better decisions using weather intelligence, irrigation guidance, crop health monitoring, market price insights, and personalized farm management.
 
