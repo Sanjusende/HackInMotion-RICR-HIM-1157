@@ -95,7 +95,7 @@ class NotificationController {
       const finalUserIds = validFarmerIds.map((u) => u._id);
 
       if (finalUserIds.length === 0) {
-        return ApiResponse.error(res, 'No farmers found matching the specified targeting criteria', 404);
+        return ApiResponse.error(res, 'No farmers found matching the specified targeting criteria', 400);
       }
 
       // Map admin categories to user-notification categories
